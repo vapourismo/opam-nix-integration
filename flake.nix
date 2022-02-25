@@ -27,6 +27,7 @@
           ppxlib
           ppx_deriving
           cmdliner
+          zarith
         ];
       };
     }

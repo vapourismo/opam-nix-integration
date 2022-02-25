@@ -1,5 +1,5 @@
 (executable
  (name opam2nix)
- (libraries opam-format)
+ (libraries opam-format cmdliner zarith)
  (preprocess
   (pps ppx_deriving.show)))
