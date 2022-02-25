@@ -1,0 +1,5 @@
+(executable
+ (name opam2nix)
+ (libraries opam-format)
+ (preprocess
+  (pps ppx_deriving.show)))

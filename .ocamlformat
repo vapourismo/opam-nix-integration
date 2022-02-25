@@ -1,0 +1,6 @@
+profile = janestreet
+module-item-spacing = sparse
+
+cases-exp-indent = 2
+function-indent = 2
+function-indent-nested = always

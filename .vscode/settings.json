@@ -1,0 +1,7 @@
+{
+  "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+  "ocaml.sandbox": {
+    "kind": "custom",
+    "template": "$prog $args"
+  }
+}
