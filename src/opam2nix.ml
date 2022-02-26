@@ -50,17 +50,39 @@ let main options =
   let opam = read_opam options.Options.file in
   let build = script default_env opam.build in
   let install = script default_env opam.install in
+  let source =
+    Option.map
+      (fun url ->
+        let src = OpamFile.URL.url url |> OpamUrl.to_string in
+        let check_attrs =
+          List.filter_map
+            (fun hash ->
+              match OpamHash.kind hash with
+              | `MD5 -> None
+              | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
+              | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash)))
+            (OpamFile.URL.checksum url)
+        in
+        Nix.(ident "fetchurl" @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
+      opam.url
+  in
   let expr =
     Nix.(
-      Pattern.attr_set [ "mkDerivation" ]
+      Pattern.attr_set_partial [ "mkDerivation"; "fetchurl" ]
       => ident "mkDerivation"
          @@ [ attr_set
-                [ "pname", string options.name
-                ; "version", string options.version
-                ; "buildPhase", multiline build
-                ; "installPhase", multiline install
-                ; "phases", list [ string "buildPhase"; string "installPhase" ]
-                ]
+                ([ "pname", string options.name
+                 ; "version", string options.version
+                 ; "buildPhase", multiline build
+                 ; "installPhase", multiline install
+                 ; ( "phases"
+                   , list
+                       [ string "unpackPhase"
+                       ; string "buildPhase"
+                       ; string "installPhase"
+                       ] )
+                 ]
+                @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
             ])
   in
   print_endline (Nix.render expr)

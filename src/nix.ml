@@ -17,6 +17,8 @@ module Pattern = struct
   ;;
 
   let attr_set fields = AttrSetPat { fields; partial = false; bound = None }
+
+  let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
 end
 
 module StringMap = Map.Make (String)
