@@ -52,18 +52,16 @@ let main options =
   let install = script default_env opam.install in
   let expr =
     Nix.(
-      lambda
-        (Pattern.attr_set [ "mkDerivation" ])
-        (apply
-           (ident "mkDerivation")
-           [ attr_set
-               [ "pname", string options.name
-               ; "version", string options.version
-               ; "buildPhase", multiline build
-               ; "installPhase", multiline install
-               ; "phases", list [ string "buildPhase"; string "installPhase" ]
-               ]
-           ]))
+      Pattern.attr_set [ "mkDerivation" ]
+      => ident "mkDerivation"
+         @@ [ attr_set
+                [ "pname", string options.name
+                ; "version", string options.version
+                ; "buildPhase", multiline build
+                ; "installPhase", multiline install
+                ; "phases", list [ string "buildPhase"; string "installPhase" ]
+                ]
+            ])
   in
   print_endline (Nix.render expr)
 ;;

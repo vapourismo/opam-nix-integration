@@ -43,7 +43,9 @@ and string_segment =
 
 and attr_set = t StringMap.t
 
-let rec render exp =
+let parens body = "(" ^ body ^ ")"
+
+let rec render_prec ?(want_parens = false) exp =
   match exp with
   | Identifier ident -> ident
   | String segments ->
@@ -59,7 +61,9 @@ let rec render exp =
   | Number num -> "(" ^ Q.to_string num ^ ")"
   | List elements ->
     "["
-    ^ String.concat " " (List.map (fun elem -> "(" ^ render elem ^ ")") elements)
+    ^ String.concat
+        " "
+        (List.map (fun elem -> render_prec ~want_parens:true elem) elements)
     ^ "]"
   | AttrSet attrs ->
     "{ "
@@ -67,20 +71,26 @@ let rec render exp =
         " "
         (StringMap.to_seq attrs
         |> List.of_seq
-        |> List.map (fun (k, v) -> k ^ " = " ^ render v ^ ";"))
+        |> List.map (fun (k, v) -> k ^ " = " ^ render_prec v ^ ";"))
     ^ " }"
-  | Lambda { head; body } -> Pattern.render head ^ ": " ^ render body
+  | Lambda { head; body } ->
+    (if want_parens then parens else Fun.id)
+    @@ Pattern.render head
+    ^ ": "
+    ^ render_prec body
   | Apply { func; args } ->
-    "("
-    ^ render func
-    ^ ") "
-    ^ String.concat " " (List.map (fun arg -> "(" ^ render arg ^ ")") args)
+    (if want_parens then parens else Fun.id)
+    @@ render_prec func
+    ^ " "
+    ^ String.concat " " (List.map (fun arg -> render_prec ~want_parens:true arg) args)
 
 and render_segment seg =
   match seg with
   | StringSegment str -> str
-  | CodeSegment code -> "${" ^ render code ^ "}"
+  | CodeSegment code -> "${" ^ render_prec code ^ "}"
 ;;
+
+let render exp = render_prec exp
 
 let ident name = Identifier name
 
@@ -99,4 +109,8 @@ let list elems = List elems
 
 let lambda head body = Lambda { head; body }
 
+let ( => ) = lambda
+
 let apply func args = Apply { func; args }
+
+let ( @@ ) = apply
