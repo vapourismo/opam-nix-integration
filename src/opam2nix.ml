@@ -109,6 +109,7 @@ let main options =
          @@ [ attr_set
                 ([ "pname", string options.name
                  ; "version", string options.version
+                 ; "configurePhase", string "# Skip"
                  ; "buildPhase", multiline build
                  ; ( "installPhase"
                    , multiline
