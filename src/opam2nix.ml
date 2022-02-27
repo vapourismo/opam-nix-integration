@@ -109,18 +109,12 @@ let main options =
         ([ "mkDerivation"; "fetchurl"; "resolveExtraFile" ] @ depends @ native_depends)
       => ident "mkDerivation"
          @@ [ attr_set
-                ([ "pname", string options.name
+                ([ "name", string options.name
                  ; "version", string options.version
-                 ; "configurePhase", string "# Skip"
-                 ; "buildPhase", multiline build
-                 ; ( "installPhase"
-                   , multiline
-                       (match install with
-                       | [] -> [ "mkdir -p $out" ]
-                       | _ -> install) )
-                 ; "dontUnpack", bool (Option.is_none source)
-                 ; "propagatedBuildInputs", list (List.map ident depends)
-                 ; "propagatedNativeBuildInputs", list (List.map ident native_depends)
+                 ; "buildScript", multiline build
+                 ; "installScript", multiline install
+                 ; "depends", list (List.map ident depends)
+                 ; "nativeDepends", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
