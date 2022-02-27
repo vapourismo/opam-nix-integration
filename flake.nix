@@ -44,7 +44,9 @@
         buildInputs = with ocamlPackages; [
           ocaml-lsp
           ocamlformat
-        ] ++ self.defaultPackage.${system}.buildInputs;
+        ] ++ self.defaultPackage.${system}.buildInputs ++ [
+          nixpkgs-fmt
+        ];
       };
     }
   );
