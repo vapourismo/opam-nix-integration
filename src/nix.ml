@@ -25,6 +25,7 @@ module StringMap = Map.Make (String)
 
 type t =
   | Identifier of string
+  | Bool of bool
   | String of string_segment list
   | MultilineString of string_segment list list
   | Number of Q.t
@@ -50,6 +51,7 @@ let parens body = "(" ^ body ^ ")"
 let rec render_prec ?(want_parens = false) exp =
   match exp with
   | Identifier ident -> ident
+  | Bool value -> if value then "true" else "false"
   | String segments ->
     [%show: string] (String.concat "" (List.map render_segment segments))
   | MultilineString lines ->
@@ -100,6 +102,8 @@ let attr_set entries =
   AttrSet
     (List.fold_left (fun attrs (k, v) -> StringMap.add k v attrs) StringMap.empty entries)
 ;;
+
+let bool value = Bool value
 
 let string body = String [ StringSegment body ]
 
