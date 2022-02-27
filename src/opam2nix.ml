@@ -120,7 +120,7 @@ let main options =
                        | _ -> install) )
                  ; "dontUnpack", bool (Option.is_none source)
                  ; "propagatedBuildInputs", list (List.map ident depends)
-                 ; "nativeBuildInputs", list (List.map ident native_depends)
+                 ; "propagatedNativeBuildInputs", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
