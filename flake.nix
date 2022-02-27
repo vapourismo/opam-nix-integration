@@ -25,7 +25,7 @@
 
         src = self;
 
-        propagatedBuildInputs = with ocamlPackages; [
+        buildInputs = with ocamlPackages; [
           opam-format
           ppxlib
           ppx_deriving
@@ -44,7 +44,7 @@
         buildInputs = with ocamlPackages; [
           ocaml-lsp
           ocamlformat
-        ] ++ self.defaultPackage.${system}.propagatedBuildInputs;
+        ] ++ self.defaultPackage.${system}.buildInputs;
       };
     }
   );
