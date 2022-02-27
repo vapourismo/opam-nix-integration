@@ -5,6 +5,7 @@ description: "Convert .opam files to .nix expressions."
 depends: [
   "dune" {>= "2.9"}
   "opam-format"
+  "opam-state"
   "cmdliner"
   "zarith"
   "ppx_deriving"

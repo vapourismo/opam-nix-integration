@@ -9,11 +9,15 @@ let script env list =
 ;;
 
 let default_env =
-  Env.create
-    [ Var.global "os", Var.string "linux"
-    ; Var.global "os-distribution", Var.string "nixos"
-    ; Var.global "arch", Var.string "x86_64"
-    ; Var.global "make", Var.string "make"
+  let sys_vars =
+    List.filter_map
+      (fun (name, optValue) ->
+        Lazy.force optValue
+        |> Option.map (fun value -> OpamVariable.Full.global name, value))
+      OpamSysPoll.variables
+  in
+  let default_vars =
+    [ Var.global "make", Var.string "make"
     ; Var.global "prefix", Var.string "$out"
     ; Var.self "lib", Var.string "$out/lib"
     ; Var.global "lib", Var.string "$out/lib"
@@ -26,6 +30,8 @@ let default_env =
     ; Var.foreign "ocaml" "preinstalled", Var.bool true
     ; Var.foreign "ocaml" "native", Var.bool true
     ]
+  in
+  Env.create (sys_vars @ default_vars)
 ;;
 
 module Options = struct

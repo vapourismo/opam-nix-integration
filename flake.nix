@@ -27,6 +27,7 @@
 
         buildInputs = with ocamlPackages; [
           opam-format
+          opam-state
           ppxlib
           ppx_deriving
           cmdliner

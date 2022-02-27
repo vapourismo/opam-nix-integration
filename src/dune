@@ -1,6 +1,6 @@
 (executable
  (name opam2nix)
  (public_name opam2nix)
- (libraries opam-format cmdliner zarith)
+ (libraries opam-format opam-state cmdliner zarith)
  (preprocess
   (pps ppx_deriving.show)))
