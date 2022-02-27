@@ -78,9 +78,17 @@ let main options =
     |> OpamFormula.atoms
     |> List.map OpamFormula.string_of_atom
   in
+  let native_depends =
+    opam.depexts
+    |> List.map (fun (set, filter) -> set, Some filter)
+    |> Filter.apply_to_list default_env
+    |> List.fold_left OpamSysPkg.Set.union OpamSysPkg.Set.empty
+    |> OpamSysPkg.Set.elements
+    |> List.map OpamSysPkg.to_string
+  in
   let expr =
     Nix.(
-      Pattern.attr_set ([ "mkDerivation"; "fetchurl" ] @ depends)
+      Pattern.attr_set ([ "mkDerivation"; "fetchurl" ] @ depends @ native_depends)
       => ident "mkDerivation"
          @@ [ attr_set
                 ([ "pname", string options.name
@@ -94,6 +102,7 @@ let main options =
                           [ string "unpackPhase" ]
                        @ [ string "buildPhase"; string "installPhase" ]) )
                  ; "propagatedBuildInputs", list (List.map ident depends)
+                 ; "nativeBuildInputs", list (List.map ident native_depends)
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
             ])
