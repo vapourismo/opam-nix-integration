@@ -38,16 +38,14 @@
       devShell = mkShell {
         nativeBuildInputs = with ocamlPackages; [
           ocaml
-          findlib
-          dune_2
-        ];
-
-        buildInputs = with ocamlPackages; [
           ocaml-lsp
           ocamlformat
-        ] ++ self.defaultPackage.${system}.buildInputs ++ [
+          findlib
+          dune_2
           nixpkgs-fmt
         ];
+
+        buildInputs = self.defaultPackage.${system}.buildInputs;
       };
     }
   );
