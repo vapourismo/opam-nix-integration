@@ -115,15 +115,7 @@ let main options =
                        (match install with
                        | [] -> [ "touch $out" ]
                        | _ -> install) )
-                 ; ( "phases"
-                   , list
-                       (List.filter
-                          (fun _ -> Option.is_some source)
-                          [ string "unpackPhase" ]
-                       @ [ string "extraFilesPhase"
-                         ; string "buildPhase"
-                         ; string "installPhase"
-                         ]) )
+                 ; "dontUnpack", bool (Option.is_none source)
                  ; "propagatedBuildInputs", list (List.map ident depends)
                  ; "nativeBuildInputs", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files
