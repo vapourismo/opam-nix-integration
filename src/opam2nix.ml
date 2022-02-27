@@ -66,9 +66,16 @@ let main options =
         Nix.(ident "fetchurl" @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
+  let depends =
+    opam.depends
+    |> OpamFormula.map (fun (name, _formula) ->
+           OpamFormula.Atom (name, OpamFormula.Empty))
+    |> OpamFormula.atoms
+    |> List.map OpamFormula.string_of_atom
+  in
   let expr =
     Nix.(
-      Pattern.attr_set_partial [ "mkDerivation"; "fetchurl" ]
+      Pattern.attr_set ([ "mkDerivation"; "fetchurl" ] @ depends)
       => ident "mkDerivation"
          @@ [ attr_set
                 ([ "pname", string options.name
@@ -81,6 +88,7 @@ let main options =
                        ; string "buildPhase"
                        ; string "installPhase"
                        ] )
+                 ; "propagatedBuildInputs", list (List.map ident depends)
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
             ])
