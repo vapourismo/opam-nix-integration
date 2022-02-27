@@ -94,7 +94,11 @@ let main options =
                 ([ "pname", string options.name
                  ; "version", string options.version
                  ; "buildPhase", multiline build
-                 ; "installPhase", multiline install
+                 ; ( "installPhase"
+                   , multiline
+                       (match install with
+                       | [] -> [ "touch $out" ]
+                       | _ -> install) )
                  ; ( "phases"
                    , list
                        (List.filter
