@@ -16,8 +16,13 @@ let default_env =
     ; Var.global "make", Var.string "make"
     ; Var.global "prefix", Var.string "$out"
     ; Var.self "lib", Var.string "$out/lib"
+    ; Var.global "lib", Var.string "$out/lib"
     ; Var.self "bin", Var.string "$out/bin"
+    ; Var.global "bin", Var.string "$out/bin"
     ; Var.self "doc", Var.string "$out/share/doc"
+    ; Var.global "doc", Var.string "$out/share/doc"
+    ; Var.self "man", Var.string "$out/share/man"
+    ; Var.global "man", Var.string "$out/share/man"
     ]
 ;;
 

@@ -5,7 +5,10 @@ exception UnknownVariable of string
 let () =
   Printexc.register_printer (function
     | UnknownVariable name ->
-      Some (Printf.sprintf "Could not find variable %s in environment" name)
+      Some
+        (Printf.sprintf
+           "Could not find variable %s in environment"
+           ([%show: string] name))
     | _ -> None)
 ;;
 
