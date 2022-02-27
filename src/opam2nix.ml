@@ -89,10 +89,10 @@ let main options =
                  ; "installPhase", multiline install
                  ; ( "phases"
                    , list
-                       [ string "unpackPhase"
-                       ; string "buildPhase"
-                       ; string "installPhase"
-                       ] )
+                       (List.filter
+                          (fun _ -> Option.is_some source)
+                          [ string "unpackPhase" ]
+                       @ [ string "buildPhase"; string "installPhase" ]) )
                  ; "propagatedBuildInputs", list (List.map ident depends)
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
