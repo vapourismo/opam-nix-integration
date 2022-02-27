@@ -102,7 +102,7 @@ let main options =
             Nix.(
               ident "resolveExtraFile"
               @@ [ attr_set
-                     ([ "name", string (OpamFilename.Base.to_string name) ]
+                     ([ "path", string (OpamFilename.Base.to_string name) ]
                      @ Option.fold ~none:[] ~some:(fun hash -> [ hash ]) (hash_attrs hash)
                      )
                  ]))
