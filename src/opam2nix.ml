@@ -23,6 +23,8 @@ let default_env =
     ; Var.global "doc", Var.string "$out/share/doc"
     ; Var.self "man", Var.string "$out/share/man"
     ; Var.global "man", Var.string "$out/share/man"
+    ; Var.foreign "ocaml" "preinstalled", Var.bool true
+    ; Var.foreign "ocaml" "native", Var.bool true
     ]
 ;;
 
