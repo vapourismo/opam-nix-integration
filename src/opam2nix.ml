@@ -116,7 +116,7 @@ let main options =
                  ; ( "installPhase"
                    , multiline
                        (match install with
-                       | [] -> [ "touch $out" ]
+                       | [] -> [ "mkdir -p $out" ]
                        | _ -> install) )
                  ; "dontUnpack", bool (Option.is_none source)
                  ; "propagatedBuildInputs", list (List.map ident depends)
