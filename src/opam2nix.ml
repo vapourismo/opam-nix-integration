@@ -51,6 +51,13 @@ module Options = struct
   ;;
 end
 
+let hash_attrs hash =
+  match OpamHash.kind hash with
+  | `MD5 -> None
+  | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
+  | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash))
+;;
+
 let main options =
   let opam = read_opam options.Options.file in
   let build = script default_env opam.build in
@@ -59,15 +66,7 @@ let main options =
     Option.map
       (fun url ->
         let src = OpamFile.URL.url url |> OpamUrl.to_string in
-        let check_attrs =
-          List.filter_map
-            (fun hash ->
-              match OpamHash.kind hash with
-              | `MD5 -> None
-              | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
-              | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash)))
-            (OpamFile.URL.checksum url)
-        in
+        let check_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
         Nix.(ident "fetchurl" @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
@@ -86,9 +85,26 @@ let main options =
     |> OpamSysPkg.Set.elements
     |> List.map OpamSysPkg.to_string
   in
+  let extra_files =
+    Option.fold
+      ~none:[]
+      ~some:(fun files ->
+        List.map
+          (fun (name, hash) ->
+            Nix.(
+              ident "resolveExtraFile"
+              @@ [ attr_set
+                     ([ "name", string (OpamFilename.Base.to_string name) ]
+                     @ Option.fold ~none:[] ~some:(fun hash -> [ hash ]) (hash_attrs hash)
+                     )
+                 ]))
+          files)
+      opam.extra_files
+  in
   let expr =
     Nix.(
-      Pattern.attr_set ([ "mkDerivation"; "fetchurl" ] @ depends @ native_depends)
+      Pattern.attr_set
+        ([ "mkDerivation"; "fetchurl"; "resolveExtraFile" ] @ depends @ native_depends)
       => ident "mkDerivation"
          @@ [ attr_set
                 ([ "pname", string options.name
@@ -104,9 +120,13 @@ let main options =
                        (List.filter
                           (fun _ -> Option.is_some source)
                           [ string "unpackPhase" ]
-                       @ [ string "buildPhase"; string "installPhase" ]) )
+                       @ [ string "extraFilesPhase"
+                         ; string "buildPhase"
+                         ; string "installPhase"
+                         ]) )
                  ; "propagatedBuildInputs", list (List.map ident depends)
                  ; "nativeBuildInputs", list (List.map ident native_depends)
+                 ; "extraFiles", list extra_files
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
             ])
