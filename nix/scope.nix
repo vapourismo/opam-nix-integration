@@ -27,6 +27,7 @@ lib.makeScope newScope (self: {
         }
         ''
           cp $src opam
+          chmod +w opam
           for patch in $patches; do
             patch opam $patch
           done
