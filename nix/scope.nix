@@ -37,7 +37,7 @@ lib.makeScope newScope (self: {
 
   callOpam2Nix = args: self.callPackage (self.generateOpam2Nix args);
 
-  callOpam = { name, version, sha256, patches ? [ ] }:
+  callOpam = { name, version, patches ? [ ] }:
     let
       src = "${opamRepository}/packages/${name}/${name}.${version}/opam";
     in
