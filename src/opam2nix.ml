@@ -112,8 +112,10 @@ let main options =
   let expr =
     Nix.(
       Pattern.attr_set
-        ([ "mkDerivation"; "fetchurl"; "resolveExtraFile" ] @ depends @ native_depends)
-      => ident "mkDerivation"
+        ([ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
+        @ depends
+        @ native_depends)
+      => ident "mkOpam2NixPackage"
          @@ [ attr_set
                 ([ "name", string options.name
                  ; "version", string options.version
