@@ -7,7 +7,9 @@ let resolve_scoped var =
     "$"
     ^ Option.fold
         ~none:"out"
-        ~some:OpamPackage.Name.to_string
+        ~some:(fun name ->
+          (* TODO: Fix this placeholder *)
+          "{" ^ OpamPackage.Name.to_string name ^ "}")
         (OpamVariable.Full.package var)
   in
   let sub_prefix dir = Some (Var.string (prefix ^ "/" ^ dir)) in
