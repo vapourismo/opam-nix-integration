@@ -7,6 +7,12 @@
 , opamRepository ? callPackage ./repository.nix { }
 }:
 
+let
+  repoInfo = import ./repository-info.nix {
+    inherit lib opamRepository;
+  };
+
+in
 lib.makeScope newScope (self: {
   inherit ocaml findlib;
   ocamlfind = self.findlib;
@@ -47,4 +53,20 @@ lib.makeScope newScope (self: {
         source = "${opamRepository}/packages/${name}/${name}.${version}/files/${path}";
       };
     } // args);
+
+  opamPackages =
+    builtins.mapAttrs
+      (name: versions:
+        builtins.listToAttrs
+          (
+            builtins.map
+              (version: {
+                name = version;
+                value = self.callOpam { inherit name version; } { };
+              })
+              versions
+          ) // {
+          latest = self.callOpam { inherit name; version = repoInfo.latest name; } { };
+        })
+      repoInfo.versions;
 })
