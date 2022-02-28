@@ -17,7 +17,8 @@ let default_env =
       OpamSysPoll.variables
   in
   let default_vars =
-    [ Var.global "make", Var.string "make"
+    [ Var.global "os-distribution", Var.string "nixos"
+    ; Var.global "make", Var.string "make"
     ; Var.global "prefix", Var.string "$out"
     ; Var.self "lib", Var.string "$out/lib"
     ; Var.global "lib", Var.string "$out/lib"
