@@ -1,8 +1,10 @@
+module StringSet = Set.Make (String)
+
 module Pattern = struct
   type t =
     | PlainPat of string
     | AttrSetPat of
-        { fields : string list
+        { fields : StringSet.t
         ; partial : bool
         ; bound : string option
         }
@@ -11,12 +13,15 @@ module Pattern = struct
     match pat with
     | PlainPat name -> name
     | AttrSetPat { fields; partial; bound } ->
+      let fields = StringSet.elements fields in
       let entries = if partial then fields @ [ "..." ] else fields in
       let binding = Option.fold ~none:"" ~some:(fun name -> "@" ^ name) bound in
       "{ " ^ String.concat ", " entries ^ " }" ^ binding
   ;;
 
-  let attr_set fields = AttrSetPat { fields; partial = false; bound = None }
+  let attr_set fields =
+    AttrSetPat { fields = StringSet.of_list fields; partial = false; bound = None }
+  ;;
 
   let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
 end
