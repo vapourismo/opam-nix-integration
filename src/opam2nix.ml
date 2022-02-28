@@ -76,7 +76,14 @@ let main options =
       (fun url ->
         let src = OpamFile.URL.url url |> OpamUrl.to_string in
         let check_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
-        Nix.(ident "fetchurl" @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
+        let fetchurl =
+          match check_attrs with
+          | [] ->
+            (* The built-in fetchurl does not required checksums. *)
+            "builtins.fetchurl"
+          | _ -> "fetchurl"
+        in
+        Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
   let depends =
