@@ -8,7 +8,7 @@ let script env list =
          |> String.concat " ")
 ;;
 
-let default_env =
+let make_env extra_vars =
   let sys_vars =
     List.filter_map
       (fun (name, optValue) ->
@@ -32,7 +32,7 @@ let default_env =
     ; Var.foreign "ocaml" "native", Var.bool true
     ]
   in
-  Env.create (sys_vars @ default_vars)
+  Env.create (sys_vars @ default_vars @ extra_vars)
 ;;
 
 module Options = struct
@@ -68,9 +68,18 @@ let hash_attrs hash =
 ;;
 
 let main options =
+  let env =
+    make_env
+      [ Var.global "jobs", Var.int 1
+      ; Var.self "name", Var.string options.Options.name
+      ; Var.global "name", Var.string options.Options.name
+      ; Var.self "version", Var.string options.Options.version
+      ; Var.global "version", Var.string options.Options.version
+      ]
+  in
   let opam = read_opam options.Options.file in
-  let build = script default_env opam.build in
-  let install = script default_env opam.install in
+  let build = script env opam.build in
+  let install = script env opam.install in
   let source =
     Option.map
       (fun url ->
@@ -89,7 +98,7 @@ let main options =
   let native_depends =
     opam.depexts
     |> List.map (fun (set, filter) -> set, Some filter)
-    |> Filter.apply_to_list default_env
+    |> Filter.apply_to_list env
     |> List.fold_left OpamSysPkg.Set.union OpamSysPkg.Set.empty
     |> OpamSysPkg.Set.elements
     |> List.map OpamSysPkg.to_string

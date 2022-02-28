@@ -8,3 +8,5 @@ let create entries =
 ;;
 
 let get_as_string env key = Option.map OpamVariable.string_of_variable_contents (env key)
+
+let set key value = Map.add key value

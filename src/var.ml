@@ -10,6 +10,8 @@ let foreign package name =
     (OpamVariable.of_string name)
 ;;
 
+let int = OpamVariable.int
+
 let string = OpamVariable.string
 
 let bool = OpamVariable.bool
