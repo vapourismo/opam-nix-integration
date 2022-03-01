@@ -42,6 +42,7 @@
           ocamlformat
           findlib
           dune_2
+          utop
           nixpkgs-fmt
         ];
 
