@@ -2,7 +2,7 @@ module StringSet = Set.Make (String)
 
 module Pattern = struct
   type t =
-    | PlainPat of string
+    | IdentPat of string
     | AttrSetPat of
         { fields : StringSet.t
         ; partial : bool
@@ -11,7 +11,7 @@ module Pattern = struct
 
   let render pat =
     match pat with
-    | PlainPat name -> name
+    | IdentPat name -> name
     | AttrSetPat { fields; partial; bound } ->
       let fields = StringSet.elements fields in
       let entries = if partial then fields @ [ "..." ] else fields in
@@ -24,6 +24,8 @@ module Pattern = struct
   ;;
 
   let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
+
+  let ident name = IdentPat name
 end
 
 module StringMap = Map.Make (String)
