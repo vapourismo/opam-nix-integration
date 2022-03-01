@@ -46,12 +46,29 @@ type t =
       { func : t
       ; args : t list
       }
+  | Infix of
+      { left : t
+      ; op : string
+      ; right : t
+      }
+  | Unary of
+      { op : string
+      ; exp : t
+      }
+  | Index of
+      { attr_set : t
+      ; field : accessor
+      }
 
 and string_segment =
   | StringSegment of string
   | CodeSegment of t
 
 and attr_set = t StringMap.t
+
+and accessor =
+  | StringAccess of string
+  | RedirectedAccess of t
 
 let parens body = "(" ^ body ^ ")"
 
@@ -94,11 +111,26 @@ let rec render_prec ?(want_parens = false) exp =
     @@ render_prec func
     ^ " "
     ^ String.concat " " (List.map (fun arg -> render_prec ~want_parens:true arg) args)
+  | Unary { op; exp } -> op ^ render_prec ~want_parens:true exp
+  | Infix { left; op; right } ->
+    (if want_parens then parens else Fun.id)
+    @@ render_prec ~want_parens:true left
+    ^ " "
+    ^ op
+    ^ " "
+    ^ render_prec ~want_parens:true right
+  | Index { attr_set; field } ->
+    render_prec ~want_parens:true attr_set ^ "." ^ render_accessor field
 
 and render_segment seg =
   match seg with
   | StringSegment str -> str
   | CodeSegment code -> "${" ^ render_prec code ^ "}"
+
+and render_accessor acc =
+  match acc with
+  | StringAccess name -> name
+  | RedirectedAccess expr -> "${" ^ render_prec expr ^ "}"
 ;;
 
 let render exp = render_prec exp
@@ -127,3 +159,9 @@ let ( => ) = lambda
 let apply func args = Apply { func; args }
 
 let ( @@ ) = apply
+
+let infix left op right = Infix { left; op; right }
+
+let unary op exp = Unary { op; exp }
+
+let index expr field = Index { attr_set = expr; field = StringAccess field }
