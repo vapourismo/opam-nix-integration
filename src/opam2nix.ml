@@ -66,6 +66,10 @@ let main options =
       ; Var.global "name", Var.string options.Options.name
       ; Var.self "version", Var.string options.Options.version
       ; Var.global "version", Var.string options.Options.version
+      ; Var.global "with-test", Var.bool false
+      ; Var.global "with-doc", Var.bool false
+      ; Var.global "dev", Var.bool false
+      ; Var.global "build", Var.bool true
       ]
   in
   let opam = read_opam options.Options.file in
