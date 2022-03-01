@@ -53,7 +53,12 @@ stdenv.mkDerivation ({
 
   buildInputs = [ ocaml findlib ];
 
-  propagatedBuildInputs = solveDepends solveDependsLib;
+  propagatedBuildInputs =
+    let
+      deps = solveDepends solveDependsLib;
+    in
+    if builtins.isList deps then deps else [ ];
+
   propagatedNativeBuildInputs = nativeDepends;
 
   patchPhase = builtins.concatStringsSep "\n" (
