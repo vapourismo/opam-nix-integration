@@ -57,7 +57,10 @@ stdenv.mkDerivation ({
     let
       deps = solveDepends solveDependsLib;
     in
-    if builtins.isList deps then deps else [ ];
+    if builtins.isList deps then
+      deps
+    else
+      builtins.abort "Some dependencies are not met";
 
   propagatedNativeBuildInputs = nativeDepends;
 
