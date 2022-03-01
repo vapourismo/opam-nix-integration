@@ -86,13 +86,7 @@ let main options =
         Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
-  let depends =
-    opam.depends
-    |> OpamFormula.map (fun (name, _formula) ->
-           OpamFormula.Atom (name, OpamFormula.Empty))
-    |> OpamFormula.atoms
-    |> List.map OpamFormula.string_of_atom
-  in
+  let dependency_names, depends_exp = Depends.transform_depends env opam.depends in
   let native_depends =
     opam.depexts
     |> List.map (fun (set, filter) -> set, Some filter)
@@ -121,7 +115,7 @@ let main options =
     Nix.(
       Pattern.attr_set
         ([ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
-        @ depends
+        @ dependency_names
         @ native_depends)
       => ident "mkOpam2NixPackage"
          @@ [ attr_set
@@ -129,7 +123,7 @@ let main options =
                  ; "version", string options.version
                  ; "buildScript", multiline build
                  ; "installScript", multiline install
-                 ; "depends", list (List.map ident depends)
+                 ; "solveDepends", depends_exp
                  ; "nativeDepends", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files
                  ]
