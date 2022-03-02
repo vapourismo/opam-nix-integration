@@ -90,7 +90,8 @@ let main options =
         Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
-  let dependency_names, depends_exp = Depends.transform_depends env opam.depends in
+  let depends_exp = Depends.transform_depends opam.depends in
+  let dependency_names = Depends.all opam.depends in
   let native_depends =
     opam.depexts
     |> List.map (fun (set, filter) -> set, Some filter)
@@ -127,7 +128,7 @@ let main options =
                  ; "version", string options.version
                  ; "buildScript", multiline build
                  ; "installScript", multiline install
-                 ; "solveDepends", depends_exp
+                 ; "depends", depends_exp
                  ; "nativeDepends", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files
                  ]

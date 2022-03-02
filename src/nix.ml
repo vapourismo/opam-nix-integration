@@ -142,6 +142,8 @@ let attr_set entries =
     (List.fold_left (fun attrs (k, v) -> StringMap.add k v attrs) StringMap.empty entries)
 ;;
 
+let null = ident "null"
+
 let bool value = Bool value
 
 let string body = String [ StringSegment body ]
