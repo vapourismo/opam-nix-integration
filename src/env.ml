@@ -18,6 +18,7 @@ let resolve_scoped var =
   | "prefix" -> Some (Var.string prefix)
   | "bin" | "sbin" | "etc" | "share" | "lib" -> sub_prefix local_name
   | "doc" | "man" -> sub_prefix ("share/" ^ local_name)
+  | "installed" -> Some (Var.bool true)
   | _ -> None
 ;;
 
