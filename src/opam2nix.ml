@@ -21,6 +21,8 @@ let make_env extra_vars =
     ; Var.global "make", Var.string "make"
     ; Var.foreign "ocaml" "preinstalled", Var.bool true
     ; Var.foreign "ocaml" "native", Var.bool true
+    ; Var.self "pinned", Var.bool false
+    ; Var.global "pinned", Var.bool false
     ]
   in
   Env.create (sys_vars @ default_vars @ extra_vars)
