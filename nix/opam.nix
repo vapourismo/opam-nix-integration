@@ -34,6 +34,36 @@ let
 
   evalFilter = env: f: f (filterScope env);
 
+  filterStringScope = {
+    bool = builtins.toJSON;
+
+    string = builtins.toJSON;
+
+    ident = pkgs: var: _defaults:
+      let
+        prefix = if pkgs == [ ] then "_" else builtins.concatStringSep ":" pkgs;
+      in
+      "${prefix}:${var}";
+
+    equal = lhs: rhs: "${lhs} == ${rhs}";
+
+    notEqual = lhs: rhs: "${lhs} != ${rhs}";
+
+    greaterEqual = lhs: rhs: "${lhs} >= ${rhs}";
+
+    greaterThan = lhs: rhs: "${lhs} > ${rhs}";
+
+    lowerEqual = lhs: rhs: "${lhs} <= ${rhs}";
+
+    lowerThan = lhs: rhs: "${lhs} < ${rhs}";
+
+    def = _: abort "filterScope.def";
+
+    undef = _: abort "filterScope.undef";
+  };
+
+  showFilter = f: f filterStringScope;
+
   # Expressions of this DSL call exactly one of these functions.
   filterOrConstraintScope = env: {
     always = filter: _: evalFilter env filter;
@@ -57,14 +87,38 @@ let
       builtins.compareVersions packageVersion (evalFilter env versionFilter) < 0;
   };
 
-  evalfilterOrConstraint = env: f: f (filterOrConstraintScope env);
+  evalFilterOrConstraint = env: f: f (filterOrConstraintScope env);
+
+  filterOrConstraintStringScope = {
+    always = filter: _: showFilter filter;
+
+    equal = versionFilter: packageName:
+      "${packageName} == ${showFilter versionFilter}";
+
+    notEqual = versionFilter: packageName:
+      "${packageName} != ${showFilter versionFilter}";
+
+    greaterEqual = versionFilter: packageName:
+      "${packageName} >= ${showFilter versionFilter}";
+
+    greaterThan = versionFilter: packageName:
+      "${packageName} > ${showFilter versionFilter}";
+
+    lowerEqual = versionFilter: packageName:
+      "${packageName} <= ${showFilter versionFilter}";
+
+    lowerThan = versionFilter: packageName:
+      "${packageName} < ${showFilter versionFilter}";
+  };
+
+  showFilterOrConstraint = f: f filterOrConstraintStringScope;
 
   # Predicate DSL where values are functions from an unknown input to boolean.
   # Atoms are of type "filterOrConstraint".
   filterOrConstraintFormulaScope = env: {
     empty = _: true;
 
-    atom = filterOrConstraint: evalfilterOrConstraint env filterOrConstraint;
+    atom = filterOrConstraint: evalFilterOrConstraint env filterOrConstraint;
 
     block = x: x;
 
@@ -74,6 +128,20 @@ let
   };
 
   evalFilterOrConstraintFormula = env: f: f (filterOrConstraintFormulaScope env);
+
+  filterOrConstraintFormulaStringScope = {
+    empty = packageName: "${packageName}";
+
+    atom = showFilterOrConstraint;
+
+    block = x: x;
+
+    and = lhs: rhs: packageName: "${lhs packageName} && ${rhs packageName}";
+
+    or = lhs: rhs: packageName: "${lhs packageName} || ${rhs packageName}";
+  };
+
+  showFilterOrConstraintFormula = f: f filterOrConstraintFormulaStringScope;
 
   # Single indirection DSL - basically an expression of this will immediate call the "package"
   # attribute.
@@ -86,6 +154,27 @@ let
   };
 
   evalDependency = env: f: f (dependencyScope env);
+
+  dependencyStringScope = {
+    package = package: formula:
+      showFilterOrConstraintFormula formula package.name;
+  };
+
+  showDependency = f: f dependencyStringScope;
+
+  dependenciesFormulaStringScope = {
+    empty = "empty";
+
+    atom = showDependency;
+
+    block = x: x;
+
+    and = lhs: rhs: "${lhs} && ${rhs}";
+
+    or = lhs: rhs: "${lhs} || ${rhs}";
+  };
+
+  showDependenciesFormula = f: f dependenciesFormulaStringScope;
 
   # List concatenation/alternation DSL where a null value indicates failure, list value indicates
   # success.
@@ -109,7 +198,10 @@ let
     if builtins.isList deps then
       deps
     else
-      abort "Some dependencies were not matched";
+      abort ''
+        Dependency formula could not be satisfied:
+        ${showDependenciesFormula f}
+      '';
 
 in
 
