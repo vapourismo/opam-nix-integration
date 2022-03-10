@@ -31,7 +31,7 @@ let nix_of_dependency (name, formula) =
     (Pattern.ident "__dependencyScope")
     (apply
        (index scope "package")
-       [ ident (OpamPackage.Name.to_string name)
+       [ string (OpamPackage.Name.to_string name)
        ; nix_of_formula nix_of_filter_or_constraint formula
        ])
 ;;

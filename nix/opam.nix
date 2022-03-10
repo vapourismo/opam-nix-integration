@@ -145,19 +145,25 @@ let
 
   # Single indirection DSL - basically an expression of this will immediate call the "package"
   # attribute.
-  dependencyScope = env: {
-    package = package: formula:
+  dependencyScope = env: packages: {
+    package = packageName: formula:
+      let package =
+        if builtins.hasAttr packageName packages then
+          packages.${packageName}
+        else
+          abort "Unknown package ${packageName}";
+      in
       if evalFilterOrConstraintFormula env formula package.version then
         [ package ]
       else
         null;
   };
 
-  evalDependency = env: f: f (dependencyScope env);
+  evalDependency = env: packages: f: f (dependencyScope env packages);
 
   dependencyStringScope = {
-    package = package: formula:
-      showFilterOrConstraintFormula formula package.name;
+    package = packageName: formula:
+      showFilterOrConstraintFormula formula packageName;
   };
 
   showDependency = f: f dependencyStringScope;
@@ -179,10 +185,10 @@ let
   # List concatenation/alternation DSL where a null value indicates failure, list value indicates
   # success.
   # Atoms are of type "dependency".
-  dependenciesFormulaScope = env: {
+  dependenciesFormulaScope = env: packages: {
     empty = null;
 
-    atom = dependency: evalDependency env dependency;
+    atom = evalDependency env packages;
 
     block = x: x;
 
@@ -191,9 +197,9 @@ let
     or = lhs: rhs: if lhs != null then lhs else rhs;
   };
 
-  evalDependenciesFormula = env: f:
+  evalDependenciesFormula = env: packages: f:
     let
-      deps = f (dependenciesFormulaScope env);
+      deps = f (dependenciesFormulaScope env packages);
     in
     if builtins.isList deps then
       deps

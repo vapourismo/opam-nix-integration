@@ -19,6 +19,7 @@ lib.makeScope newScope (self: {
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
     inherit (self) ocaml findlib;
+    ocamlPackages = self;
   };
 
   opam2nix = (import ../default.nix).default;

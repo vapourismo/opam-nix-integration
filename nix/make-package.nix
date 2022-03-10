@@ -1,4 +1,4 @@
-{ lib, stdenv, ocaml, findlib }:
+{ lib, stdenv, ocamlPackages, ocaml, findlib }:
 
 let
   opam = import ./opam.nix;
@@ -34,7 +34,7 @@ stdenv.mkDerivation ({
 
   buildInputs = [ ocaml findlib ];
 
-  propagatedBuildInputs = opam.evalDependenciesFormula env depends;
+  propagatedBuildInputs = opam.evalDependenciesFormula env ocamlPackages depends;
 
   propagatedNativeBuildInputs = nativeDepends;
 
