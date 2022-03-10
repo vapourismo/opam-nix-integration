@@ -77,13 +77,16 @@ let rec render_prec ?(want_parens = false) exp =
   | Identifier ident -> ident
   | Bool value -> if value then "true" else "false"
   | String segments ->
-    [%show: string] (String.concat "" (List.map render_segment segments))
+    "\"" ^ String.concat "" (List.map (fun seg -> render_segment seg) segments) ^ "\""
   | MultilineString lines ->
     "''"
     ^ String.concat
         "\n"
         (List.map
-           (fun segments -> String.concat "" (List.map render_segment segments))
+           (fun segments ->
+             String.concat
+               ""
+               (List.map (fun seg -> render_segment ~escape:false seg) segments))
            lines)
     ^ "''"
   | Number num -> "(" ^ Q.to_string num ^ ")"
@@ -122,9 +125,10 @@ let rec render_prec ?(want_parens = false) exp =
   | Index { attr_set; field } ->
     render_prec ~want_parens:true attr_set ^ "." ^ render_accessor field
 
-and render_segment seg =
+and render_segment ?(escape = true) seg =
   match seg with
-  | StringSegment str -> str
+  | StringSegment str ->
+    if escape then String.concat "\\\"" (String.split_on_char '"' str) else str
   | CodeSegment code -> "${" ^ render_prec code ^ "}"
 
 and render_accessor acc =

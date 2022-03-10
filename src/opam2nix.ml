@@ -1,13 +1,5 @@
 let read_opam path = OpamFilename.of_string path |> OpamFile.make |> OpamFile.OPAM.read
 
-let script env list =
-  Filter.apply_to_list env list
-  |> List.map (fun cmd ->
-         Filter.apply_to_list env cmd
-         |> List.map (fun arg -> Arg.resolve env arg)
-         |> String.concat " ")
-;;
-
 let make_env extra_vars =
   let sys_vars =
     List.filter_map
@@ -75,8 +67,8 @@ let main options =
       ]
   in
   let opam = read_opam options.Options.file in
-  let build = script env opam.build in
-  let install = script env opam.install in
+  let build = Script.nix_of_commands opam.build in
+  let install = Script.nix_of_commands opam.install in
   let source =
     Option.map
       (fun url ->
@@ -128,8 +120,8 @@ let main options =
          @@ [ attr_set
                 ([ "name", string options.name
                  ; "version", string options.version
-                 ; "buildScript", multiline build
-                 ; "installScript", multiline install
+                 ; "buildScript", build
+                 ; "installScript", install
                  ; "depends", depends_exp
                  ; "nativeDepends", list (List.map ident native_depends)
                  ; "extraFiles", list extra_files

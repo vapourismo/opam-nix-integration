@@ -1,19 +1,44 @@
 let
+  resolveVariable = { local, packages }: pkgs: var: defaults:
+    if pkgs == [ ] || pkgs == [ "_" ] then
+      if builtins.hasAttr var local then
+        local.${var}
+      else
+        abort ("Unknown local variable: ${var}")
+    else
+      abort
+        ("ident: ${builtins.toJSON [pkgs var defaults]}");
+
+  argScope = env: {
+    ident = resolveVariable env;
+  };
+
+  evalArg = env: f: f (argScope env);
+
+  evalCommands = env: commands:
+    let
+      keptCommands = builtins.filter ({ filter, ... }: evalFilter env filter) commands;
+
+      prunedCommands = builtins.map
+        ({ args, ... }:
+          let
+            keptArgs = builtins.filter ({ filter, ... }: evalFilter env filter) args;
+
+            prunedArgs = builtins.map ({ arg, ... }: builtins.toJSON (evalArg env arg)) keptArgs;
+          in
+          builtins.concatStringsSep " " prunedArgs
+        )
+        keptCommands;
+    in
+    builtins.concatStringsSep "\n" prunedCommands;
+
   # Filter DSL.
-  filterScope = { local, packages }: {
+  filterScope = env: {
     bool = value: value;
 
     string = value: value;
 
-    ident = pkgs: var: defaults:
-      if pkgs == [ ] then
-        if builtins.hasAttr var local then
-          local.${var}
-        else
-          abort ("Unknown local variable: ${var}")
-      else
-        abort
-          ("ident: ${builtins.toJSON [pkgs var defaults]}");
+    ident = resolveVariable env;
 
     equal = lhs: rhs: lhs == rhs;
 
@@ -41,7 +66,7 @@ let
 
     ident = pkgs: var: _defaults:
       let
-        prefix = if pkgs == [ ] then "_" else builtins.concatStringSep ":" pkgs;
+        prefix = if pkgs == [ ] then "_" else builtins.concatStringsSep ":" pkgs;
       in
       "${prefix}:${var}";
 
@@ -212,5 +237,5 @@ let
 in
 
 {
-  inherit evalDependenciesFormula;
+  inherit evalDependenciesFormula evalCommands;
 }

@@ -7,8 +7,8 @@ in
 { name
 , version
 , src ? null
-, buildScript ? ""
-, installScript ? ""
+, buildScript ? [ ]
+, installScript ? [ ]
 , depends ? (_: [ ])
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
@@ -18,7 +18,12 @@ in
 let
   env = {
     local = {
-      inherit version;
+      inherit name version;
+      jobs = 1;
+      dev = false;
+      with-test = false;
+      with-doc = false;
+      build = true;
     };
 
     packages = { };
@@ -48,13 +53,13 @@ stdenv.mkDerivation ({
 
   buildPhase = ''
     # Build Opam package
-    ${buildScript}
+    ${opam.evalCommands env buildScript}
   '';
 
   installPhase = ''
     # Install Opam package
     mkdir -p $out/lib
-    ${installScript}
+    ${opam.evalCommands env installScript}
   '';
 } // builtins.removeAttrs args [
   "name"
