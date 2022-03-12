@@ -54,6 +54,7 @@ let
       # For 'ocaml' package
       native = true;
       native-dynlink = true;
+      preinstalled = true;
     };
   };
 
