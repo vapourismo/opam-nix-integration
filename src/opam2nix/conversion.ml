@@ -120,14 +120,6 @@ let nix_of_depexts depexts =
        depexts)
 ;;
 
-let all depends =
-  OpamFormula.map
-    (fun (name, _formula) -> OpamFormula.Atom (name, OpamFormula.Empty))
-    depends
-  |> OpamFormula.atoms
-  |> List.map OpamFormula.string_of_atom
-;;
-
 let interpolated_string_parser scope =
   let open Angstrom in
   let variable =

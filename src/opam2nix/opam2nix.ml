@@ -52,7 +52,6 @@ let main options =
       opam.url
   in
   let depends_exp = Conversion.nix_of_depends opam.depends in
-  let dependency_names = Conversion.all opam.depends in
   let native_depends = Conversion.nix_of_depexts opam.depexts in
   let extra_files =
     Option.fold
@@ -72,8 +71,7 @@ let main options =
   in
   let expr =
     Nix.(
-      Pattern.attr_set
-        ([ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ] @ dependency_names)
+      Pattern.attr_set [ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
       => ident "mkOpam2NixPackage"
          @@ [ attr_set
                 ([ "name", string options.name
