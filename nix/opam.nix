@@ -368,7 +368,7 @@ let
     atom = evalDependency env packages;
   };
 
-  evalDependenciesFormula = env: packages: f:
+  evalDependenciesFormula = name: env: packages: f:
     let
       cnf = f (dependenciesFormulaScope env packages);
 
@@ -389,7 +389,7 @@ let
       deps
     else
       abort ''
-        Dependency formula could not be satisfied:
+        Dependency formula could not be satisfied for ${name}:
         ${reduceDependencyFormula env packages f}
       '';
 

@@ -65,7 +65,7 @@ stdenv.mkDerivation ({
 
   buildInputs = [ ocaml findlib ];
 
-  propagatedBuildInputs = opam.evalDependenciesFormula env ocamlPackages depends;
+  propagatedBuildInputs = opam.evalDependenciesFormula name env ocamlPackages depends;
 
   propagatedNativeBuildInputs = opam.evalNativeDependencies env pkgs nativeDepends;
 
