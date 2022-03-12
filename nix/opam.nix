@@ -256,7 +256,7 @@ let
         if builtins.hasAttr packageName packages then
           packages.${packageName}.name
         else
-          packageName;
+          abort "Unknown package ${packageName}";
       in
       if evalFilterFormula env enabled then
         "${packageName}: ${showConstraintFormula env constraints package}"
