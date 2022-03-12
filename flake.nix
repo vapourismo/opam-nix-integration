@@ -32,6 +32,7 @@
           ppx_deriving
           cmdliner
           zarith
+          angstrom
         ];
       };
 
