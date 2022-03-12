@@ -38,6 +38,22 @@ let nix_of_dependency (name, formula) =
 
 let transform_depends depends = nix_of_formula nix_of_dependency depends
 
+let transform_native_depends depexts =
+  let open Nix in
+  list
+    (List.map
+       (fun (packages, filter) ->
+         attr_set
+           [ ( "packages"
+             , list
+                 (List.map
+                    (fun package -> string (OpamSysPkg.to_string package))
+                    (OpamSysPkg.Set.elements packages)) )
+           ; "filter", Filter.nix_of_filter filter
+           ])
+       depexts)
+;;
+
 let all depends =
   OpamFormula.map
     (fun (name, _formula) -> OpamFormula.Atom (name, OpamFormula.Empty))

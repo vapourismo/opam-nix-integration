@@ -48,7 +48,7 @@ stdenv.mkDerivation ({
 
   propagatedBuildInputs = opam.evalDependenciesFormula env ocamlPackages depends;
 
-  propagatedNativeBuildInputs = nativeDepends;
+  propagatedNativeBuildInputs = opam.evalNativeDependencies env pkgs nativeDepends;
 
   patchPhase = builtins.concatStringsSep "\n" (
     builtins.map (file: "cp ${file.source} ${file.path}") extraFiles

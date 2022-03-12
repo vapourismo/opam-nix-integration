@@ -52,6 +52,10 @@ let
 
     lowerThan = lhs: rhs: lhs < rhs;
 
+    and = lhs: rhs: lhs && rhs;
+
+    or = lhs: rhs: lhs || rhs;
+
     def = _: abort "filterScope.def";
 
     undef = _: abort "filterScope.undef";
@@ -81,6 +85,10 @@ let
     lowerEqual = lhs: rhs: "${lhs} <= ${rhs}";
 
     lowerThan = lhs: rhs: "${lhs} < ${rhs}";
+
+    and = lhs: rhs: "${lhs} && ${rhs}";
+
+    or = lhs: rhs: "${lhs} || ${rhs}";
 
     def = _: abort "filterScope.def";
 
@@ -211,7 +219,7 @@ let
   # success.
   # Atoms are of type "dependency".
   dependenciesFormulaScope = env: packages: {
-    empty = null;
+    empty = [ ];
 
     atom = evalDependency env packages;
 
@@ -234,8 +242,20 @@ let
         ${showDependenciesFormula f}
       '';
 
+  evalNativeDependencies = env: nativePackages: nativeDepends:
+    let
+      findDep = packageName:
+        if builtins.hasAttr packageName nativePackages then
+          nativePackages.${packageName}
+        else
+          abort "Unknown native package ${packageName}";
+    in
+    builtins.concatMap
+      ({ packages, ... }: builtins.map findDep packages)
+      (builtins.filter ({ filter, ... }: evalFilter env filter) nativeDepends);
+
 in
 
 {
-  inherit evalDependenciesFormula evalCommands;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies;
 }

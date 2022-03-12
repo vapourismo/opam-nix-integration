@@ -53,19 +53,6 @@ let hash_attrs hash =
 ;;
 
 let main options =
-  let env =
-    make_env
-      [ Var.global "jobs", Var.int 1
-      ; Var.self "name", Var.string options.Options.name
-      ; Var.global "name", Var.string options.Options.name
-      ; Var.self "version", Var.string options.Options.version
-      ; Var.global "version", Var.string options.Options.version
-      ; Var.global "with-test", Var.bool false
-      ; Var.global "with-doc", Var.bool false
-      ; Var.global "dev", Var.bool false
-      ; Var.global "build", Var.bool true
-      ]
-  in
   let opam = read_opam options.Options.file in
   let build = Script.nix_of_commands opam.build in
   let install = Script.nix_of_commands opam.install in
@@ -86,14 +73,7 @@ let main options =
   in
   let depends_exp = Depends.transform_depends opam.depends in
   let dependency_names = Depends.all opam.depends in
-  let native_depends =
-    opam.depexts
-    |> List.map (fun (set, filter) -> set, Some filter)
-    |> Filter.apply_to_list env
-    |> List.fold_left OpamSysPkg.Set.union OpamSysPkg.Set.empty
-    |> OpamSysPkg.Set.elements
-    |> List.map OpamSysPkg.to_string
-  in
+  let native_depends = Depends.transform_native_depends opam.depexts in
   let extra_files =
     Option.fold
       ~none:[]
@@ -113,9 +93,7 @@ let main options =
   let expr =
     Nix.(
       Pattern.attr_set
-        ([ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
-        @ dependency_names
-        @ native_depends)
+        ([ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ] @ dependency_names)
       => ident "mkOpam2NixPackage"
          @@ [ attr_set
                 ([ "name", string options.name
@@ -123,7 +101,7 @@ let main options =
                  ; "buildScript", build
                  ; "installScript", install
                  ; "depends", depends_exp
-                 ; "nativeDepends", list (List.map ident native_depends)
+                 ; "nativeDepends", native_depends
                  ; "extraFiles", list extra_files
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
