@@ -36,6 +36,8 @@ let
       build = true;
       pinned = false;
 
+      os-distribution = "nixos";
+
       make = "${gnumake}/bin/make";
 
       prefix = "$out";
