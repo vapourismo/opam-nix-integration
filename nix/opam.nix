@@ -290,9 +290,58 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  # List concatenation/alternation DSL where a null value indicates failure, list value indicates
-  # success.
-  # Atoms are of type "dependency".
+  dependenciesFormulaReduceScope = env: packages: {
+    empty = [ ];
+
+    atom = atom: {
+      eval = evalDependency env packages atom != null;
+      string = showDependency env packages atom;
+    };
+  };
+
+  reduceDependencyFormula = env: packages: f:
+    let
+      cnf = f (dependenciesFormulaReduceScope env packages);
+
+      evalOrs =
+        builtins.foldl'
+          (lhs: rhs:
+            if lhs.eval || rhs.eval then
+              { eval = true; string = "true"; }
+            else
+              {
+                eval = false;
+                string = "${lhs.string} or \n${rhs.string}";
+              }
+          )
+          {
+            eval = false;
+            string = "false";
+          };
+
+      evalAnds =
+        builtins.foldl'
+          (lhs: rhs:
+            if lhs.eval && rhs.eval then
+              {
+                eval = true;
+                string = "true";
+              }
+            else if lhs.eval then
+              rhs
+            else
+              lhs
+          )
+          {
+            eval = true;
+            string = "true";
+          };
+
+      deps = evalAnds (builtins.map evalOrs cnf);
+
+    in
+    deps.string;
+
   dependenciesFormulaScope = env: packages: {
     empty = [ ];
 
@@ -321,8 +370,9 @@ let
     else
       abort ''
         Dependency formula could not be satisfied:
-        ${showDependenciesFormula env packages f}
+        ${reduceDependencyFormula env packages f}
       '';
+
 
   evalNativeDependencies = env: nativePackages: nativeDepends:
     let
