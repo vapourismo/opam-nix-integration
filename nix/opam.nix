@@ -222,7 +222,7 @@ let
 
   dependencyStringScope = {
     package = packageName: formula:
-      showFilterOrConstraintFormula formula packageName;
+      "${packageName} when ${showFilterOrConstraintFormula formula packageName}";
   };
 
   showDependency = f: f dependencyStringScope;
