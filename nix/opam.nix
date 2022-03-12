@@ -188,7 +188,7 @@ let
             (builtins.head ors)
             (builtins.tail ors)
         else
-          _: "false";
+          _: "never";
 
       evalAnds = ands:
         if builtins.length ands > 0 then
@@ -197,7 +197,7 @@ let
             (builtins.head ands)
             (builtins.tail ands)
         else
-          _: "true";
+          _: "always";
 
     in
     evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
@@ -222,7 +222,7 @@ let
 
   dependencyStringScope = {
     package = packageName: formula:
-      "${packageName} when ${showFilterOrConstraintFormula formula packageName}";
+      "${packageName}: ${showFilterOrConstraintFormula formula packageName}";
   };
 
   showDependency = f: f dependencyStringScope;
@@ -245,11 +245,11 @@ let
 
       evalAnds = ands:
         if builtins.length ands > 0 then
-          builtins.foldl' (lhs: rhs: "${lhs} && ${rhs}") (builtins.head ands) (builtins.tail ands)
+          builtins.foldl' (lhs: rhs: "${lhs}\n${rhs}") (builtins.head ands) (builtins.tail ands)
         else
           "true";
     in
-    evalAnds (builtins.map (ors: "(${evalOrs ors})") cnf);
+    evalAnds (builtins.map evalOrs cnf);
 
   # List concatenation/alternation DSL where a null value indicates failure, list value indicates
   # success.
