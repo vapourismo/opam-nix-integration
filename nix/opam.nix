@@ -63,6 +63,8 @@ let
 
     or = lhs: rhs: lhs || rhs;
 
+    not = x: !x;
+
     def = _: abort "filterScope.def";
 
     undef = _: abort "filterScope.undef";
@@ -379,7 +381,6 @@ let
         Dependency formula could not be satisfied:
         ${reduceDependencyFormula env packages f}
       '';
-
 
   evalNativeDependencies = env: nativePackages: nativeDepends:
     let
