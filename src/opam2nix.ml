@@ -1,25 +1,5 @@
 let read_opam path = OpamFilename.of_string path |> OpamFile.make |> OpamFile.OPAM.read
 
-let make_env extra_vars =
-  let sys_vars =
-    List.filter_map
-      (fun (name, optValue) ->
-        Lazy.force optValue
-        |> Option.map (fun value -> OpamVariable.Full.global name, value))
-      OpamSysPoll.variables
-  in
-  let default_vars =
-    [ Var.global "os-distribution", Var.string "nixos"
-    ; Var.global "make", Var.string "make"
-    ; Var.foreign "ocaml" "preinstalled", Var.bool true
-    ; Var.foreign "ocaml" "native", Var.bool true
-    ; Var.self "pinned", Var.bool false
-    ; Var.global "pinned", Var.bool false
-    ]
-  in
-  Env.create (sys_vars @ default_vars @ extra_vars)
-;;
-
 module Options = struct
   open Cmdliner
 
