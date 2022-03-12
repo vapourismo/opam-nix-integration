@@ -103,8 +103,31 @@ let
 
   showFilter = env: f: f (filterStringScope env);
 
+  filterFormulaScope = env: {
+    empty = true;
+
+    atom = evalFilter env;
+  };
+
+  evalFilterFormula = env: f:
+    let
+      cnf = f (filterFormulaScope env);
+
+      evalOrs =
+        builtins.foldl'
+          (lhs: rhs: lhs || rhs)
+          false;
+
+      evalAnds =
+        builtins.foldl'
+          (lhs: rhs: lhs && rhs)
+          true;
+
+    in
+    evalAnds (builtins.map evalOrs cnf);
+
   # Expressions of this DSL call exactly one of these functions.
-  filterOrConstraintScope = env: {
+  constraintScope = env: {
     always = filter: _: evalFilter env filter;
 
     equal = versionFilter: packageVersion:
@@ -126,11 +149,9 @@ let
       builtins.compareVersions packageVersion (evalFilter env versionFilter) < 0;
   };
 
-  evalFilterOrConstraint = env: f: f (filterOrConstraintScope env);
+  evalConstraint = env: f: f (constraintScope env);
 
-  filterOrConstraintStringScope = env: {
-    always = filter: _: showFilter env filter;
-
+  constraintStringScope = env: {
     equal = versionFilter: packageName:
       "${packageName} == ${showFilter env versionFilter}";
 
@@ -150,19 +171,17 @@ let
       "${packageName} < ${showFilter env versionFilter}";
   };
 
-  showFilterOrConstraint = env: f: f (filterOrConstraintStringScope env);
+  showConstraint = env: f: f (constraintStringScope env);
 
-  # Predicate DSL where values are functions from an unknown input to boolean.
-  # Atoms are of type "filterOrConstraint".
-  filterOrConstraintFormulaScope = env: {
+  constraintFormulaScope = env: {
     empty = _: true;
 
-    atom = filterOrConstraint: evalFilterOrConstraint env filterOrConstraint;
+    atom = evalConstraint env;
   };
 
-  evalFilterOrConstraintFormula = env: f:
+  evalConstraintFormula = env: f:
     let
-      cnf = f (filterOrConstraintFormulaScope env);
+      cnf = f (constraintFormulaScope env);
 
       evalOrs =
         builtins.foldl'
@@ -177,15 +196,15 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  filterOrConstraintFormulaStringScope = env: {
+  constraintFormulaStringScope = env: {
     empty = packageName: "${packageName}";
 
-    atom = showFilterOrConstraint env;
+    atom = showConstraint env;
   };
 
-  showFilterOrConstraintFormula = env: f:
+  showConstraintFormula = env: f:
     let
-      cnf = f (filterOrConstraintFormulaStringScope env);
+      cnf = f (constraintFormulaStringScope env);
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -211,30 +230,38 @@ let
   # Single indirection DSL - basically an expression of this will immediate call the "package"
   # attribute.
   dependencyScope = env: packages: {
-    package = packageName: formula:
+    package = packageName: enabled: constraints:
       let package =
         if builtins.hasAttr packageName packages then
           packages.${packageName}
         else
           abort "Unknown package ${packageName}";
       in
-      if evalFilterOrConstraintFormula env formula package.version then
-        [ package ]
+      if evalFilterFormula env enabled then
+        (
+          if evalConstraintFormula env constraints package.version then
+            [ package ]
+          else
+            null
+        )
       else
-        null;
+        [ ];
   };
 
   evalDependency = env: packages: f: f (dependencyScope env packages);
 
   dependencyStringScope = env: packages: {
-    package = packageName: formula:
+    package = packageName: enabled: constraints:
       let package =
         if builtins.hasAttr packageName packages then
           packages.${packageName}.name
         else
           packageName;
       in
-      "${packageName}: ${showFilterOrConstraintFormula env formula package}";
+      if evalFilterFormula env enabled then
+        "${packageName}: ${showConstraintFormula env constraints package}"
+      else
+        "${packageName}: disabled";
   };
 
   showDependency = env: packages: f: f (dependencyStringScope env packages);

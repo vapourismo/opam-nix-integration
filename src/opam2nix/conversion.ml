@@ -79,26 +79,40 @@ let nix_of_formula to_nix formula =
   lambda (Pattern.ident "__formulaScope") body
 ;;
 
-let nix_of_filter_or_constraint filter =
+let nix_of_constraint (op, filter) =
   let open Nix in
-  let scope = ident "__filterOrConstraintScope" in
+  let scope = ident "__constraintScope" in
   lambda
-    (Pattern.ident "__filterOrConstraintScope")
-    (match filter with
-    | OpamTypes.Filter filter -> apply (index scope "always") [ nix_of_filter filter ]
-    | Constraint (op, filter) ->
-      apply (index scope (string_of_relop op)) [ nix_of_filter filter ])
+    (Pattern.ident "__constraintScope")
+    (apply (index scope (string_of_relop op)) [ nix_of_filter filter ])
 ;;
 
 let nix_of_dependency (name, formula) =
   let open Nix in
   let scope = ident "__dependencyScope" in
+  let constraints =
+    OpamFormula.map
+      (fun atom ->
+        match atom with
+        | OpamTypes.Filter _ -> OpamTypes.Empty
+        | Constraint body -> OpamTypes.Atom body)
+      formula
+  in
+  let enabled =
+    OpamFormula.map
+      (fun atom ->
+        match atom with
+        | OpamTypes.Constraint _ -> OpamTypes.Empty
+        | Filter filter -> OpamFormula.Atom filter)
+      formula
+  in
   lambda
     (Pattern.ident "__dependencyScope")
     (apply
        (index scope "package")
        [ string (OpamPackage.Name.to_string name)
-       ; nix_of_formula nix_of_filter_or_constraint formula
+       ; nix_of_formula nix_of_filter enabled
+       ; nix_of_formula nix_of_constraint constraints
        ])
 ;;
 
