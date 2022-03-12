@@ -152,29 +152,55 @@ let
     empty = _: true;
 
     atom = filterOrConstraint: evalFilterOrConstraint env filterOrConstraint;
-
-    block = x: x;
-
-    and = lhs: rhs: version: lhs version && rhs version;
-
-    or = lhs: rhs: version: lhs version || rhs version;
   };
 
-  evalFilterOrConstraintFormula = env: f: f (filterOrConstraintFormulaScope env);
+  evalFilterOrConstraintFormula = env: f:
+    let
+      cnf = f (filterOrConstraintFormulaScope env);
+
+      evalOrs =
+        builtins.foldl'
+          (lhs: rhs: version: lhs version || rhs version)
+          (_: false);
+
+      evalAnds =
+        builtins.foldl'
+          (lhs: rhs: version: lhs version && rhs version)
+          (_: true);
+
+    in
+    evalAnds (builtins.map evalOrs cnf);
 
   filterOrConstraintFormulaStringScope = {
     empty = packageName: "${packageName}";
 
     atom = showFilterOrConstraint;
-
-    block = x: x;
-
-    and = lhs: rhs: packageName: "${lhs packageName} && ${rhs packageName}";
-
-    or = lhs: rhs: packageName: "${lhs packageName} || ${rhs packageName}";
   };
 
-  showFilterOrConstraintFormula = f: f filterOrConstraintFormulaStringScope;
+  showFilterOrConstraintFormula = f:
+    let
+      cnf = f filterOrConstraintFormulaStringScope;
+
+      evalOrs = ors:
+        if builtins.length ors > 0 then
+          builtins.foldl'
+            (lhs: rhs: packageName: "${lhs packageName} || ${rhs packageName}")
+            (builtins.head ors)
+            (builtins.tail ors)
+        else
+          _: "false";
+
+      evalAnds = ands:
+        if builtins.length ands > 0 then
+          builtins.foldl'
+            (lhs: rhs: packageName: "${lhs packageName} && ${rhs packageName}")
+            (builtins.head ands)
+            (builtins.tail ands)
+        else
+          _: "true";
+
+    in
+    evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
 
   # Single indirection DSL - basically an expression of this will immediate call the "package"
   # attribute.
@@ -205,15 +231,25 @@ let
     empty = "empty";
 
     atom = showDependency;
-
-    block = x: x;
-
-    and = lhs: rhs: "${lhs} && ${rhs}";
-
-    or = lhs: rhs: "${lhs} || ${rhs}";
   };
 
-  showDependenciesFormula = f: f dependenciesFormulaStringScope;
+  showDependenciesFormula = f:
+    let
+      cnf = f dependenciesFormulaStringScope;
+
+      evalOrs = ors:
+        if builtins.length ors > 0 then
+          builtins.foldl' (lhs: rhs: "${lhs} || ${rhs}") (builtins.head ors) (builtins.tail ors)
+        else
+          "false";
+
+      evalAnds = ands:
+        if builtins.length ands > 0 then
+          builtins.foldl' (lhs: rhs: "${lhs} && ${rhs}") (builtins.head ands) (builtins.tail ands)
+        else
+          "true";
+    in
+    evalAnds (builtins.map (ors: "(${evalOrs ors})") cnf);
 
   # List concatenation/alternation DSL where a null value indicates failure, list value indicates
   # success.
@@ -222,17 +258,24 @@ let
     empty = [ ];
 
     atom = evalDependency env packages;
-
-    block = x: x;
-
-    and = lhs: rhs: if lhs != null && rhs != null then lhs ++ rhs else null;
-
-    or = lhs: rhs: if lhs != null then lhs else rhs;
   };
 
   evalDependenciesFormula = env: packages: f:
     let
-      deps = f (dependenciesFormulaScope env packages);
+      cnf = f (dependenciesFormulaScope env packages);
+
+      evalOrs =
+        builtins.foldl'
+          (lhs: rhs: if lhs != null then lhs else rhs)
+          null;
+
+      evalAnds =
+        builtins.foldl'
+          (lhs: rhs: if lhs != null && rhs != null then lhs ++ rhs else null)
+          [ ];
+
+      deps = evalAnds (builtins.map evalOrs cnf);
+
     in
     if builtins.isList deps then
       deps

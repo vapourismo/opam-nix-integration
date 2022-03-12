@@ -65,11 +65,18 @@ let nix_of_formula to_nix formula =
     match formula with
     | OpamFormula.Empty -> index scope "empty"
     | Atom atom -> apply (index scope "atom") [ to_nix atom ]
-    | Block formula -> apply (index scope "block") [ go formula ]
-    | And (left, right) -> apply (index scope "and") [ go left; go right ]
-    | Or (left, right) -> apply (index scope "or") [ go left; go right ]
+    | Block formula -> go formula
+    (* The formula is in CNF, these two cases should never happen. *)
+    | And _ -> failwith "CNF conversion failed!"
+    | Or _ -> failwith "CNF conversion failed!"
   in
-  lambda (Pattern.ident "__formulaScope") (go formula)
+  let body =
+    OpamFormula.cnf_of_formula formula
+    |> OpamFormula.ands_to_list
+    |> List.map (fun ors -> OpamFormula.ors_to_list ors |> List.map go |> list)
+    |> list
+  in
+  lambda (Pattern.ident "__formulaScope") body
 ;;
 
 let nix_of_filter_or_constraint filter =
