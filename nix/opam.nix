@@ -69,10 +69,10 @@ let
     string = builtins.toJSON;
 
     ident = pkgs: var: _defaults:
-      let
-        prefix = if pkgs == [ ] then "_" else builtins.concatStringsSep ":" pkgs;
-      in
-      "${prefix}:${var}";
+      if pkgs == [ ] then
+        "${var}"
+      else
+        builtins.concatStringsSep ":" (pkgs ++ [ var ]);
 
     equal = lhs: rhs: "${lhs} == ${rhs}";
 
