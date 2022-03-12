@@ -63,16 +63,22 @@ let
 
   evalFilter = env: f: f (filterScope env);
 
-  filterStringScope = {
+  filterStringScope = env: {
     bool = builtins.toJSON;
 
     string = builtins.toJSON;
 
-    ident = pkgs: var: _defaults:
-      if pkgs == [ ] then
-        "${var}"
-      else
-        builtins.concatStringsSep ":" (pkgs ++ [ var ]);
+    ident = pkgs: var: defaults:
+      let
+        name =
+          if pkgs == [ ] then
+            var
+          else
+            builtins.concatStringsSep ":" (pkgs ++ [ var ]);
+
+        value = builtins.toJSON (resolveVariable env pkgs var defaults);
+      in
+      "${value} (${name})";
 
     equal = lhs: rhs: "${lhs} == ${rhs}";
 
@@ -95,7 +101,7 @@ let
     undef = _: abort "filterScope.undef";
   };
 
-  showFilter = f: f filterStringScope;
+  showFilter = env: f: f (filterStringScope env);
 
   # Expressions of this DSL call exactly one of these functions.
   filterOrConstraintScope = env: {
@@ -122,29 +128,29 @@ let
 
   evalFilterOrConstraint = env: f: f (filterOrConstraintScope env);
 
-  filterOrConstraintStringScope = {
-    always = filter: _: showFilter filter;
+  filterOrConstraintStringScope = env: {
+    always = filter: _: showFilter env filter;
 
     equal = versionFilter: packageName:
-      "${packageName} == ${showFilter versionFilter}";
+      "${packageName} == ${showFilter env versionFilter}";
 
     notEqual = versionFilter: packageName:
-      "${packageName} != ${showFilter versionFilter}";
+      "${packageName} != ${showFilter env versionFilter}";
 
     greaterEqual = versionFilter: packageName:
-      "${packageName} >= ${showFilter versionFilter}";
+      "${packageName} >= ${showFilter env versionFilter}";
 
     greaterThan = versionFilter: packageName:
-      "${packageName} > ${showFilter versionFilter}";
+      "${packageName} > ${showFilter env versionFilter}";
 
     lowerEqual = versionFilter: packageName:
-      "${packageName} <= ${showFilter versionFilter}";
+      "${packageName} <= ${showFilter env versionFilter}";
 
     lowerThan = versionFilter: packageName:
-      "${packageName} < ${showFilter versionFilter}";
+      "${packageName} < ${showFilter env versionFilter}";
   };
 
-  showFilterOrConstraint = f: f filterOrConstraintStringScope;
+  showFilterOrConstraint = env: f: f (filterOrConstraintStringScope env);
 
   # Predicate DSL where values are functions from an unknown input to boolean.
   # Atoms are of type "filterOrConstraint".
@@ -171,15 +177,15 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  filterOrConstraintFormulaStringScope = {
+  filterOrConstraintFormulaStringScope = env: {
     empty = packageName: "${packageName}";
 
-    atom = showFilterOrConstraint;
+    atom = showFilterOrConstraint env;
   };
 
-  showFilterOrConstraintFormula = f:
+  showFilterOrConstraintFormula = env: f:
     let
-      cnf = f filterOrConstraintFormulaStringScope;
+      cnf = f (filterOrConstraintFormulaStringScope env);
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -197,7 +203,7 @@ let
             (builtins.head ands)
             (builtins.tail ands)
         else
-          _: "always";
+          _: "no constraint";
 
     in
     evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
@@ -220,22 +226,28 @@ let
 
   evalDependency = env: packages: f: f (dependencyScope env packages);
 
-  dependencyStringScope = {
+  dependencyStringScope = env: packages: {
     package = packageName: formula:
-      "${packageName}: ${showFilterOrConstraintFormula formula packageName}";
+      let package =
+        if builtins.hasAttr packageName packages then
+          packages.${packageName}.name
+        else
+          packageName;
+      in
+      "${packageName}: ${showFilterOrConstraintFormula env formula package}";
   };
 
-  showDependency = f: f dependencyStringScope;
+  showDependency = env: packages: f: f (dependencyStringScope env packages);
 
-  dependenciesFormulaStringScope = {
+  dependenciesFormulaStringScope = env: packages: {
     empty = "empty";
 
-    atom = showDependency;
+    atom = showDependency env packages;
   };
 
-  showDependenciesFormula = f:
+  showDependenciesFormula = env: packages: f:
     let
-      cnf = f dependenciesFormulaStringScope;
+      cnf = f (dependenciesFormulaStringScope env packages);
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -282,7 +294,7 @@ let
     else
       abort ''
         Dependency formula could not be satisfied:
-        ${showDependenciesFormula f}
+        ${showDependenciesFormula env packages f}
       '';
 
   evalNativeDependencies = env: nativePackages: nativeDepends:
