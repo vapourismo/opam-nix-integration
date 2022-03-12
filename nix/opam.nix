@@ -5,6 +5,17 @@ let
         local.${var}
       else
         abort ("Unknown local variable: ${var}")
+    else if builtins.length pkgs == 1 then
+      let
+        package = builtins.elemAt pkgs 0;
+
+        foreign = packages package;
+      in
+      if builtins.hasAttr var foreign then
+        foreign.${var}
+      else
+        abort ("Unknown package ${package} variable: ${var}")
+
     else
       abort
         ("ident: ${builtins.toJSON [pkgs var defaults]}");

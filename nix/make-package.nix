@@ -29,10 +29,13 @@ let
     local = defaultVariables // {
       inherit name version;
       jobs = 1;
+
       dev = false;
       with-test = false;
       with-doc = false;
       build = true;
+      pinned = false;
+
       make = "${gnumake}/bin/make";
 
       prefix = "$out";
@@ -43,7 +46,13 @@ let
       man = "$out/share/man";
     };
 
-    packages = { };
+    packages = package: {
+      installed = builtins.hasAttr package ocamlPackages;
+
+      # For 'ocaml' package
+      native = true;
+      native-dynlink = true;
+    };
   };
 
 in
