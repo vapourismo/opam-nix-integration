@@ -1,0 +1,5 @@
+(executable
+ (name opamvars2nix)
+ (package opamvars2nix)
+ (public_name opamvars2nix)
+ (libraries opam-format opam-state nix))

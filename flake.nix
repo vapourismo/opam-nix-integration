@@ -36,6 +36,23 @@
         ];
       };
 
+      packages = {
+        opamvars2nix = ocamlPackages.buildDunePackage {
+          pname = "opamvars2nix";
+          version = "0.0.0";
+
+          useDune2 = true;
+
+          src = self;
+
+          buildInputs = with ocamlPackages; [
+            opam-format
+            opam-state
+            zarith
+          ];
+        };
+      };
+
       devShell = mkShell {
         nativeBuildInputs = with ocamlPackages; [
           ocaml
