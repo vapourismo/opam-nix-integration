@@ -36,6 +36,11 @@ let
       make = "${gnumake}/bin/make";
 
       prefix = "$out";
+      lib = "$out/lib";
+      bin = "$out/bin";
+      share = "$out/share";
+      doc = "$out/share/doc";
+      man = "$out/share/man";
     };
 
     packages = { };

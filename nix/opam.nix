@@ -1,6 +1,6 @@
 let
   resolveVariable = { local, packages }: pkgs: var: defaults:
-    if pkgs == [ ] || pkgs == [ "_" ] then
+    if pkgs == [ ] || pkgs == [ "_" ] || pkgs == [ null ] then
       if builtins.hasAttr var local then
         local.${var}
       else
