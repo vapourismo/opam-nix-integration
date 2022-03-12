@@ -1,4 +1,4 @@
-{ lib, stdenv, ocamlPackages, ocaml, findlib }:
+{ pkgs, lib, stdenv, ocamlPackages, ocaml, findlib, gnumake }:
 
 let
   opam = import ./opam.nix;
@@ -24,6 +24,13 @@ let
       with-test = false;
       with-doc = false;
       build = true;
+      make = "${gnumake}/bin/make";
+
+      os = "linux";
+      arch = "x86_64";
+      os-distribution = "nixos";
+      os-family = "nixos";
+      prefix = "$out";
     };
 
     packages = { };
