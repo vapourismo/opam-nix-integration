@@ -1,5 +1,6 @@
 { callPackage
 , runCommand
+, system
 , lib
 , newScope
 , ocaml
@@ -18,11 +19,13 @@ lib.makeScope newScope (self: {
   ocamlfind = self.findlib;
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
-    inherit (self) ocaml findlib;
+    inherit (self) ocaml findlib opamvars2nix;
     ocamlPackages = self;
   };
 
   opam2nix = (import ../default.nix).default;
+
+  opamvars2nix = (import ../default.nix).packages.${system}.opamvars2nix;
 
   generateOpam2Nix = { name, version, src, patches ? [ ] }:
     import (

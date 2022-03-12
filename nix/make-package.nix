@@ -1,4 +1,4 @@
-{ pkgs, lib, stdenv, ocamlPackages, ocaml, findlib, gnumake }:
+{ pkgs, runCommand, lib, stdenv, ocamlPackages, ocaml, findlib, gnumake, opamvars2nix }:
 
 let
   opam = import ./opam.nix;
@@ -16,8 +16,17 @@ in
 }@args:
 
 let
+  defaultVariables = import (
+    runCommand
+      "opamvars2nix"
+      {
+        buildInputs = [ opamvars2nix ];
+      }
+      "opamvars2nix > $out"
+  );
+
   env = {
-    local = {
+    local = defaultVariables // {
       inherit name version;
       jobs = 1;
       dev = false;
@@ -26,10 +35,6 @@ let
       build = true;
       make = "${gnumake}/bin/make";
 
-      os = "linux";
-      arch = "x86_64";
-      os-distribution = "nixos";
-      os-family = "nixos";
       prefix = "$out";
     };
 
