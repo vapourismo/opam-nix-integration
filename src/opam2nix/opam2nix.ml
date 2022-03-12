@@ -34,8 +34,8 @@ let hash_attrs hash =
 
 let main options =
   let opam = read_opam options.Options.file in
-  let build = Script.nix_of_commands opam.build in
-  let install = Script.nix_of_commands opam.install in
+  let build = Conversion.nix_of_commands opam.build in
+  let install = Conversion.nix_of_commands opam.install in
   let source =
     Option.map
       (fun url ->
@@ -51,9 +51,9 @@ let main options =
         Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
-  let depends_exp = Depends.transform_depends opam.depends in
-  let dependency_names = Depends.all opam.depends in
-  let native_depends = Depends.transform_native_depends opam.depexts in
+  let depends_exp = Conversion.nix_of_depends opam.depends in
+  let dependency_names = Conversion.all opam.depends in
+  let native_depends = Conversion.nix_of_depexts opam.depexts in
   let extra_files =
     Option.fold
       ~none:[]
