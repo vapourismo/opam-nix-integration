@@ -10,7 +10,14 @@ let
         ("ident: ${builtins.toJSON [pkgs var defaults]}");
 
   argScope = env: {
-    ident = resolveVariable env;
+    ident = pkgs: var: defaults:
+      let
+        value = resolveVariable env pkgs var defaults;
+      in
+      if builtins.isString value then
+        value
+      else
+        builtins.toJSON value;
   };
 
   evalArg = env: f: f (argScope env);
