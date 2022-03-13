@@ -1,4 +1,5 @@
 { callPackage
+, stdenv
 , runCommand
 , system
 , lib
@@ -13,6 +14,17 @@ let
     inherit lib opamRepository;
   };
 
+  justExecutable = deriv: stdenv.mkDerivation {
+    inherit (deriv) pname version;
+
+    phases = [ "installPhase" ];
+
+    installPhase = ''
+      mkdir $out
+      cp -r ${deriv}/bin $out
+    '';
+  };
+
 in
 lib.makeScope newScope (self: {
   inherit ocaml findlib;
@@ -23,9 +35,9 @@ lib.makeScope newScope (self: {
     ocamlPackages = self;
   };
 
-  opam2nix = (import ../default.nix).default;
+  opam2nix = justExecutable (import ../default.nix).default;
 
-  opamvars2nix = (import ../default.nix).packages.${system}.opamvars2nix;
+  opamvars2nix = justExecutable (import ../default.nix).packages.${system}.opamvars2nix;
 
   generateOpam2Nix = { name, version, src, patches ? [ ] }:
     import (
