@@ -146,27 +146,29 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
+  compareVersions = lhs: rhs: builtins.compareVersions (cleanVersion lhs) (cleanVersion rhs);
+
   # Expressions of this DSL call exactly one of these functions.
   constraintScope = env: {
     always = filter: _: evalFilter env filter;
 
     equal = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) == 0;
+      compareVersions packageVersion (evalFilter env versionFilter) == 0;
 
     notEqual = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) != 0;
+      compareVersions packageVersion (evalFilter env versionFilter) != 0;
 
     greaterEqual = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) >= 0;
+      compareVersions packageVersion (evalFilter env versionFilter) >= 0;
 
     greaterThan = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) > 0;
+      compareVersions packageVersion (evalFilter env versionFilter) > 0;
 
     lowerEqual = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) <= 0;
+      compareVersions packageVersion (evalFilter env versionFilter) <= 0;
 
     lowerThan = versionFilter: packageVersion:
-      builtins.compareVersions packageVersion (evalFilter env versionFilter) < 0;
+      compareVersions packageVersion (evalFilter env versionFilter) < 0;
   };
 
   evalConstraint = env: f: f (constraintScope env);
@@ -405,8 +407,10 @@ let
       ({ packages, ... }: builtins.map findDep packages)
       (builtins.filter ({ filter, ... }: evalFilter env filter) nativeDepends);
 
+  cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
+
 in
 
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies cleanVersion;
 }

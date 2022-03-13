@@ -62,7 +62,7 @@ let
 in
 stdenv.mkDerivation ({
   pname = name;
-  version = builtins.replaceStrings [ "~" ] [ "-" ] version;
+  version = opam.cleanVersion version;
 
   inherit src;
   dontUnpack = src == null;
