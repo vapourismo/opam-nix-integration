@@ -34,6 +34,7 @@ let
       with-test = false;
       with-doc = false;
       build = true;
+      post = false;
       pinned = false;
 
       os-distribution = "nixos";
