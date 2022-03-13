@@ -50,6 +50,7 @@ let
 
     packages = package: {
       installed = builtins.hasAttr package ocamlPackages;
+      enable = builtins.hasAttr package ocamlPackages;
 
       # For 'ocaml' package
       native = true;
