@@ -52,7 +52,7 @@ let main options =
       opam.url
   in
   let depends = Conversion.nix_of_depends opam.depends in
-  let depopts = Conversion.nix_of_depends opam.depopts in
+  let depopts = Conversion.nix_of_depopts opam.depopts in
   let native_depends = Conversion.nix_of_depexts opam.depexts in
   let extra_files =
     Option.fold
