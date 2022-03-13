@@ -87,7 +87,7 @@ let nix_of_constraint (op, filter) =
     (apply (index scope (string_of_relop op)) [ nix_of_filter filter ])
 ;;
 
-let nix_of_dependency (name, formula) =
+let nix_of_dependency ?(optional = false) (name, formula) =
   let open Nix in
   let scope = ident "__dependencyScope" in
   let constraints =
@@ -109,7 +109,7 @@ let nix_of_dependency (name, formula) =
   lambda
     (Pattern.ident "__dependencyScope")
     (apply
-       (index scope "package")
+       (index scope (if optional then "optionalPackage" else "package"))
        [ string (OpamPackage.Name.to_string name)
        ; nix_of_formula nix_of_filter enabled
        ; nix_of_formula nix_of_constraint constraints
@@ -117,6 +117,8 @@ let nix_of_dependency (name, formula) =
 ;;
 
 let nix_of_depends depends = nix_of_formula nix_of_dependency depends
+
+let nix_of_depopts depots = nix_of_formula (nix_of_dependency ~optional:true) depots
 
 let nix_of_depexts depexts =
   let open Nix in

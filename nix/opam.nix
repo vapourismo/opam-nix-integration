@@ -249,8 +249,6 @@ let
     in
     evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
 
-  # Single indirection DSL - basically an expression of this will immediate call the "package"
-  # attribute.
   dependencyScope = env: packages: {
     package = packageName: enabled: constraints:
       let package =
@@ -265,6 +263,25 @@ let
             [ package ]
           else
             null
+        )
+      else
+        [ ];
+
+    optionalPackage = packageName: enabled: constraints:
+      if builtins.hasAttr packageName packages then
+        let package =
+          packages.${packageName};
+        in
+        (
+          if evalFilterFormula env enabled then
+            (
+              if evalConstraintFormula env constraints package.version then
+                [ package ]
+              else
+                null
+            )
+          else
+            [ ]
         )
       else
         [ ];
@@ -284,6 +301,20 @@ let
         "${packageName}: ${showConstraintFormula env constraints package}"
       else
         "${packageName}: disabled";
+
+    optionalPackage = packageName: enabled: constraints:
+      if builtins.hasAttr packageName packages then
+        let package =
+          packages.${packageName}.name;
+        in
+        (
+          if evalFilterFormula env enabled then
+            "${packageName}: ${showConstraintFormula env constraints package}"
+          else
+            "${packageName}: disabled"
+        )
+      else
+        "${packageName}: not available";
   };
 
   showDependency = env: packages: f: f (dependencyStringScope env packages);

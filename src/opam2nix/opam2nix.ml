@@ -51,7 +51,8 @@ let main options =
         Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
-  let depends_exp = Conversion.nix_of_depends opam.depends in
+  let depends = Conversion.nix_of_depends opam.depends in
+  let depopts = Conversion.nix_of_depends opam.depopts in
   let native_depends = Conversion.nix_of_depexts opam.depexts in
   let extra_files =
     Option.fold
@@ -78,7 +79,8 @@ let main options =
                  ; "version", string options.version
                  ; "buildScript", build
                  ; "installScript", install
-                 ; "depends", depends_exp
+                 ; "depends", depends
+                 ; "optionalDepends", depopts
                  ; "nativeDepends", native_depends
                  ; "extraFiles", list extra_files
                  ]

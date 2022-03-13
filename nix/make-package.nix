@@ -10,6 +10,7 @@ in
 , buildScript ? [ ]
 , installScript ? [ ]
 , depends ? (_: [ ])
+, optionalDepends ? (_: [ ])
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
 , ...
@@ -70,7 +71,9 @@ stdenv.mkDerivation ({
 
   buildInputs = [ ocaml findlib ];
 
-  propagatedBuildInputs = opam.evalDependenciesFormula name env ocamlPackages depends;
+  propagatedBuildInputs =
+    opam.evalDependenciesFormula name env ocamlPackages depends
+      ++ opam.evalDependenciesFormula name env ocamlPackages optionalDepends;
 
   propagatedNativeBuildInputs = opam.evalNativeDependencies env pkgs nativeDepends;
 
@@ -99,6 +102,7 @@ stdenv.mkDerivation ({
   "buildScript"
   "installScript"
   "depends"
+  "optionalDepends"
   "nativeDepends"
   "extraFiles"
 ])
