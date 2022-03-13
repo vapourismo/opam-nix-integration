@@ -122,7 +122,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p $out/lib
+    mkdir -p ${env.local.bin} ${env.local.lib}
     ${finalInstallScript}
   '';
 } // builtins.removeAttrs args [
