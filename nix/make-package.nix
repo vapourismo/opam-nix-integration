@@ -61,7 +61,7 @@ let
 in
 stdenv.mkDerivation ({
   pname = name;
-  inherit version;
+  version = builtins.replaceStrings [ "~" ] [ "-" ] version;
 
   inherit src;
   dontUnpack = src == null;
