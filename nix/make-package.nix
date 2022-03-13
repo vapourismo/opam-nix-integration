@@ -42,7 +42,7 @@ let
       make = "${gnumake}/bin/make";
 
       prefix = "$out";
-      lib = "$out/lib";
+      lib = "$OCAMLFIND_DESTDIR";
       bin = "$out/bin";
       share = "$out/share";
       doc = "$out/share/doc";
