@@ -60,9 +60,21 @@ let
       man = "$out/share/man";
     };
 
-    packages = package: {
-      installed = builtins.hasAttr package ocamlPackages;
-      enable = builtins.hasAttr package ocamlPackages;
+    packages = package: rec {
+      installed = builtins.elem package [
+        "ocaml"
+        "dune"
+        "findlib"
+      ];
+
+      enable = installed;
+
+      prefix = "${ocamlPackages.${package}}";
+      lib = "${prefix}/lib/ocaml/${ocaml.version}/site-lib";
+      bin = "${prefix}/bin";
+      share = "${prefix}/share";
+      doc = "${prefix}/share/doc";
+      man = "${prefix}/share/man";
 
       # For 'ocaml' package
       native = true;
