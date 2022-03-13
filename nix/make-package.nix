@@ -8,6 +8,7 @@
 , gnumake
 , opamvars2nix
 , opam-installer
+, git
 }:
 
 let
@@ -111,7 +112,7 @@ stdenv.mkDerivation ({
   inherit src;
   dontUnpack = src == null;
 
-  buildInputs = [ ocaml findlib ];
+  buildInputs = [ ocaml findlib git ];
 
   propagatedBuildInputs =
     opam.evalDependenciesFormula name env ocamlPackages depends
