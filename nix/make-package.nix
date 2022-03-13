@@ -1,4 +1,14 @@
-{ pkgs, runCommand, lib, stdenv, ocamlPackages, ocaml, findlib, gnumake, opamvars2nix }:
+{ pkgs
+, runCommand
+, lib
+, stdenv
+, ocamlPackages
+, ocaml
+, findlib
+, gnumake
+, opamvars2nix
+, opam-installer
+}:
 
 let
   opam = import ./opam.nix;
@@ -61,6 +71,26 @@ let
     };
   };
 
+  defaultInstallScript = ''
+    if test -r "${name}.install"; then
+      ${opam-installer}/bin/opam-installer \
+        --prefix="${env.local.prefix}" \
+        --libdir="${env.local.lib}" \
+        --docdir="${env.local.doc}" \
+        --mandir="${env.local.man}" \
+        --name="${name}" \
+        --install "${name}.install"
+    fi
+  '';
+
+  renderedInstallScript = opam.evalCommands env installScript;
+
+  finalInstallScript =
+    if renderedInstallScript == "" then
+      defaultInstallScript
+    else
+      renderedInstallScript;
+
 in
 stdenv.mkDerivation ({
   pname = name;
@@ -93,7 +123,7 @@ stdenv.mkDerivation ({
   installPhase = ''
     # Install Opam package
     mkdir -p $out/lib
-    ${opam.evalCommands env installScript}
+    ${finalInstallScript}
   '';
 } // builtins.removeAttrs args [
   "name"
