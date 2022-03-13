@@ -9,6 +9,7 @@ depends: [
   "cmdliner"
   "zarith"
   "ppx_deriving"
+  "angstrom"
   "odoc" {with-doc}
 ]
 build: [
