@@ -64,16 +64,18 @@ in
       }
       { };
 
-  mtime =
+  digestif =
     final.callOpam
       {
-        name = "mtime";
-        version = "1.4.0";
-        patches = [ ../patches/mtime-1.4.0.patch ];
+        name = "digestif";
+        version = "1.1.0";
+        patches = [ ../patches/digestif-1.1.0.patch ];
       }
       { };
 
+  # Packages where the latest version is not viable.
   ppxlib = final.opamPackages.ppxlib."0.24.0";
+  hxd = final.opamPackages.hxd."0.3.1";
 
   # These packages have messed up versions published.
   ppx_sexp_conv = final.opamPackages.ppx_sexp_conv."v0.14.3";
@@ -144,7 +146,6 @@ in
   "cstruct"
   "ctypes"
   "decompress"
-  "digestif"
   "dns-client"
   "domain-name"
   "duration"
@@ -154,7 +155,6 @@ in
   "fsevents-lwt"
   "git-mirage"
   "git-unix"
-  "git"
   "graphql_parser"
   "graphql-cohttp"
   "graphql-lwt"
@@ -240,7 +240,6 @@ in
   "carton-lwt"
   "carton-git"
   "encore"
-  "hxd"
   "emile"
   "psq"
   "duff"
@@ -321,4 +320,6 @@ in
   "stdio"
   "time_now"
   "octavius"
+  "git"
+  "mtime"
 ]
