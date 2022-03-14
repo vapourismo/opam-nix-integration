@@ -6,6 +6,7 @@
 , newScope
 , ocaml
 , findlib
+, makeWrapper
 , opamRepository ? callPackage ./repository.nix { }
 }:
 
@@ -27,7 +28,16 @@ let
 
 in
 lib.makeScope newScope (self: {
-  inherit ocaml findlib;
+  ocaml = ocaml.overrideAttrs (old: {
+    buildInputs = (old.buildInputs or [ ]) ++ [ makeWrapper ];
+
+    postInstall = ''
+      ${old.postInstall or ""}
+      wrapProgram "$out/bin/ocaml" --add-flags "-I ${findlib}/lib/ocaml/${ocaml.version}/site-lib"
+    '';
+  });
+
+  inherit findlib;
   ocamlfind = self.findlib;
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
