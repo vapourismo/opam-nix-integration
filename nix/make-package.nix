@@ -124,9 +124,7 @@ stdenv.mkDerivation ({
     builtins.map (file: "cp ${file.source} ${file.path}") extraFiles
   );
 
-  configurePhase = ''
-    # Configure Opam package
-  '';
+  dontConfigure = true;
 
   buildPhase = ''
     # Build Opam package
