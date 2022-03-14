@@ -68,7 +68,7 @@ let
         "findlib"
       ];
 
-      enable = installed;
+      enable = if installed then "enable" else "disable";
 
       prefix = "${ocamlPackages.${package}}";
       lib = "${prefix}/lib/ocaml/${ocaml.version}/site-lib";
