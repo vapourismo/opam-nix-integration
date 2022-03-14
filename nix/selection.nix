@@ -64,6 +64,15 @@ in
       }
       { };
 
+  mtime =
+    final.callOpam
+      {
+        name = "mtime";
+        version = "1.4.0";
+        patches = [ ../patches/mtime-1.4.0.patch ];
+      }
+      { };
+
   ppxlib = final.opamPackages.ppxlib."0.24.0";
 
   # These packages have messed up versions published.
@@ -188,7 +197,6 @@ in
   "mirage-time"
   "mirage-unix"
   "mmap"
-  "mtime"
   "ocaml-syntax-shims"
   "ocaml-version"
   "ocamlgraph"
