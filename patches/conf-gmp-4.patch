@@ -1,0 +1,12 @@
+diff --git a/packages/conf-gmp/conf-gmp.4/opam b/packages/conf-gmp/conf-gmp.4/opam
+index 8499887730..0aef1f8eb3 100644
+--- a/packages/conf-gmp/conf-gmp.4/opam
++++ b/packages/conf-gmp/conf-gmp.4/opam
+@@ -29,6 +29,7 @@ depexts: [
+   ["gmp-dev"] {os-distribution = "alpine"}
+   ["gmp-devel"] {os-family = "suse"}
+   ["gmp"] {os = "win32" & os-distribution = "cygwinports"}
++  ["gmp"] {os-distribution = "nixos"}
+ ]
+ synopsis: "Virtual package relying on a GMP lib system installation"
+ description:

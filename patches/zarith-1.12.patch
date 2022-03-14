@@ -1,0 +1,22 @@
+diff --git a/packages/zarith/zarith.1.12/opam b/packages/zarith/zarith.1.12/opam
+index aae31e5031..38c8a9eb3b 100644
+--- a/packages/zarith/zarith.1.12/opam
++++ b/packages/zarith/zarith.1.12/opam
+@@ -9,7 +9,7 @@ homepage: "https://github.com/ocaml/Zarith"
+ bug-reports: "https://github.com/ocaml/Zarith/issues"
+ dev-repo: "git+https://github.com/ocaml/Zarith.git"
+ build: [
+-  ["./configure"] {os != "openbsd" & os != "freebsd" & os != "macos"}
++  ["./configure" "-installdir" "%{lib}%"] {os != "openbsd" & os != "freebsd" & os != "macos"}
+   [
+     "sh"
+     "-exc"
+@@ -18,7 +18,7 @@ build: [
+   [
+     "sh"
+     "-exc"
+-    "LDFLAGS=\"$LDFLAGS -L/opt/local/lib -L/usr/local/lib\" CFLAGS=\"$CFLAGS -I/opt/local/include -I/usr/local/include\" ./configure"
++    "LDFLAGS=\"$LDFLAGS -L/opt/local/lib -L/usr/local/lib\" CFLAGS=\"$CFLAGS -I/opt/local/include -I/usr/local/include\" ./configure -installdir \"%{lib}%\""
+   ] {os = "macos" & os-distribution != "homebrew"}
+   [
+     "sh"

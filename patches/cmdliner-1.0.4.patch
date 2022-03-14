@@ -1,0 +1,18 @@
+diff --git a/packages/cmdliner/cmdliner.1.0.4/opam b/packages/cmdliner/cmdliner.1.0.4/opam
+index b2187dc5b6..e444eafd83 100644
+--- a/packages/cmdliner/cmdliner.1.0.4/opam
++++ b/packages/cmdliner/cmdliner.1.0.4/opam
+@@ -8,10 +8,10 @@ bug-reports: "https://github.com/dbuenzli/cmdliner/issues"
+ tags: [ "cli" "system" "declarative" "org:erratique" ]
+ license: "ISC"
+ depends:[ "ocaml" {>= "4.03.0"} ]
+-build: [[ make "all" "PREFIX=%{prefix}%" ]]
++build: [[ make "all" "PREFIX=%{prefix}%" "LIBDIR=%{_:lib}%/%{name}%" ]]
+ install:
+-[[make "install" "LIBDIR=%{_:lib}%" "DOCDIR=%{_:doc}%" ]
+- [make "install-doc" "LIBDIR=%{_:lib}%" "DOCDIR=%{_:doc}%"  ]]
++[[make "install" "LIBDIR=%{_:lib}%/%{name}%" "DOCDIR=%{_:doc}%" ]
++ [make "install-doc" "LIBDIR=%{_:lib}%/%{name}%" "DOCDIR=%{_:doc}%"  ]]
+ 
+ synopsis: """Declarative definition of command line interfaces for OCaml"""
+ description: """\

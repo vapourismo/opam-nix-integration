@@ -24,7 +24,7 @@ in
       {
         name = "conf-gmp";
         version = "4";
-        patches = [ ./patches/conf-gmp-4.patch ];
+        patches = [ ../patches/conf-gmp-4.patch ];
       }
       { };
 
@@ -33,7 +33,7 @@ in
       {
         name = "conf-libffi";
         version = "2.0.0";
-        patches = [ ./patches/conf-libffi-2.0.0.patch ];
+        patches = [ ../patches/conf-libffi-2.0.0.patch ];
       }
       { };
 
@@ -42,7 +42,7 @@ in
       {
         name = "zarith";
         version = "1.12";
-        patches = [ ./patches/zarith-1.12.patch ];
+        patches = [ ../patches/zarith-1.12.patch ];
       }
       { };
 
@@ -51,7 +51,7 @@ in
       {
         name = "cmdliner";
         version = "1.0.4";
-        patches = [ ./patches/cmdliner-1.0.4.patch ];
+        patches = [ ../patches/cmdliner-1.0.4.patch ];
       }
       { };
 
@@ -60,7 +60,7 @@ in
       {
         name = "checkseum";
         version = "0.3.2";
-        patches = [ ./patches/checkseum-0.3.2.patch ];
+        patches = [ ../patches/checkseum-0.3.2.patch ];
       }
       { };
 
