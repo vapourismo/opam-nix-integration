@@ -51,6 +51,8 @@ let
 
       os-distribution = "nixos";
 
+      opam-version = "2.1.2";
+
       make = "${gnumake}/bin/make";
 
       prefix = "$out";
