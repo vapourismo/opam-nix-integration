@@ -4,7 +4,7 @@
 , stdenv
 , ocamlPackages
 , ocaml
-, findlib
+, ocamlfind
 , gnumake
 , opamvars2nix
 , opam-installer
@@ -67,7 +67,7 @@ let
       installed = builtins.elem package [
         "ocaml"
         "dune"
-        "findlib"
+        "ocamlfind"
       ];
 
       enable = if installed then "enable" else "disable";
@@ -108,7 +108,7 @@ stdenv.mkDerivation ({
   inherit src;
   dontUnpack = src == null;
 
-  buildInputs = [ ocaml findlib git ];
+  buildInputs = [ ocaml ocamlfind git ];
 
   propagatedBuildInputs =
     opam.evalDependenciesFormula name env ocamlPackages depends
