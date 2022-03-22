@@ -100,12 +100,6 @@ let
 
   renderedInstallScript = opam.evalCommands env installScript;
 
-  finalInstallScript =
-    if renderedInstallScript == "" then
-      defaultInstallScript
-    else
-      renderedInstallScript;
-
 in
 stdenv.mkDerivation ({
   pname = name;
@@ -136,7 +130,8 @@ stdenv.mkDerivation ({
   installPhase = ''
     # Install Opam package
     mkdir -p ${env.local.bin} ${env.local.lib}
-    ${finalInstallScript}
+    ${defaultInstallScript}
+    ${renderedInstallScript}
   '';
 } // builtins.removeAttrs args [
   "name"
