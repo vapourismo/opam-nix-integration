@@ -62,6 +62,8 @@
           dune_2
           utop
           nixpkgs-fmt
+          odoc
+          inotify-tools
         ];
 
         buildInputs = self.defaultPackage.${system}.buildInputs;
