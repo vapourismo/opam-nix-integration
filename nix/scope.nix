@@ -48,6 +48,8 @@ lib.makeScope newScope (self: {
 
   opamvars2nix = justExecutable (import ../default.nix).packages.${system}.opamvars2nix;
 
+  opamsubst2nix = justExecutable (import ../default.nix).packages.${system}.opamsubst2nix;
+
   generateOpam2Nix = { name, version, src, patches ? [ ] }:
     import (
       runCommand

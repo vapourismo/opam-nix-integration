@@ -13,3 +13,7 @@
  (synopsis "Nix OPAM variable utility")
  (description "Print OPAM variables as Nix expressions")
  (depends opam-format opam-state))
+
+(package
+ (name opamsubst2nix)
+ (depends angstrom))

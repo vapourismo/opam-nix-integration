@@ -51,6 +51,21 @@
             zarith
           ];
         };
+
+        opamsubst2nix = ocamlPackages.buildDunePackage {
+          pname = "opamsubst2nix";
+          version = "0.0.0";
+
+          useDune2 = true;
+
+          src = self;
+
+          buildInputs = with ocamlPackages; [
+            opam-format
+            angstrom
+            zarith
+          ];
+        };
       };
 
       devShell = mkShell {
