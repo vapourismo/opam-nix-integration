@@ -3,8 +3,6 @@
 , lib
 , stdenv
 , ocamlPackages
-, ocaml
-, ocamlfind
 , gnumake
 , opamvars2nix
 , opam-installer
@@ -73,7 +71,7 @@ let
       enable = if installed then "enable" else "disable";
 
       prefix = "${ocamlPackages.${package}}";
-      lib = "${prefix}/lib/ocaml/${ocaml.version}/site-lib";
+      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
       bin = "${prefix}/bin";
       share = "${prefix}/share";
       doc = "${prefix}/share/doc";
@@ -108,7 +106,7 @@ stdenv.mkDerivation ({
   inherit src;
   dontUnpack = src == null;
 
-  buildInputs = [ ocaml ocamlfind git ];
+  buildInputs = with ocamlPackages; [ ocaml ocamlfind git ];
 
   propagatedBuildInputs =
     opam.evalDependenciesFormula name env ocamlPackages depends
