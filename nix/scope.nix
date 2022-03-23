@@ -40,7 +40,7 @@ lib.makeScope newScope (self: {
   ocamlfind = findlib;
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
-    inherit (self) opamvars2nix;
+    inherit (self) opamvars2nix opamsubst2nix;
     ocamlPackages = self;
   };
 

@@ -443,5 +443,5 @@ let
 in
 
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies cleanVersion;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies evalArg cleanVersion;
 }

@@ -1,10 +1,12 @@
 { pkgs
 , runCommand
+, writeText
 , lib
 , stdenv
 , ocamlPackages
 , gnumake
 , opamvars2nix
+, opamsubst2nix
 , opam-installer
 , git
 }:
@@ -22,6 +24,7 @@ in
 , optionalDepends ? (_: [ ])
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
+, substFiles ? [ ]
 , ...
 }@args:
 
@@ -98,13 +101,54 @@ let
 
   renderedInstallScript = opam.evalCommands env installScript;
 
+  copyExtraFiles = builtins.concatStringsSep "\n" (
+    builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles
+  );
+
+  overlayedSource = stdenv.mkDerivation {
+    name = "opam2nix-extra-files-${name}-${opam.cleanVersion version}";
+
+    inherit src;
+    dontUnpack = src == null;
+
+    dontConfigure = true;
+    dontBuild = true;
+
+    installPhase = ''
+      mkdir -p $out
+      ${copyExtraFiles}
+      cp -r . $out
+    '';
+  };
+
+  substs = builtins.map
+    (file:
+      {
+        path = file;
+        source = writeText "opam2nix-subst-file" (opam.evalArg env (import (
+          runCommand
+            "opam2nix-subst-expr"
+            {
+              buildInputs = [ opamsubst2nix ];
+            }
+            "opamsubst2nix < ${overlayedSource}/${file}.in > $out"
+        )));
+      }
+    )
+    substFiles;
+
+  writeSubsts = builtins.concatStringsSep "\n" (
+    builtins.map
+      ({ path, source }: "cp -v ${source} ${path}")
+      substs
+  );
+
 in
 stdenv.mkDerivation ({
   pname = name;
   version = opam.cleanVersion version;
 
-  inherit src;
-  dontUnpack = src == null;
+  src = overlayedSource;
 
   buildInputs = with ocamlPackages; [ ocaml ocamlfind git ];
 
@@ -114,11 +158,11 @@ stdenv.mkDerivation ({
 
   propagatedNativeBuildInputs = opam.evalNativeDependencies env pkgs nativeDepends;
 
-  patchPhase = builtins.concatStringsSep "\n" (
-    builtins.map (file: "cp ${file.source} ${file.path}") extraFiles
-  );
-
   dontConfigure = true;
+
+  patchPhase = ''
+    ${writeSubsts}
+  '';
 
   buildPhase = ''
     # Build Opam package
@@ -141,4 +185,5 @@ stdenv.mkDerivation ({
   "optionalDepends"
   "nativeDepends"
   "extraFiles"
+  "substFiles"
 ])

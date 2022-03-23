@@ -1,5 +1,4 @@
 module Lib = Opam2nix_lib
-open Angstrom
 
 let read_one_line () =
   try
@@ -18,10 +17,11 @@ let lines =
 let () =
   let expr =
     Result.fold ~ok:Fun.id ~error:failwith
-    @@ parse_string
-         ~consume:All
-         (Lib.interpolated_string_parser (Nix.ident "__argScope"))
-         lines
+    @@ Angstrom.(
+         parse_string
+           ~consume:All
+           (Lib.interpolated_string_parser (Nix.ident "__argScope"))
+           lines)
   in
   let lambda = Nix.(lambda (Pattern.ident "__argScope") expr) in
   print_string (Nix.render lambda)
