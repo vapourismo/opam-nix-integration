@@ -1,13 +1,3 @@
-let string_of_relop op =
-  match op with
-  | `Eq -> "equal"
-  | `Neq -> "notEqual"
-  | `Geq -> "greaterEqual"
-  | `Gt -> "greaterThan"
-  | `Leq -> "lowerEqual"
-  | `Lt -> "lowerThan"
-;;
-
 let nix_of_ident scope packages name defaults =
   let open Nix in
   let packages =
@@ -31,6 +21,35 @@ let nix_of_ident scope packages name defaults =
 let nix_of_ident_string scope name =
   let packages, name, defaults = OpamTypesBase.filter_ident_of_string name in
   nix_of_ident scope packages name defaults
+;;
+
+let interpolated_string_parser scope =
+  let open Angstrom in
+  let variable =
+    string "%{" *> many1 (satisfy (fun c -> c <> '}'))
+    <* string "}%"
+    >>| fun chars ->
+    List.to_seq chars
+    |> String.of_seq
+    |> nix_of_ident_string scope
+    |> fun code -> Nix.CodeSegment code
+  in
+  let not_variable =
+    many1 (satisfy (fun c -> c <> '%'))
+    >>| fun chars ->
+    List.to_seq chars |> String.of_seq |> fun str -> Nix.StringSegment str
+  in
+  many (variable <|> not_variable) >>| fun segments -> Nix.String segments
+;;
+
+let string_of_relop op =
+  match op with
+  | `Eq -> "equal"
+  | `Neq -> "notEqual"
+  | `Geq -> "greaterEqual"
+  | `Gt -> "greaterThan"
+  | `Leq -> "lowerEqual"
+  | `Lt -> "lowerThan"
 ;;
 
 let nix_of_filter filter =
@@ -134,25 +153,6 @@ let nix_of_depexts depexts =
            ; "filter", nix_of_filter filter
            ])
        depexts)
-;;
-
-let interpolated_string_parser scope =
-  let open Angstrom in
-  let variable =
-    string "%{" *> many1 (satisfy (fun c -> c <> '}'))
-    <* string "}%"
-    >>| fun chars ->
-    List.to_seq chars
-    |> String.of_seq
-    |> nix_of_ident_string scope
-    |> fun code -> Nix.CodeSegment code
-  in
-  let not_variable =
-    many1 (satisfy (fun c -> c <> '%'))
-    >>| fun chars ->
-    List.to_seq chars |> String.of_seq |> fun str -> Nix.StringSegment str
-  in
-  many (variable <|> not_variable) >>| fun segments -> Nix.String segments
 ;;
 
 let nix_of_args args =

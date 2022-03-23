@@ -2,6 +2,6 @@
  (name opam2nix)
  (package opam2nix)
  (public_name opam2nix)
- (libraries opam-format opam-state cmdliner zarith angstrom nix)
+ (libraries opam-format opam-state cmdliner zarith angstrom nix opam2nix_lib)
  (preprocess
   (pps ppx_deriving.show)))

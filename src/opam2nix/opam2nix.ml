@@ -1,3 +1,5 @@
+module Lib = Opam2nix_lib
+
 let read_opam path = OpamFilename.of_string path |> OpamFile.make |> OpamFile.OPAM.read
 
 module Options = struct
@@ -34,8 +36,8 @@ let hash_attrs hash =
 
 let main options =
   let opam = read_opam options.Options.file in
-  let build = Conversion.nix_of_commands opam.build in
-  let install = Conversion.nix_of_commands opam.install in
+  let build = Lib.nix_of_commands opam.build in
+  let install = Lib.nix_of_commands opam.install in
   let source =
     Option.map
       (fun url ->
@@ -51,9 +53,9 @@ let main options =
         Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
       opam.url
   in
-  let depends = Conversion.nix_of_depends opam.depends in
-  let depopts = Conversion.nix_of_depopts opam.depopts in
-  let native_depends = Conversion.nix_of_depexts opam.depexts in
+  let depends = Lib.nix_of_depends opam.depends in
+  let depopts = Lib.nix_of_depopts opam.depopts in
+  let native_depends = Lib.nix_of_depexts opam.depexts in
   let extra_files =
     Option.fold
       ~none:[]
@@ -70,6 +72,9 @@ let main options =
           files)
       opam.extra_files
   in
+  let substs =
+    List.map (fun path -> OpamFilename.Base.to_string path |> Nix.string) opam.substs
+  in
   let expr =
     Nix.(
       Pattern.attr_set [ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
@@ -83,6 +88,7 @@ let main options =
                  ; "optionalDepends", depopts
                  ; "nativeDepends", native_depends
                  ; "extraFiles", list extra_files
+                 ; "substFiles", list substs
                  ]
                 @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
             ])
