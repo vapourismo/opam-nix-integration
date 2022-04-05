@@ -30,7 +30,9 @@ let
 
 in
 lib.makeScope newScope (self: {
-  ocaml = ocaml.overrideAttrs (old: {
+  ocaml-unwrapped = ocaml;
+
+  ocaml = self.ocaml-unwrapped.overrideAttrs (old: {
     buildInputs = (old.buildInputs or [ ]) ++ [ makeWrapper ];
 
     postInstall = ''

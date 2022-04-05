@@ -13,10 +13,10 @@ in
 
 {
   dune = pkgs.ocaml-ng.ocamlPackages_4_13.dune_2;
-  inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocamlbuild ocaml-freestanding;
+  inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocamlbuild;
 
   dune-configurator = final.opamPackages.dune-configurator.${final.dune.version};
-  ocaml-src = final.opamPackages.ocaml-src.${final.ocaml.version};
+  ocaml-base-compiler = final.ocaml;
   camlp4 = final.opamPackages.camlp4."4.13+1";
 
   conf-gmp =
