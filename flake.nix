@@ -17,26 +17,28 @@
       ocamlPackages = ocaml-ng.ocamlPackages_4_13;
     in
     {
-      defaultPackage = ocamlPackages.buildDunePackage {
-        pname = "opam2nix";
-        version = "0.0.0";
-
-        useDune2 = true;
-
-        src = self;
-
-        buildInputs = with ocamlPackages; [
-          opam-format
-          opam-state
-          ppxlib
-          ppx_deriving
-          cmdliner
-          zarith
-          angstrom
-        ];
-      };
+      defaultPackage = self.packages.${system}.opam2nix;
 
       packages = {
+        opam2nix = ocamlPackages.buildDunePackage {
+          pname = "opam2nix";
+          version = "0.0.0";
+
+          useDune2 = true;
+
+          src = self;
+
+          buildInputs = with ocamlPackages; [
+            opam-format
+            opam-state
+            ppxlib
+            ppx_deriving
+            cmdliner
+            zarith
+            angstrom
+          ];
+        };
+
         opamvars2nix = ocamlPackages.buildDunePackage {
           pname = "opamvars2nix";
           version = "0.0.0";

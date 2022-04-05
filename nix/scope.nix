@@ -26,6 +26,8 @@ let
     '';
   };
 
+  opam2NixFlake = import ../default.nix;
+
 in
 lib.makeScope newScope (self: {
   ocaml = ocaml.overrideAttrs (old: {
@@ -44,11 +46,11 @@ lib.makeScope newScope (self: {
     ocamlPackages = self;
   };
 
-  opam2nix = justExecutable (import ../default.nix).default;
+  opam2nix = justExecutable opam2NixFlake.packages.${system}.opam2nix;
 
-  opamvars2nix = justExecutable (import ../default.nix).packages.${system}.opamvars2nix;
+  opamvars2nix = justExecutable opam2NixFlake.packages.${system}.opamvars2nix;
 
-  opamsubst2nix = justExecutable (import ../default.nix).packages.${system}.opamsubst2nix;
+  opamsubst2nix = justExecutable opam2NixFlake.packages.${system}.opamsubst2nix;
 
   generateOpam2Nix = { name, version, src, patches ? [ ] }:
     import (
