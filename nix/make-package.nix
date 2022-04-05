@@ -69,7 +69,7 @@ let
         "ocaml"
         "dune"
         "ocamlfind"
-      ];
+      ] || (builtins.hasAttr package ocamlPackages);
 
       enable = if installed then "enable" else "disable";
 
