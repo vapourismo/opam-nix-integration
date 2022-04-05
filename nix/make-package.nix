@@ -113,8 +113,7 @@ let
     inherit src;
     dontUnpack = src == null;
 
-    dontConfigure = true;
-    dontBuild = true;
+    phases = [ "unpackPhase" "installPhase" ];
 
     installPhase = ''
       mkdir -p $out
