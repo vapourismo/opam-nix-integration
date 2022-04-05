@@ -30,17 +30,7 @@ let
 
 in
 lib.makeScope newScope (self: {
-  ocaml-unwrapped = ocaml;
-
-  ocaml = self.ocaml-unwrapped.overrideAttrs (old: {
-    buildInputs = (old.buildInputs or [ ]) ++ [ makeWrapper ];
-
-    postInstall = ''
-      ${old.postInstall or ""}
-      wrapProgram "$out/bin/ocaml" --add-flags "-I ${self.ocamlfind}/lib/ocaml/${ocaml.version}/site-lib"
-    '';
-  });
-
+  inherit ocaml;
   ocamlfind = findlib;
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
