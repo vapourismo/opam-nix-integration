@@ -23,23 +23,25 @@ let nix_of_ident_string scope name =
   nix_of_ident scope packages name defaults
 ;;
 
-let interpolated_string_parser scope =
-  let open Angstrom in
-  let variable =
-    string "%{" *> many1 (satisfy (fun c -> c <> '}'))
-    <* string "}%"
-    >>| fun chars ->
-    List.to_seq chars
-    |> String.of_seq
-    |> nix_of_ident_string scope
-    |> fun code -> Nix.CodeSegment code
+let nix_of_interpolated_string scope input =
+  let rec with_variable head tail =
+    match String.split_on_char '}' head with
+    | [ name; "" ] -> Nix.CodeSegment (nix_of_ident_string scope name) :: start tail
+    | _ -> failwith (Printf.sprintf "Bad variable interpolation: %s" head)
+  and after_percent = function
+    | [] -> []
+    | head :: tail ->
+      if String.starts_with ~prefix:"{" head
+      then (
+        let head = String.sub head 1 (String.length head - 1) in
+        with_variable head tail)
+      else Nix.StringSegment head :: after_percent tail
+  and start segments =
+    match segments with
+    | head :: tail -> Nix.StringSegment head :: after_percent tail
+    | [] -> []
   in
-  let not_variable =
-    many1 (satisfy (fun c -> c <> '%'))
-    >>| fun chars ->
-    List.to_seq chars |> String.of_seq |> fun str -> Nix.StringSegment str
-  in
-  many (variable <|> not_variable) >>| fun segments -> Nix.String segments
+  Nix.MultilineString [ start (String.split_on_char '%' input) ]
 ;;
 
 let string_of_relop op =
@@ -163,15 +165,7 @@ let nix_of_args args =
          let filter = Option.fold ~none:nix_of_true ~some:nix_of_filter filter in
          let arg =
            match arg with
-           | OpamTypes.CString str ->
-             Result.fold
-               ~ok:Fun.id
-               ~error:failwith
-               Angstrom.(
-                 parse_string
-                   ~consume:All
-                   (interpolated_string_parser (ident "__argScope"))
-                   str)
+           | OpamTypes.CString str -> nix_of_interpolated_string (ident "__argScope") str
            | CIdent name -> nix_of_ident_string (ident "__argScope") name
          in
          attr_set [ "filter", filter; "arg", lambda (Pattern.ident "__argScope") arg ])

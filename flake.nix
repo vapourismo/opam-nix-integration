@@ -35,7 +35,6 @@
             ppx_deriving
             cmdliner
             zarith
-            angstrom
           ];
         };
 
@@ -64,7 +63,6 @@
 
           buildInputs = with ocamlPackages; [
             opam-format
-            angstrom
             zarith
           ];
         };

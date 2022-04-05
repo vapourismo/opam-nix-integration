@@ -16,29 +16,10 @@ let input =
 
 let scope = Nix.ident "__argScope"
 
-let segments =
-  let rec with_variable head tail =
-    match String.split_on_char '}' head with
-    | [ name; "" ] -> Nix.CodeSegment (Lib.nix_of_ident_string scope name) :: start tail
-    | _ -> failwith (Printf.sprintf "Bad variable interpolation: %s" head)
-  and after_percent = function
-    | [] -> []
-    | head :: tail ->
-      if String.starts_with ~prefix:"{" head
-      then (
-        let head = String.sub head 1 (String.length head - 1) in
-        with_variable head tail)
-      else Nix.StringSegment head :: after_percent tail
-  and start segments =
-    match segments with
-    | head :: tail -> Nix.StringSegment head :: after_percent tail
-    | [] -> []
-  in
-  start (String.split_on_char '%' input)
-;;
-
 let () =
   let open Nix in
-  let exp = lambda (Pattern.ident "__argScope") (MultilineString [ segments ]) in
+  let exp =
+    lambda (Pattern.ident "__argScope") (Lib.nix_of_interpolated_string scope input)
+  in
   print_endline (render exp)
 ;;

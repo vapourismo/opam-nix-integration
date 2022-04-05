@@ -2,4 +2,4 @@
  (name opamsubst2nix)
  (package opamsubst2nix)
  (public_name opamsubst2nix)
- (libraries opam2nix_lib angstrom nix))
+ (libraries opam2nix_lib nix))
