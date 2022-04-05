@@ -17,8 +17,8 @@ let
         abort ("Unknown package ${package} variable: ${var}")
 
     else
-      abort
-        ("ident: ${builtins.toJSON [pkgs var defaults]}");
+      abort ("ident: ${builtins.toJSON [pkgs var defaults]}")
+  ;
 
   argScope = env: {
     ident = pkgs: var: defaults:
