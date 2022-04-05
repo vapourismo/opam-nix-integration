@@ -35,7 +35,7 @@ lib.makeScope newScope (self: {
 
     postInstall = ''
       ${old.postInstall or ""}
-      wrapProgram "$out/bin/ocaml" --add-flags "-I ${findlib}/lib/ocaml/${ocaml.version}/site-lib"
+      wrapProgram "$out/bin/ocaml" --add-flags "-I ${self.ocamlfind}/lib/ocaml/${ocaml.version}/site-lib"
     '';
   });
 
