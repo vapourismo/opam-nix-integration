@@ -80,6 +80,8 @@ let
       doc = "${prefix}/share/doc";
       man = "${prefix}/share/man";
 
+      version = if (ocamlPackages ? package) then ocamlPackages.${package}.version else null;
+
       # For 'ocaml' package
       native = true;
       native-dynlink = true;
