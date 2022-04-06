@@ -16,26 +16,7 @@ in
   inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocamlbuild;
 
   dune-configurator = final.opamPackages.dune-configurator.${final.dune.version};
-  ocaml-base-compiler = final.ocaml;
   camlp4 = final.opamPackages.camlp4."4.13+1";
-
-  conf-gmp =
-    final.callOpam
-      {
-        name = "conf-gmp";
-        version = "4";
-        patches = [ ../patches/conf-gmp-4.patch ];
-      }
-      { };
-
-  conf-libffi =
-    final.callOpam
-      {
-        name = "conf-libffi";
-        version = "2.0.0";
-        patches = [ ../patches/conf-libffi-2.0.0.patch ];
-      }
-      { };
 
   zarith =
     final.callOpam
@@ -76,45 +57,63 @@ in
   # Packages where the latest version is not viable.
   ppxlib = final.opamPackages.ppxlib."0.24.0";
   hxd = final.opamPackages.hxd."0.3.1";
+  cstruct = final.opamPackages.cstruct."6.0.1";
+
+  git = final.opamPackages.git."3.8.0";
+  git-unix = final.opamPackages.git-unix.${final.git.version};
+  git-mirage = final.opamPackages.git-mirage.${final.git.version};
+  git-paf = final.opamPackages.git-paf.${final.git.version};
+
+  happy-eyeballs = final.opamPackages.happy-eyeballs."0.1.3";
+  happy-eyeballs-lwt = final.opamPackages.happy-eyeballs-lwt.${final.happy-eyeballs.version};
+  happy-eyeballs-mirage = final.opamPackages.happy-eyeballs-mirage.${final.happy-eyeballs.version};
+
+  cf = final.opamPackages.cf."0.4";
+  cf-lwt = final.opamPackages.cf-lwt.${final.cf.version};
+
+  cstruct-lwt = final.opamPackages.cstruct-lwt.${final.cstruct.version};
+  cstruct-sexp = final.opamPackages.cstruct-sexp.${final.cstruct.version};
+  cstruct-unix = final.opamPackages.cstruct-unix.${final.cstruct.version};
+  ppx_cstruct = final.opamPackages.ppx_cstruct.${final.cstruct.version};
 
   # These packages have messed up versions published.
-  ppx_sexp_conv = final.opamPackages.ppx_sexp_conv."v0.14.3";
-  sexplib = final.opamPackages.sexplib."v0.14.0";
-  core = final.opamPackages.core."v0.14.1";
-  core_kernel = final.opamPackages.core_kernel."v0.14.2";
-  ppx_jane = final.opamPackages.ppx_jane."v0.14.0";
-  bin_prot = final.opamPackages.bin_prot."v0.14.0";
-  fieldslib = final.opamPackages.fieldslib."v0.14.0";
-  jane-street-headers = final.opamPackages.jane-street-headers."v0.14.0";
-  ppx_assert = final.opamPackages.ppx_assert."v0.14.0";
-  ppx_base = final.opamPackages.ppx_base."v0.14.0";
-  ppx_hash = final.opamPackages.ppx_hash."v0.14.0";
-  ppx_inline_test = final.opamPackages.ppx_inline_test."v0.14.1";
-  ppx_sexp_message = final.opamPackages.ppx_sexp_message."v0.14.1";
-  splittable_random = final.opamPackages.splittable_random."v0.14.0";
-  typerep = final.opamPackages.typerep."v0.14.0";
-  variantslib = final.opamPackages.variantslib."v0.14.0";
-  ppx_optcomp = final.opamPackages.ppx_optcomp."v0.14.3";
-  ppx_bench = final.opamPackages.ppx_bench."v0.14.1";
-  ppx_bin_prot = final.opamPackages.ppx_bin_prot."v0.14.0";
-  ppx_custom_printf = final.opamPackages.ppx_custom_printf."v0.14.1";
-  ppx_expect = final.opamPackages.ppx_expect."v0.14.2";
-  ppx_fields_conv = final.opamPackages.ppx_fields_conv."v0.14.2";
-  ppx_here = final.opamPackages.ppx_here."v0.14.0";
-  ppx_let = final.opamPackages.ppx_let."v0.14.0";
-  ppx_module_timer = final.opamPackages.ppx_module_timer."v0.14.0";
-  ppx_optional = final.opamPackages.ppx_optional."v0.14.0";
-  ppx_pipebang = final.opamPackages.ppx_pipebang."v0.14.0";
-  ppx_sexp_value = final.opamPackages.ppx_sexp_value."v0.14.0";
-  ppx_stable = final.opamPackages.ppx_stable."v0.14.1";
-  ppx_typerep_conv = final.opamPackages.ppx_typerep_conv."v0.14.2";
-  ppx_string = final.opamPackages.ppx_string."v0.14.1";
-  ppx_variants_conv = final.opamPackages.ppx_variants_conv."v0.14.2";
-  ppx_cold = final.opamPackages.ppx_cold."v0.14.0";
-  ppx_compare = final.opamPackages.ppx_compare."v0.14.0";
-  ppx_enumerate = final.opamPackages.ppx_enumerate."v0.14.0";
-  ppx_js_style = final.opamPackages.ppx_js_style."v0.14.1";
-  ppx_fixed_literal = final.opamPackages.ppx_fixed_literal."v0.14.0";
+  ppx_sexp_conv = final.opamPackages.ppx_sexp_conv."v0.15.0";
+  sexplib = final.opamPackages.sexplib."v0.15.0";
+  core = final.opamPackages.core."v0.15.0";
+  core_kernel = final.opamPackages.core_kernel."v0.15.0";
+  ppx_jane = final.opamPackages.ppx_jane."v0.15.0";
+  bin_prot = final.opamPackages.bin_prot."v0.15.0";
+  fieldslib = final.opamPackages.fieldslib."v0.15.0";
+  jane-street-headers = final.opamPackages.jane-street-headers."v0.15.0";
+  ppx_assert = final.opamPackages.ppx_assert."v0.15.0";
+  ppx_base = final.opamPackages.ppx_base."v0.15.0";
+  ppx_hash = final.opamPackages.ppx_hash."v0.15.0";
+  ppx_inline_test = final.opamPackages.ppx_inline_test."v0.15.0";
+  ppx_sexp_message = final.opamPackages.ppx_sexp_message."v0.15.0";
+  splittable_random = final.opamPackages.splittable_random."v0.15.0";
+  typerep = final.opamPackages.typerep."v0.15.0";
+  variantslib = final.opamPackages.variantslib."v0.15.0";
+  ppx_optcomp = final.opamPackages.ppx_optcomp."v0.15.0";
+  ppx_bench = final.opamPackages.ppx_bench."v0.15.0";
+  ppx_bin_prot = final.opamPackages.ppx_bin_prot."v0.15.0";
+  ppx_custom_printf = final.opamPackages.ppx_custom_printf."v0.15.0";
+  ppx_expect = final.opamPackages.ppx_expect."v0.15.0";
+  ppx_fields_conv = final.opamPackages.ppx_fields_conv."v0.15.0";
+  ppx_here = final.opamPackages.ppx_here."v0.15.0";
+  ppx_let = final.opamPackages.ppx_let."v0.15.0";
+  ppx_module_timer = final.opamPackages.ppx_module_timer."v0.15.0";
+  ppx_optional = final.opamPackages.ppx_optional."v0.15.0";
+  ppx_pipebang = final.opamPackages.ppx_pipebang."v0.15.0";
+  ppx_sexp_value = final.opamPackages.ppx_sexp_value."v0.15.0";
+  ppx_stable = final.opamPackages.ppx_stable."v0.15.0";
+  ppx_typerep_conv = final.opamPackages.ppx_typerep_conv."v0.15.0";
+  ppx_string = final.opamPackages.ppx_string."v0.15.0";
+  ppx_variants_conv = final.opamPackages.ppx_variants_conv."v0.15.0";
+  ppx_cold = final.opamPackages.ppx_cold."v0.15.0";
+  ppx_compare = final.opamPackages.ppx_compare."v0.15.0";
+  ppx_enumerate = final.opamPackages.ppx_enumerate."v0.15.0";
+  ppx_js_style = final.opamPackages.ppx_js_style."v0.15.0";
+  ppx_fixed_literal = final.opamPackages.ppx_fixed_literal."v0.15.0";
 } // selectLatest [
   "bigarray-compat"
   "bigstringaf"
@@ -132,7 +131,6 @@ in
   "bos"
   "ca-certs-nss"
   "ca-certs"
-  "cf-lwt"
   "cohttp-lwt-unix"
   "cohttp-lwt"
   "cohttp"
@@ -143,7 +141,6 @@ in
   "conf-pkg-config"
   "cppo"
   "csexp"
-  "cstruct"
   "ctypes"
   "decompress"
   "dns-client"
@@ -153,14 +150,10 @@ in
   "ezjsonm"
   "fpath"
   "fsevents-lwt"
-  "git-mirage"
-  "git-unix"
   "graphql_parser"
   "graphql-cohttp"
   "graphql-lwt"
   "graphql"
-  "happy-eyeballs-lwt"
-  "happy-eyeballs"
   "hex"
   "index"
   "inotify"
@@ -259,9 +252,7 @@ in
   "menhirSdk"
   "biniou"
   "easy-format"
-  "git-paf"
   "dns"
-  "happy-eyeballs-mirage"
   "mirage-random"
   "paf"
   "httpaf"
@@ -271,8 +262,6 @@ in
   "mirage-profile"
   "ethernet"
   "arp"
-  "cstruct-lwt"
-  "ppx_cstruct"
   "parsexp"
   "num"
   "macaddr-cstruct"
@@ -285,8 +274,6 @@ in
   "mirage-crypto-pk"
   "mirage-no-solo5"
   "mirage-no-xen"
-  "cstruct-sexp"
-  "cstruct-unix"
   "conf-gmp-powm-sec"
   "asn1-combinators"
   "gmap"
@@ -296,7 +283,6 @@ in
   "mirage-runtime"
   "io-page"
   "functoria-runtime"
-  "cf"
   "integers"
   "ctypes-foreign"
   "fsevents"
@@ -320,6 +306,7 @@ in
   "stdio"
   "time_now"
   "octavius"
-  "git"
   "mtime"
+  "conf-gmp"
+  "conf-libffi"
 ]

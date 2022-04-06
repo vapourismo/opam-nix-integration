@@ -31,6 +31,8 @@ let
 in
 lib.makeScope newScope (self: {
   inherit ocaml;
+  ocaml-base-compiler = self.ocaml;
+
   ocamlfind = findlib;
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
