@@ -255,7 +255,7 @@ let
         if builtins.hasAttr packageName packages then
           packages.${packageName}
         else
-          abort "Unknown package ${packageName}";
+          null;
       in
       if evalFilterFormula env enabled then
         (
