@@ -407,7 +407,14 @@ let
 
       evalOrs =
         builtins.foldl'
-          (lhs: rhs: if lhs != null then lhs else rhs)
+          (lhs: rhs:
+            if lhs != null && rhs != null then
+              lhs ++ rhs
+            else if lhs != null then
+              lhs
+            else
+              rhs
+          )
           null;
 
       evalAnds =
