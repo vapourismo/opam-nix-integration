@@ -101,7 +101,25 @@ let
     fi
   '';
 
-  renderedInstallScript = opam.evalCommands env installScript;
+  fixTopkgCommand = args:
+    # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
+    if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
+      let
+        ocamlfindEnv = (env.packages "ocamlfind");
+      in
+      [ "ocaml" "-I" ocamlfindEnv.lib ] ++ lib.lists.drop 1 args
+    else
+      args;
+
+  renderCommands = cmds: builtins.concatStringsSep "\n" (
+    builtins.map (builtins.concatStringsSep " ") cmds
+  );
+
+  renderedBuildScript = renderCommands (
+    builtins.map fixTopkgCommand (opam.evalCommands env buildScript)
+  );
+
+  renderedInstallScript = renderCommands (opam.evalCommands env installScript);
 
   copyExtraFiles = builtins.concatStringsSep "\n" (
     builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles
@@ -167,7 +185,7 @@ stdenv.mkDerivation ({
 
   buildPhase = ''
     # Build Opam package
-    ${opam.evalCommands env buildScript}
+    ${renderedBuildScript}
   '';
 
   installPhase = ''

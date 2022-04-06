@@ -44,11 +44,11 @@ let
 
             prunedArgs = builtins.map ({ arg, ... }: builtins.toJSON (evalArg env arg)) keptArgs;
           in
-          builtins.concatStringsSep " " prunedArgs
+          prunedArgs
         )
         keptCommands;
     in
-    builtins.concatStringsSep "\n" prunedCommands;
+    prunedCommands;
 
   # Filter DSL.
   filterScope = env: {
