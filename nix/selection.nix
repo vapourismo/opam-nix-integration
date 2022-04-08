@@ -235,7 +235,6 @@ in
   "lwt_ppx"
   "lwt_ssl"
   "lwt-dllist"
-  "lwt-unix"
   "lwt"
   "macaddr-cstruct"
   "macaddr"
