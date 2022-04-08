@@ -304,7 +304,7 @@ let
             "${packageName}: disabled"
         )
       else
-        "${packageName}: not available";
+        "${packageName}: unknown package";
 
     optionalPackage = packageName: enabled: constraints:
       if builtins.hasAttr packageName packages then
@@ -318,7 +318,7 @@ let
             "${packageName}: disabled"
         )
       else
-        "${packageName}: not available";
+        "${packageName}: unknown package";
   };
 
   showDependency = env: packages: f: f (dependencyStringScope env packages);
