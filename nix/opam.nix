@@ -386,8 +386,13 @@ let
               }
             else if lhs.eval then
               rhs
-            else
+            else if rhs.eval then
               lhs
+            else
+              {
+                eval = false;
+                string = "${lhs.string}, \n${rhs.string}";
+              }
           )
           {
             eval = true;
