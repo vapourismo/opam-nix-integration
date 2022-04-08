@@ -251,21 +251,23 @@ let
 
   dependencyScope = env: packages: {
     package = packageName: enabled: constraints:
-      let package =
-        if builtins.hasAttr packageName packages then
-          packages.${packageName}
-        else
-          abort "Unknown package ${packageName}";
-      in
-      if evalFilterFormula env enabled then
+      if builtins.hasAttr packageName packages then
         (
-          if evalConstraintFormula env constraints package.version then
-            [ package ]
+          let
+            package = packages.${packageName};
+          in
+          if evalFilterFormula env enabled then
+            (
+              if evalConstraintFormula env constraints packages.${packageName}.version then
+                [ package ]
+              else
+                null
+            )
           else
-            null
+            [ ]
         )
       else
-        [ ];
+        null;
 
     optionalPackage = packageName: enabled: constraints:
       if builtins.hasAttr packageName packages then
@@ -291,16 +293,18 @@ let
 
   dependencyStringScope = env: packages: {
     package = packageName: enabled: constraints:
-      let package =
-        if builtins.hasAttr packageName packages then
-          packages.${packageName}.name
-        else
-          abort "Unknown package ${packageName}";
-      in
-      if evalFilterFormula env enabled then
-        "${packageName}: ${showConstraintFormula env constraints package}"
+      if builtins.hasAttr packageName packages then
+        (
+          let package =
+            packages.${packageName}.name;
+          in
+          if evalFilterFormula env enabled then
+            "${packageName}: ${showConstraintFormula env constraints package}"
+          else
+            "${packageName}: disabled"
+        )
       else
-        "${packageName}: disabled";
+        "${packageName}: not available";
 
     optionalPackage = packageName: enabled: constraints:
       if builtins.hasAttr packageName packages then
