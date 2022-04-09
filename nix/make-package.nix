@@ -1,4 +1,5 @@
 { pkgs
+, callPackage
 , runCommand
 , writeText
 , lib
@@ -11,10 +12,6 @@
 , git
 }:
 
-let
-  opam = import ./opam.nix;
-
-in
 { name
 , version
 , src ? null
@@ -29,73 +26,20 @@ in
 }@args:
 
 let
-  defaultVariables = import (
-    runCommand
-      "opamvars2nix"
-      {
-        buildInputs = [ opamvars2nix ];
-      }
-      "opamvars2nix > $out"
-  );
+  env =
+    callPackage ./eval/env.nix
+      { inherit opamvars2nix ocamlPackages; }
+      { inherit name version; };
 
-  env = {
-    local = defaultVariables // {
-      inherit name version;
-      jobs = 1;
-
-      dev = false;
-      with-test = false;
-      with-doc = false;
-      build = true;
-      post = false;
-      pinned = false;
-
-      os-distribution = "nixos";
-
-      opam-version = "2.1.2";
-
-      make = "${gnumake}/bin/make";
-
-      prefix = "$out";
-      lib = "$OCAMLFIND_DESTDIR";
-      bin = "$out/bin";
-      share = "$out/share";
-      doc = "$out/share/doc";
-      man = "$out/share/man";
-    };
-
-    packages = package: rec {
-      installed = builtins.elem package [
-        "ocaml"
-        "dune"
-        "ocamlfind"
-      ] || (builtins.hasAttr package ocamlPackages);
-
-      enable = if installed then "enable" else "disable";
-
-      prefix = "${ocamlPackages.${package}}";
-      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
-      bin = "${prefix}/bin";
-      share = "${prefix}/share";
-      doc = "${prefix}/share/doc";
-      man = "${prefix}/share/man";
-
-      version = if (ocamlPackages ? package) then ocamlPackages.${package}.version else null;
-
-      # For 'ocaml' package
-      native = true;
-      native-dynlink = true;
-      preinstalled = true;
-    };
-  };
+  opam = callPackage ./opam.nix { };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
-        --prefix="${env.local.prefix}" \
-        --libdir="${env.local.lib}" \
-        --docdir="${env.local.doc}" \
-        --mandir="${env.local.man}" \
+        --prefix="${env.lookupLocalVar "prefix"}" \
+        --libdir="${env.lookupLocalVar "lib"}" \
+        --docdir="${env.lookupLocalVar "doc"}" \
+        --mandir="${env.lookupLocalVar "man"}" \
         --name="${name}" \
         --install "${name}.install"
     fi
@@ -104,10 +48,7 @@ let
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
-      let
-        ocamlfindEnv = (env.packages "ocamlfind");
-      in
-      [ "ocaml" "-I" ocamlfindEnv.lib ] ++ lib.lists.drop 1 args
+      [ "ocaml" "-I" (env.lookupPackageVar "ocamlfind" "lib") ] ++ lib.lists.drop 1 args
     else
       args;
 
@@ -144,7 +85,7 @@ let
     (file:
       {
         path = file;
-        source = writeText "opam2nix-subst-file" (opam.evalArg env (import (
+        source = writeText "opam2nix-subst-file" (opam.interpolate env (import (
           runCommand
             "opam2nix-subst-expr"
             {
@@ -190,7 +131,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p ${env.local.bin} ${env.local.lib}
+    mkdir -p ${env.lookupLocalVar "bin"} ${env.lookupLocalVar "lib"}
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';

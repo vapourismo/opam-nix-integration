@@ -14,12 +14,8 @@ let input =
   |> String.concat "\n"
 ;;
 
-let scope = Nix.ident "__argScope"
-
 let () =
   let open Nix in
-  let exp =
-    lambda (Pattern.ident "__argScope") (Lib.nix_of_interpolated_string scope input)
-  in
+  let exp = Lib.nix_of_interpolated_string input in
   print_endline (render exp)
 ;;

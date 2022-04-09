@@ -1,38 +1,6 @@
+{ lib, callPackage }:
+
 let
-  resolveVariable = { local, packages }: pkgs: var: defaults:
-    if pkgs == [ ] || pkgs == [ "_" ] || pkgs == [ null ] then
-      if builtins.hasAttr var local then
-        local.${var}
-      else
-        abort ("Unknown local variable: ${var}")
-    else if builtins.length pkgs == 1 then
-      let
-        package = builtins.elemAt pkgs 0;
-
-        foreign = packages package;
-      in
-      if builtins.hasAttr var foreign then
-        foreign.${var}
-      else
-        abort ("Unknown package ${package} variable: ${var}")
-
-    else
-      abort ("ident: ${builtins.toJSON [pkgs var defaults]}")
-  ;
-
-  argScope = env: {
-    ident = pkgs: var: defaults:
-      let
-        value = resolveVariable env pkgs var defaults;
-      in
-      if builtins.isString value then
-        value
-      else
-        builtins.toJSON value;
-  };
-
-  evalArg = env: f: f (argScope env);
-
   evalCommands = env: commands:
     let
       keptCommands = builtins.filter ({ filter, ... }: evalFilter env filter) commands;
@@ -42,7 +10,10 @@ let
           let
             keptArgs = builtins.filter ({ filter, ... }: evalFilter env filter) args;
 
-            prunedArgs = builtins.map ({ arg, ... }: builtins.toJSON (evalArg env arg)) keptArgs;
+            prunedArgs =
+              builtins.map
+                ({ arg, ... }: builtins.toJSON (env.eval arg))
+                keptArgs;
           in
           prunedArgs
         )
@@ -56,7 +27,7 @@ let
 
     string = value: value;
 
-    ident = resolveVariable env;
+    ident = env.eval;
 
     equal = lhs: rhs: lhs == rhs;
 
@@ -88,17 +59,20 @@ let
 
     string = builtins.toJSON;
 
-    ident = pkgs: var: defaults:
-      let
-        name =
-          if pkgs == [ ] then
-            var
-          else
-            builtins.concatStringsSep ":" (pkgs ++ [ var ]);
+    ident = f:
+      let value = env.eval f; in
+      {
 
-        value = builtins.toJSON (resolveVariable env pkgs var defaults);
-      in
-      "${value} (${name})";
+        local = { name, ... }: "${value} (${name})";
+
+        package = { packageName, name, ... }: "${value} (${packageName}:${name})";
+
+        combine = values:
+          lib.foldl'
+            (lhs: rhs: "${lhs} & ${rhs}")
+            (lib.head values)
+            (lib.tail values);
+      };
 
     equal = lhs: rhs: "${lhs} == ${rhs}";
 
@@ -459,5 +433,5 @@ let
 in
 
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies evalArg cleanVersion;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies cleanVersion;
 }
