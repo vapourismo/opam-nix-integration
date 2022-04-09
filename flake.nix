@@ -79,6 +79,7 @@
           nixpkgs-fmt
           odoc
           inotify-tools
+          rnix-lsp
         ];
 
         buildInputs = self.defaultPackage.${system}.buildInputs;
