@@ -17,7 +17,7 @@ in
   dune = final.opamPackages.dune."2.9.3";
   dune-configurator = final.opamPackages.dune-configurator.${final.dune.version};
 
-  inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocamlbuild;
+  ocamlbuild = final.opamPackages.ocamlbuild.latest;
 
   camlp4 = final.opamPackages.camlp4."4.13+1";
 
