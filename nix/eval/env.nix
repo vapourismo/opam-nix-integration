@@ -161,4 +161,6 @@ in
 
 {
   inherit eval lookupLocalVar lookupPackageVar;
+  local = localVars;
+  packages = packageVars;
 }

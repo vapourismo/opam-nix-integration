@@ -48,7 +48,7 @@ let
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
-      [ "ocaml" "-I" (env.lookupPackageVar "ocamlfind" "lib") ] ++ lib.lists.drop 1 args
+      [ "ocaml" "-I" env.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
     else
       args;
 
@@ -131,7 +131,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p ${env.lookupLocalVar "bin"} ${env.lookupLocalVar "lib"}
+    mkdir -p ${env.local.bin} ${env.local.lib}
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';
