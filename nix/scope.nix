@@ -33,7 +33,7 @@ lib.makeScope newScope (self: {
   inherit ocaml;
   ocaml-base-compiler = self.ocaml;
 
-  ocamlfind = findlib;
+  ocamlfind = findlib.override { inherit (self) ocaml; };
 
   mkOpam2NixPackage = callPackage ./make-package.nix {
     inherit (self) opamvars2nix opamsubst2nix;
