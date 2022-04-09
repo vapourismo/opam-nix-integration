@@ -48,6 +48,7 @@ in
 , jobs ? 1
 , enableTests ? false
 , enableDocs ? false
+, disabledPackages ? [ ]
 }:
 
 with lib;
@@ -89,7 +90,7 @@ let
 
   lookupPackageVar = packageName:
     let
-      isInstalled = lib.hasAttr packageName packageVars;
+      isInstalled = lib.hasAttr packageName packageVars && !(elem packageName disabledPackages);
     in
 
     name:
