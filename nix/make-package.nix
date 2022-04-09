@@ -36,10 +36,10 @@ let
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
-        --prefix="${env.lookupLocalVar "prefix"}" \
-        --libdir="${env.lookupLocalVar "lib"}" \
-        --docdir="${env.lookupLocalVar "doc"}" \
-        --mandir="${env.lookupLocalVar "man"}" \
+        --prefix="${env.local.prefix}" \
+        --libdir="${env.local.lib}" \
+        --docdir="${env.local.doc}" \
+        --mandir="${env.local.man}" \
         --name="${name}" \
         --install "${name}.install"
     fi
