@@ -14,10 +14,11 @@ in
 {
   ocaml-src = final.opamPackages.ocaml-src.${final.ocaml.version};
 
-  dune = pkgs.ocaml-ng.ocamlPackages_4_13.dune_2;
+  dune = final.opamPackages.dune."2.9.3";
+  dune-configurator = final.opamPackages.dune-configurator.${final.dune.version};
+
   inherit (pkgs.ocaml-ng.ocamlPackages_4_13) ocamlbuild;
 
-  dune-configurator = final.opamPackages.dune-configurator.${final.dune.version};
   camlp4 = final.opamPackages.camlp4."4.13+1";
 
   zarith =
