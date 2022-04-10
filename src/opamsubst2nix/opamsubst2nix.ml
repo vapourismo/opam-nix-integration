@@ -16,6 +16,6 @@ let input =
 
 let () =
   let open Nix in
-  let exp = Lib.nix_of_interpolated_string input in
+  let exp = Lib.Env.nix_of_interpolated_string input in
   print_endline (render exp)
 ;;

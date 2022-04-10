@@ -1,61 +1,5 @@
-let nix_of_variable_scoped scope packages name defaults =
-  let open Nix in
-  let packages = List.filter_map (Option.map OpamPackage.Name.to_string) packages in
-  let defaults =
-    match defaults with
-    | None -> null
-    | Some (if_true, otherwise) ->
-      attr_set [ "ifTrue", string if_true; "otherwise", string otherwise ]
-  in
-  let resolve_local_var () =
-    index scope "local"
-    @@ [ attr_set [ "name", string (OpamVariable.to_string name); "defaults", defaults ] ]
-  in
-  let resolve_package_var package =
-    if package == "_"
-    then resolve_local_var ()
-    else
-      index scope "package"
-      @@ [ attr_set
-             [ "packageName", string package
-             ; "name", string (OpamVariable.to_string name)
-             ; "defaults", defaults
-             ]
-         ]
-  in
-  match packages with
-  | [] | [ "_" ] -> resolve_local_var ()
-  | [ package ] -> resolve_package_var package
-  | packages -> index scope "combine" @@ [ list (List.map resolve_package_var packages) ]
-;;
-
-let nix_of_variable packages name defaults =
-  Nix.scoped "__envScope" (fun scope ->
-      nix_of_variable_scoped scope packages name defaults)
-;;
-
-let nix_of_variable_string_scoped scope name =
-  let open Nix in
-  let packages, name, defaults = OpamTypesBase.filter_ident_of_string name in
-  index scope "toString" @@ [ nix_of_variable_scoped scope packages name defaults ]
-;;
-
-let nix_of_variable_string name =
-  Nix.scoped "__envScope" (fun scope -> nix_of_variable_string_scoped scope name)
-;;
-
-let nix_of_interpolated_string input =
-  let open Nix in
-  scoped "__envScope" (fun scope ->
-      let segments =
-        Interpolated_string.parse
-          ~on_string:(fun str -> StringSegment str)
-          ~on_variable:(fun name ->
-            CodeSegment (nix_of_variable_string_scoped scope name))
-          input
-      in
-      MultilineString [ segments ])
-;;
+module Interpolated_string = Interpolated_string
+module Env = Env
 
 let string_of_relop op =
   match op with
@@ -74,7 +18,7 @@ let nix_of_filter filter =
     | OpamTypes.FBool value -> index scope "bool" @@ [ bool value ]
     | FString value -> index scope "string" @@ [ string value ]
     | FIdent (packages, name, defaults) ->
-      index scope "ident" @@ [ nix_of_variable packages name defaults ]
+      index scope "ident" @@ [ Env.nix_of_variable packages name defaults ]
     | FOp (left, op, right) -> index scope (string_of_relop op) @@ [ go left; go right ]
     | FAnd (left, right) -> index scope "and" @@ [ go left; go right ]
     | FOr (left, right) -> index scope "or" @@ [ go left; go right ]
@@ -179,8 +123,8 @@ let nix_of_args args =
          let filter = Option.fold ~none:nix_of_true_filter ~some:nix_of_filter filter in
          let arg =
            match arg with
-           | OpamTypes.CString str -> nix_of_interpolated_string str
-           | CIdent name -> nix_of_variable_string name
+           | OpamTypes.CString str -> Env.nix_of_interpolated_string str
+           | CIdent name -> Env.nix_of_ident_string name
          in
          attr_set [ "filter", filter; "arg", arg ])
        args)
