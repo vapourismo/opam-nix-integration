@@ -1,71 +1,6 @@
 module Interpolated_string = Interpolated_string
 module Env = Env
 
-let string_of_relop op =
-  match op with
-  | `Eq -> "equal"
-  | `Neq -> "notEqual"
-  | `Geq -> "greaterEqual"
-  | `Gt -> "greaterThan"
-  | `Leq -> "lowerEqual"
-  | `Lt -> "lowerThan"
-;;
-
-let nix_of_filter filter =
-  let open Nix in
-  let scope = ident "__filterScope" in
-  let rec go = function
-    | OpamTypes.FBool value -> index scope "bool" @@ [ bool value ]
-    | FString value -> index scope "string" @@ [ string value ]
-    | FIdent (packages, name, defaults) ->
-      index scope "ident" @@ [ Env.nix_of_variable packages name defaults ]
-    | FOp (left, op, right) -> index scope (string_of_relop op) @@ [ go left; go right ]
-    | FAnd (left, right) -> index scope "and" @@ [ go left; go right ]
-    | FOr (left, right) -> index scope "or" @@ [ go left; go right ]
-    | FNot filter -> index scope "not" @@ [ go filter ]
-    | FDefined filter -> index scope "def" @@ [ go filter ]
-    | FUndef filter -> index scope "undef" @@ [ go filter ]
-  in
-  lambda (Pattern.ident "__filterScope") (go filter)
-;;
-
-let nix_of_true_filter =
-  let open Nix in
-  lambda
-    (Pattern.ident "__filterScope")
-    (index (ident "__filterScope") "bool" @@ [ bool true ])
-;;
-
-let nix_of_formula to_nix formula =
-  let open Nix in
-  let scope = ident "__formulaScope" in
-  let rec go formula =
-    match formula with
-    | OpamFormula.Empty -> index scope "empty"
-    | Atom atom -> index scope "atom" @@ [ to_nix atom ]
-    | Block formula -> go formula
-    (* The formula is in CNF, these two cases should never happen because [go] is called on
-       "atom"-like items of the formula. *)
-    | And _ -> failwith "CNF conversion failed!"
-    | Or _ -> failwith "CNF conversion failed!"
-  in
-  let body =
-    OpamFormula.cnf_of_formula formula
-    |> OpamFormula.ands_to_list
-    |> List.map (fun ors -> OpamFormula.ors_to_list ors |> List.map go |> list)
-    |> list
-  in
-  lambda (Pattern.ident "__formulaScope") body
-;;
-
-let nix_of_constraint (op, filter) =
-  let open Nix in
-  let scope = ident "__constraintScope" in
-  lambda
-    (Pattern.ident "__constraintScope")
-    (apply (index scope (string_of_relop op)) [ nix_of_filter filter ])
-;;
-
 let nix_of_dependency ?(optional = false) (name, formula) =
   let open Nix in
   let scope = ident "__dependencyScope" in
@@ -90,14 +25,14 @@ let nix_of_dependency ?(optional = false) (name, formula) =
     (apply
        (index scope (if optional then "optionalPackage" else "package"))
        [ string (OpamPackage.Name.to_string name)
-       ; nix_of_formula nix_of_filter enabled
-       ; nix_of_formula nix_of_constraint constraints
+       ; Formula.to_nix Filter.to_nix enabled
+       ; Formula.to_nix Constraint.to_nix constraints
        ])
 ;;
 
-let nix_of_depends depends = nix_of_formula nix_of_dependency depends
+let nix_of_depends depends = Formula.to_nix nix_of_dependency depends
 
-let nix_of_depopts depots = nix_of_formula (nix_of_dependency ~optional:true) depots
+let nix_of_depopts depots = Formula.to_nix (nix_of_dependency ~optional:true) depots
 
 let nix_of_depexts depexts =
   let open Nix in
@@ -110,7 +45,7 @@ let nix_of_depexts depexts =
                  (List.map
                     (fun package -> string (OpamSysPkg.to_string package))
                     (OpamSysPkg.Set.elements packages)) )
-           ; "filter", nix_of_filter filter
+           ; "filter", Filter.to_nix filter
            ])
        depexts)
 ;;
@@ -120,7 +55,7 @@ let nix_of_args args =
   list
     (List.map
        (fun (arg, filter) ->
-         let filter = Option.fold ~none:nix_of_true_filter ~some:nix_of_filter filter in
+         let filter = Option.fold ~none:Filter.nix_of_true ~some:Filter.to_nix filter in
          let arg =
            match arg with
            | OpamTypes.CString str -> Env.nix_of_interpolated_string str
@@ -135,7 +70,7 @@ let nix_of_commands commands =
   list
     (List.map
        (fun (args, filter) ->
-         let filter = Option.fold ~none:nix_of_true_filter ~some:nix_of_filter filter in
+         let filter = Option.fold ~none:Filter.nix_of_true ~some:Filter.to_nix filter in
          attr_set [ "filter", filter; "args", nix_of_args args ])
        commands)
 ;;
