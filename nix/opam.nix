@@ -12,7 +12,7 @@ let
 
             prunedArgs =
               builtins.map
-                ({ arg, ... }: builtins.toJSON (env.eval arg))
+                ({ arg, ... }: builtins.toJSON (env.eval { } arg))
                 keptArgs;
           in
           prunedArgs
@@ -27,7 +27,7 @@ let
 
     string = value: value;
 
-    ident = env.eval;
+    ident = env.eval { };
 
     equal = lhs: rhs: lhs == rhs;
 
@@ -60,7 +60,7 @@ let
     string = builtins.toJSON;
 
     ident = f:
-      let value = env.eval f; in
+      let value = env.eval { } f; in
       {
 
         local = { name, ... }: "${value} (${name})";

@@ -107,8 +107,18 @@ let
     else
       packageVars.${packageName}.${name} or null;
 
-  eval = template:
-    let lookup = { packageName ? null, name, defaults ? { } }:
+  defaultOnMissing = packageName: name:
+    if packageName == null then
+      abort "Unknown local variable ${name}"
+    else
+      abort "Unknown variable ${packageName}:${name}";
+
+  eval = { onMissing ? defaultOnMissing }: template:
+    let lookup =
+      { packageName ? null
+      , name
+      , defaults ? { }
+      }:
       let
         value =
           if packageName == null then
@@ -130,12 +140,7 @@ let
       else
         (
           if value == null then
-            (
-              if packageName == null then
-                abort "Unknown local variable ${name}"
-              else
-                abort "Unknown variable ${packageName}:${name}"
-            )
+            onMissing packageName name
           else
             value
         );
@@ -161,7 +166,7 @@ let
 in
 
 {
-  inherit eval lookupLocalVar lookupPackageVar;
+  inherit eval lookupLocalVar lookupPackageVar defaultOnMissing;
   local = localVars;
   packages = packageVars;
 }
