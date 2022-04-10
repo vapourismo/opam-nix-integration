@@ -35,7 +35,9 @@ let
 
   constraintLib = import ./eval/constraint.nix { inherit filterLib; };
 
-  opam = callPackage ./opam.nix { } { inherit envLib filterLib constraintLib; };
+  formulaLib = import ./eval/formula.nix;
+
+  opam = callPackage ./opam.nix { } { inherit envLib filterLib constraintLib formulaLib; };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then

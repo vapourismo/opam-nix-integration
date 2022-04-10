@@ -1,5 +1,5 @@
 { lib }:
-{ envLib, filterLib, constraintLib }:
+{ envLib, filterLib, constraintLib, formulaLib }:
 
 let
   evalCommands = commands:
@@ -22,82 +22,11 @@ let
     in
     prunedCommands;
 
-  filterFormulaScope = {
-    empty = true;
+  evalFilterFormula = formulaLib.evalBoolean { atom = filterLib.eval; };
 
-    atom = filterLib.eval;
-  };
+  showConstraintFormula = formulaLib.show { atom = constraintLib.show; };
 
-  evalFilterFormula = f:
-    let
-      cnf = f filterFormulaScope;
-
-      evalOrs =
-        builtins.foldl'
-          (lhs: rhs: lhs || rhs)
-          false;
-
-      evalAnds =
-        builtins.foldl'
-          (lhs: rhs: lhs && rhs)
-          true;
-
-    in
-    evalAnds (builtins.map evalOrs cnf);
-
-  constraintFormulaScope = {
-    empty = _: true;
-
-    atom = constraintLib.eval;
-  };
-
-  evalConstraintFormula = f:
-    let
-      cnf = f constraintFormulaScope;
-
-      evalOrs =
-        builtins.foldl'
-          (lhs: rhs: version: lhs version || rhs version)
-          (_: false);
-
-      evalAnds =
-        builtins.foldl'
-          (lhs: rhs: version: lhs version && rhs version)
-          (_: true);
-
-    in
-    evalAnds (builtins.map evalOrs cnf);
-
-  constraintFormulaStringScope = {
-    empty = packageName: "${packageName}";
-
-    atom = constraintLib.show;
-  };
-
-  showConstraintFormula = f:
-    let
-      cnf = f constraintFormulaStringScope;
-
-      evalOrs = ors:
-        if builtins.length ors > 0 then
-          builtins.foldl'
-            (lhs: rhs: packageName: "${lhs packageName} || ${rhs packageName}")
-            (builtins.head ors)
-            (builtins.tail ors)
-        else
-          _: "never";
-
-      evalAnds = ands:
-        if builtins.length ands > 0 then
-          builtins.foldl'
-            (lhs: rhs: packageName: "${lhs packageName} && ${rhs packageName}")
-            (builtins.head ands)
-            (builtins.tail ands)
-        else
-          _: "no constraint";
-
-    in
-    evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
+  evalConstraintFormula = formulaLib.evalPredicate { atom = constraintLib.eval; };
 
   dependencyScope = packages: {
     package = packageName: enabled: constraints:
@@ -149,7 +78,7 @@ let
             packages.${packageName}.name;
           in
           if evalFilterFormula enabled then
-            "${packageName}: ${showConstraintFormula constraints package}"
+            "${packageName}: ${showConstraintFormula constraints}"
           else
             "${packageName}: disabled"
         )
@@ -163,7 +92,7 @@ let
         in
         (
           if evalFilterFormula enabled then
-            "${packageName}: ${showConstraintFormula constraints package}"
+            "${packageName}: ${showConstraintFormula constraints}"
           else
             "${packageName}: disabled"
         )
@@ -254,36 +183,8 @@ let
     in
     deps.string;
 
-  dependenciesFormulaScope = packages: {
-    empty = [ ];
-
-    atom = evalDependency packages;
-  };
-
   evalDependenciesFormula = name: packages: f:
-    let
-      cnf = f (dependenciesFormulaScope packages);
-
-      evalOrs =
-        builtins.foldl'
-          (lhs: rhs:
-            if lhs != null && rhs != null then
-              lhs ++ rhs
-            else if lhs != null then
-              lhs
-            else
-              rhs
-          )
-          null;
-
-      evalAnds =
-        builtins.foldl'
-          (lhs: rhs: if lhs != null && rhs != null then lhs ++ rhs else null)
-          [ ];
-
-      deps = evalAnds (builtins.map evalOrs cnf);
-
-    in
+    let deps = formulaLib.evalList { atom = evalDependency packages; } f; in
     if builtins.isList deps then
       deps
     else

@@ -5,51 +5,39 @@ let
 
   compareVersions = lhs: rhs: builtins.compareVersions (cleanVersion lhs) (cleanVersion rhs);
 
-  constraintScopeEval = {
-    always = filter: _: filterLib.eval filter;
+  evalConstraint = constraint: version: constraint {
+    equal = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) == 0;
 
-    equal = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) == 0;
+    notEqual = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) != 0;
 
-    notEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) != 0;
+    greaterEqual = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) >= 0;
 
-    greaterEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) >= 0;
+    greaterThan = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) > 0;
 
-    greaterThan = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) > 0;
+    lowerEqual = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) <= 0;
 
-    lowerEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) <= 0;
-
-    lowerThan = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) < 0;
+    lowerThan = versionFilter:
+      compareVersions version (filterLib.eval versionFilter) < 0;
   };
 
-  evalConstraint = constraint: constraint constraintScopeEval;
+  showConstraint = constraint: constraint {
+    equal = versionFilter: "== ${filterLib.show versionFilter}";
 
-  constraintScopeShow = {
-    equal = versionFilter: packageName:
-      "${packageName} == ${filterLib.show versionFilter}";
+    notEqual = versionFilter: "!= ${filterLib.show versionFilter}";
 
-    notEqual = versionFilter: packageName:
-      "${packageName} != ${filterLib.show versionFilter}";
+    greaterEqual = versionFilter: ">= ${filterLib.show versionFilter}";
 
-    greaterEqual = versionFilter: packageName:
-      "${packageName} >= ${filterLib.show versionFilter}";
+    greaterThan = versionFilter: "> ${filterLib.show versionFilter}";
 
-    greaterThan = versionFilter: packageName:
-      "${packageName} > ${filterLib.show versionFilter}";
+    lowerEqual = versionFilter: "<= ${filterLib.show versionFilter}";
 
-    lowerEqual = versionFilter: packageName:
-      "${packageName} <= ${filterLib.show versionFilter}";
-
-    lowerThan = versionFilter: packageName:
-      "${packageName} < ${filterLib.show versionFilter}";
+    lowerThan = versionFilter: "< ${filterLib.show versionFilter}";
   };
-
-  showConstraint = constraint: constraint constraintScopeShow;
 
 in
 {
