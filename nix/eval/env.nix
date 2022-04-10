@@ -18,6 +18,7 @@ let
       )
     // {
       os-distribution = "nixos";
+      os-version = "1";
       opam-version = opamVersion;
 
       make = "${gnumake}/bin/make";

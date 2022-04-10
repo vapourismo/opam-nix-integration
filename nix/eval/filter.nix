@@ -20,28 +20,42 @@ let
       };
 
       # any -> any -> bool
-      equal = lhs: rhs: lhs == rhs;
+      equal = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs == rhs;
 
       # any -> any -> bool
-      notEqual = lhs: rhs: lhs != rhs;
+      notEqual = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs != rhs;
 
       # any -> any -> bool
-      greaterEqual = lhs: rhs: lhs >= rhs;
+      greaterEqual = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs >= rhs;
 
       # any -> any -> bool
-      greaterThan = lhs: rhs: lhs > rhs;
+      greaterThan = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs > rhs;
 
       # any -> any -> bool
-      lowerEqual = lhs: rhs: lhs <= rhs;
+      lowerEqual = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs <= rhs;
 
       # any -> any -> bool
-      lowerThan = lhs: rhs: lhs < rhs;
+      lowerThan = lhs: rhs:
+        if lhs == null || rhs == null then null else lhs < rhs;
 
       # bool -> bool -> bool
-      and = lhs: rhs: lhs && rhs;
+      and = lhs: rhs:
+        if (lhs == null && rhs == false) || (rhs == null && lhs == false) then
+          false
+        else
+          lhs && rhs;
 
       # bool -> bool -> bool
-      or = lhs: rhs: lhs || rhs;
+      or = lhs: rhs:
+        if (lhs == null && rhs == true) || (rhs == null && lhs == true) then
+          true
+        else
+          lhs || rhs;
 
       # bool -> bool
       not = x: !x;
