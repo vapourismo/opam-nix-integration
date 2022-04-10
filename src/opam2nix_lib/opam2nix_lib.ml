@@ -53,26 +53,15 @@ let nix_of_variable_string ?(force_string = false) name =
 
 let nix_of_interpolated_string_scoped scope input =
   let open Nix in
-  let rec with_variable head tail =
-    match String.split_on_char '}' head with
-    | [ name; "" ] ->
-      CodeSegment (index scope "toString" @@ [ nix_of_variable_string_scoped scope name ])
-      :: start tail
-    | _ -> failwith (Printf.sprintf "Bad variable interpolation: %s" head)
-  and after_percent = function
-    | [] -> []
-    | head :: tail ->
-      if String.starts_with ~prefix:"{" head
-      then (
-        let head = String.sub head 1 (String.length head - 1) in
-        with_variable head tail)
-      else StringSegment head :: after_percent tail
-  and start segments =
-    match segments with
-    | head :: tail -> StringSegment head :: after_percent tail
-    | [] -> []
+  let segments =
+    Interpolated_string.parse
+      ~on_string:(fun str -> StringSegment str)
+      ~on_variable:(fun name ->
+        CodeSegment
+          (index scope "toString" @@ [ nix_of_variable_string_scoped scope name ]))
+      input
   in
-  MultilineString [ start (String.split_on_char '%' input) ]
+  MultilineString [ segments ]
 ;;
 
 let nix_of_interpolated_string input =
