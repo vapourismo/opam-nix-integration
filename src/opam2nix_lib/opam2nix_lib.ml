@@ -115,7 +115,8 @@ let nix_of_formula to_nix formula =
     | OpamFormula.Empty -> index scope "empty"
     | Atom atom -> apply (index scope "atom") [ to_nix atom ]
     | Block formula -> go formula
-    (* The formula is in CNF, these two cases should never happen. *)
+    (* The formula is in CNF, these two cases should never happen because [go] is called on
+       "atom"-like items of the formula. *)
     | And _ -> failwith "CNF conversion failed!"
     | Or _ -> failwith "CNF conversion failed!"
   in
