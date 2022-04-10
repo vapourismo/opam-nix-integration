@@ -31,7 +31,7 @@ let
       { inherit opamvars2nix ocamlPackages; }
       { inherit name version; };
 
-  opam = callPackage ./opam.nix { };
+  opam = callPackage ./opam.nix { } { inherit env; };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
@@ -57,10 +57,10 @@ let
   );
 
   renderedBuildScript = renderCommands (
-    builtins.map fixTopkgCommand (opam.evalCommands env buildScript)
+    builtins.map fixTopkgCommand (opam.evalCommands buildScript)
   );
 
-  renderedInstallScript = renderCommands (opam.evalCommands env installScript);
+  renderedInstallScript = renderCommands (opam.evalCommands installScript);
 
   copyExtraFiles = builtins.concatStringsSep "\n" (
     builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles
@@ -85,7 +85,7 @@ let
     (file:
       {
         path = file;
-        source = writeText "opam2nix-subst-file" (opam.interpolate env (import (
+        source = writeText "opam2nix-subst-file" (opam.interpolate (import (
           runCommand
             "opam2nix-subst-expr"
             {
@@ -113,10 +113,10 @@ stdenv.mkDerivation ({
   buildInputs = with ocamlPackages; [ ocaml ocamlfind git ];
 
   propagatedBuildInputs =
-    opam.evalDependenciesFormula name env ocamlPackages depends
-      ++ opam.evalDependenciesFormula name env ocamlPackages optionalDepends;
+    opam.evalDependenciesFormula name ocamlPackages depends
+      ++ opam.evalDependenciesFormula name ocamlPackages optionalDepends;
 
-  propagatedNativeBuildInputs = opam.evalNativeDependencies env pkgs nativeDepends;
+  propagatedNativeBuildInputs = opam.evalNativeDependencies pkgs nativeDepends;
 
   dontConfigure = true;
 

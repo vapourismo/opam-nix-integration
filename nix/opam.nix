@@ -1,14 +1,15 @@
-{ lib, callPackage }:
+{ lib }:
+{ env }:
 
 let
-  evalCommands = env: commands:
+  evalCommands = commands:
     let
-      keptCommands = builtins.filter ({ filter, ... }: evalFilter env filter) commands;
+      keptCommands = builtins.filter ({ filter, ... }: evalFilter filter) commands;
 
       prunedCommands = builtins.map
         ({ args, ... }:
           let
-            keptArgs = builtins.filter ({ filter, ... }: evalFilter env filter) args;
+            keptArgs = builtins.filter ({ filter, ... }: evalFilter filter) args;
 
             prunedArgs =
               builtins.map
@@ -22,7 +23,7 @@ let
     prunedCommands;
 
   # Filter DSL.
-  filterScope = env: {
+  filterScope = {
     bool = value: value;
 
     string = value: value;
@@ -52,9 +53,9 @@ let
     undef = _: abort "filterScope.undef";
   };
 
-  evalFilter = env: f: f (filterScope env);
+  evalFilter = f: f filterScope;
 
-  filterStringScope = env: {
+  filterStringScope = {
     bool = builtins.toJSON;
 
     string = builtins.toJSON;
@@ -95,17 +96,17 @@ let
     undef = _: abort "filterScope.undef";
   };
 
-  showFilter = env: f: f (filterStringScope env);
+  showFilter = f: f filterStringScope;
 
-  filterFormulaScope = env: {
+  filterFormulaScope = {
     empty = true;
 
-    atom = evalFilter env;
+    atom = evalFilter;
   };
 
-  evalFilterFormula = env: f:
+  evalFilterFormula = f:
     let
-      cnf = f (filterFormulaScope env);
+      cnf = f filterFormulaScope;
 
       evalOrs =
         builtins.foldl'
@@ -123,61 +124,61 @@ let
   compareVersions = lhs: rhs: builtins.compareVersions (cleanVersion lhs) (cleanVersion rhs);
 
   # Expressions of this DSL call exactly one of these functions.
-  constraintScope = env: {
-    always = filter: _: evalFilter env filter;
+  constraintScope = {
+    always = filter: _: evalFilter filter;
 
     equal = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) == 0;
+      compareVersions packageVersion (evalFilter versionFilter) == 0;
 
     notEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) != 0;
+      compareVersions packageVersion (evalFilter versionFilter) != 0;
 
     greaterEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) >= 0;
+      compareVersions packageVersion (evalFilter versionFilter) >= 0;
 
     greaterThan = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) > 0;
+      compareVersions packageVersion (evalFilter versionFilter) > 0;
 
     lowerEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) <= 0;
+      compareVersions packageVersion (evalFilter versionFilter) <= 0;
 
     lowerThan = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter env versionFilter) < 0;
+      compareVersions packageVersion (evalFilter versionFilter) < 0;
   };
 
-  evalConstraint = env: f: f (constraintScope env);
+  evalConstraint = f: f constraintScope;
 
-  constraintStringScope = env: {
+  constraintStringScope = {
     equal = versionFilter: packageName:
-      "${packageName} == ${showFilter env versionFilter}";
+      "${packageName} == ${showFilter versionFilter}";
 
     notEqual = versionFilter: packageName:
-      "${packageName} != ${showFilter env versionFilter}";
+      "${packageName} != ${showFilter versionFilter}";
 
     greaterEqual = versionFilter: packageName:
-      "${packageName} >= ${showFilter env versionFilter}";
+      "${packageName} >= ${showFilter versionFilter}";
 
     greaterThan = versionFilter: packageName:
-      "${packageName} > ${showFilter env versionFilter}";
+      "${packageName} > ${showFilter versionFilter}";
 
     lowerEqual = versionFilter: packageName:
-      "${packageName} <= ${showFilter env versionFilter}";
+      "${packageName} <= ${showFilter versionFilter}";
 
     lowerThan = versionFilter: packageName:
-      "${packageName} < ${showFilter env versionFilter}";
+      "${packageName} < ${showFilter versionFilter}";
   };
 
-  showConstraint = env: f: f (constraintStringScope env);
+  showConstraint = f: f constraintStringScope;
 
-  constraintFormulaScope = env: {
+  constraintFormulaScope = {
     empty = _: true;
 
-    atom = evalConstraint env;
+    atom = evalConstraint;
   };
 
-  evalConstraintFormula = env: f:
+  evalConstraintFormula = f:
     let
-      cnf = f (constraintFormulaScope env);
+      cnf = f constraintFormulaScope;
 
       evalOrs =
         builtins.foldl'
@@ -192,15 +193,15 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  constraintFormulaStringScope = env: {
+  constraintFormulaStringScope = {
     empty = packageName: "${packageName}";
 
-    atom = showConstraint env;
+    atom = showConstraint;
   };
 
-  showConstraintFormula = env: f:
+  showConstraintFormula = f:
     let
-      cnf = f (constraintFormulaStringScope env);
+      cnf = f constraintFormulaStringScope;
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -223,16 +224,16 @@ let
     in
     evalAnds (builtins.map (ors: p: "(${evalOrs ors p})") cnf);
 
-  dependencyScope = env: packages: {
+  dependencyScope = packages: {
     package = packageName: enabled: constraints:
       if builtins.hasAttr packageName packages then
         (
           let
             package = packages.${packageName};
           in
-          if evalFilterFormula env enabled then
+          if evalFilterFormula enabled then
             (
-              if evalConstraintFormula env constraints packages.${packageName}.version then
+              if evalConstraintFormula constraints packages.${packageName}.version then
                 [ package ]
               else
                 null
@@ -249,9 +250,9 @@ let
           packages.${packageName};
         in
         (
-          if evalFilterFormula env enabled then
+          if evalFilterFormula enabled then
             (
-              if evalConstraintFormula env constraints package.version then
+              if evalConstraintFormula constraints package.version then
                 [ package ]
               else
                 null
@@ -263,17 +264,17 @@ let
         [ ];
   };
 
-  evalDependency = env: packages: f: f (dependencyScope env packages);
+  evalDependency = packages: f: f (dependencyScope packages);
 
-  dependencyStringScope = env: packages: {
+  dependencyStringScope = packages: {
     package = packageName: enabled: constraints:
       if builtins.hasAttr packageName packages then
         (
           let package =
             packages.${packageName}.name;
           in
-          if evalFilterFormula env enabled then
-            "${packageName}: ${showConstraintFormula env constraints package}"
+          if evalFilterFormula enabled then
+            "${packageName}: ${showConstraintFormula constraints package}"
           else
             "${packageName}: disabled"
         )
@@ -286,8 +287,8 @@ let
           packages.${packageName}.name;
         in
         (
-          if evalFilterFormula env enabled then
-            "${packageName}: ${showConstraintFormula env constraints package}"
+          if evalFilterFormula enabled then
+            "${packageName}: ${showConstraintFormula constraints package}"
           else
             "${packageName}: disabled"
         )
@@ -295,17 +296,17 @@ let
         "${packageName}: unknown package";
   };
 
-  showDependency = env: packages: f: f (dependencyStringScope env packages);
+  showDependency = packages: f: f (dependencyStringScope packages);
 
-  dependenciesFormulaStringScope = env: packages: {
+  dependenciesFormulaStringScope = packages: {
     empty = "empty";
 
-    atom = showDependency env packages;
+    atom = showDependency packages;
   };
 
-  showDependenciesFormula = env: packages: f:
+  showDependenciesFormula = packages: f:
     let
-      cnf = f (dependenciesFormulaStringScope env packages);
+      cnf = f (dependenciesFormulaStringScope packages);
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -321,18 +322,18 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  dependenciesFormulaReduceScope = env: packages: {
+  dependenciesFormulaReduceScope = packages: {
     empty = [ ];
 
     atom = atom: {
-      eval = evalDependency env packages atom != null;
-      string = showDependency env packages atom;
+      eval = evalDependency packages atom != null;
+      string = showDependency packages atom;
     };
   };
 
-  reduceDependencyFormula = env: packages: f:
+  reduceDependencyFormula = packages: f:
     let
-      cnf = f (dependenciesFormulaReduceScope env packages);
+      cnf = f (dependenciesFormulaReduceScope packages);
 
       evalOrs =
         builtins.foldl'
@@ -378,15 +379,15 @@ let
     in
     deps.string;
 
-  dependenciesFormulaScope = env: packages: {
+  dependenciesFormulaScope = packages: {
     empty = [ ];
 
-    atom = evalDependency env packages;
+    atom = evalDependency packages;
   };
 
-  evalDependenciesFormula = name: env: packages: f:
+  evalDependenciesFormula = name: packages: f:
     let
-      cnf = f (dependenciesFormulaScope env packages);
+      cnf = f (dependenciesFormulaScope packages);
 
       evalOrs =
         builtins.foldl'
@@ -413,10 +414,10 @@ let
     else
       abort ''
         Dependency formula could not be satisfied for ${name}:
-        ${reduceDependencyFormula env packages f}
+        ${reduceDependencyFormula  packages f}
       '';
 
-  evalNativeDependencies = env: nativePackages: nativeDepends:
+  evalNativeDependencies = nativePackages: nativeDepends:
     let
       findDep = packageName:
         if builtins.hasAttr packageName nativePackages then
@@ -426,7 +427,7 @@ let
     in
     builtins.concatMap
       ({ packages, ... }: builtins.map findDep packages)
-      (builtins.filter ({ filter, ... }: evalFilter env filter) nativeDepends);
+      (builtins.filter ({ filter, ... }: evalFilter filter) nativeDepends);
 
   cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
 
