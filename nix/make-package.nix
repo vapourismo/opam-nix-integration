@@ -37,7 +37,10 @@ let
 
   formulaLib = import ./eval/formula.nix;
 
-  opam = callPackage ./opam.nix { } { inherit envLib filterLib constraintLib formulaLib; };
+  opam =
+    callPackage ./opam.nix
+      { inherit ocamlPackages; }
+      { inherit envLib filterLib constraintLib formulaLib; };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
@@ -119,10 +122,10 @@ stdenv.mkDerivation ({
   buildInputs = with ocamlPackages; [ ocaml ocamlfind git ];
 
   propagatedBuildInputs =
-    opam.evalDependenciesFormula name ocamlPackages depends
-      ++ opam.evalDependenciesFormula name ocamlPackages optionalDepends;
+    opam.evalDependenciesFormula name depends
+      ++ opam.evalDependenciesFormula name optionalDepends;
 
-  propagatedNativeBuildInputs = opam.evalNativeDependencies pkgs nativeDepends;
+  propagatedNativeBuildInputs = opam.evalNativeDependencies nativeDepends;
 
   dontConfigure = true;
 

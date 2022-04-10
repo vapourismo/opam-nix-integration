@@ -40,7 +40,7 @@ let nix_of_depexts depexts =
     (List.map
        (fun (packages, filter) ->
          attr_set
-           [ ( "packages"
+           [ ( "nativePackage"
              , list
                  (List.map
                     (fun package -> string (OpamSysPkg.to_string package))

@@ -1,4 +1,4 @@
-{ lib }:
+{ lib, pkgs, ocamlPackages }:
 { envLib, filterLib, constraintLib, formulaLib }:
 
 let
@@ -28,16 +28,16 @@ let
 
   evalConstraintFormula = formulaLib.evalPredicate { atom = constraintLib.eval; };
 
-  dependencyScope = packages: {
+  dependencyScope = {
     package = packageName: enabled: constraints:
-      if builtins.hasAttr packageName packages then
+      if builtins.hasAttr packageName ocamlPackages then
         (
           let
-            package = packages.${packageName};
+            package = ocamlPackages.${packageName};
           in
           if evalFilterFormula enabled then
             (
-              if evalConstraintFormula constraints packages.${packageName}.version then
+              if evalConstraintFormula constraints ocamlPackages.${packageName}.version then
                 [ package ]
               else
                 null
@@ -49,9 +49,9 @@ let
         null;
 
     optionalPackage = packageName: enabled: constraints:
-      if builtins.hasAttr packageName packages then
+      if builtins.hasAttr packageName ocamlPackages then
         let package =
-          packages.${packageName};
+          ocamlPackages.${packageName};
         in
         (
           if evalFilterFormula enabled then
@@ -68,14 +68,14 @@ let
         [ ];
   };
 
-  evalDependency = packages: f: f (dependencyScope packages);
+  evalDependency = f: f dependencyScope;
 
-  dependencyStringScope = packages: {
+  dependencyStringScope = {
     package = packageName: enabled: constraints:
-      if builtins.hasAttr packageName packages then
+      if builtins.hasAttr packageName ocamlPackages then
         (
           let package =
-            packages.${packageName}.name;
+            ocamlPackages.${packageName}.name;
           in
           if evalFilterFormula enabled then
             "${packageName}: ${showConstraintFormula constraints}"
@@ -86,9 +86,9 @@ let
         "${packageName}: unknown package";
 
     optionalPackage = packageName: enabled: constraints:
-      if builtins.hasAttr packageName packages then
+      if builtins.hasAttr packageName ocamlPackages then
         let package =
-          packages.${packageName}.name;
+          ocamlPackages.${packageName}.name;
         in
         (
           if evalFilterFormula enabled then
@@ -100,17 +100,17 @@ let
         "${packageName}: unknown package";
   };
 
-  showDependency = packages: f: f (dependencyStringScope packages);
+  showDependency = f: f dependencyStringScope;
 
-  dependenciesFormulaStringScope = packages: {
+  dependenciesFormulaStringScope = {
     empty = "empty";
 
-    atom = showDependency packages;
+    atom = showDependency;
   };
 
-  showDependenciesFormula = packages: f:
+  showDependenciesFormula = f:
     let
-      cnf = f (dependenciesFormulaStringScope packages);
+      cnf = f dependenciesFormulaStringScope;
 
       evalOrs = ors:
         if builtins.length ors > 0 then
@@ -126,18 +126,18 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  dependenciesFormulaReduceScope = packages: {
+  dependenciesFormulaReduceScope = {
     empty = [ ];
 
     atom = atom: {
-      eval = evalDependency packages atom != null;
-      string = showDependency packages atom;
+      eval = evalDependency atom != null;
+      string = showDependency atom;
     };
   };
 
-  reduceDependencyFormula = packages: f:
+  reduceDependencyFormula = f:
     let
-      cnf = f (dependenciesFormulaReduceScope packages);
+      cnf = f dependenciesFormulaReduceScope;
 
       evalOrs =
         builtins.foldl'
@@ -183,32 +183,31 @@ let
     in
     deps.string;
 
-  evalDependenciesFormula = name: packages: f:
-    let deps = formulaLib.evalList { atom = evalDependency packages; } f; in
+  evalDependenciesFormula = name: f:
+    let deps = formulaLib.evalList { atom = evalDependency; } f; in
     if builtins.isList deps then
       deps
     else
       abort ''
         Dependency formula could not be satisfied for ${name}:
-        ${reduceDependencyFormula  packages f}
+        ${reduceDependencyFormula f}
       '';
 
-  evalNativeDependencies = nativePackages: nativeDepends:
+  evalNativeDependencies = nativeDepends:
     let
       findDep = packageName:
-        if builtins.hasAttr packageName nativePackages then
-          nativePackages.${packageName}
+        if builtins.hasAttr packageName pkgs then
+          pkgs.${packageName}
         else
           abort "Unknown native package ${packageName}";
     in
     builtins.concatMap
-      ({ packages, ... }: builtins.map findDep packages)
+      ({ nativePackage, ... }: builtins.map findDep nativePackage)
       (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
 
   cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
 
 in
-
 {
   inherit evalDependenciesFormula evalCommands evalNativeDependencies cleanVersion;
 }
