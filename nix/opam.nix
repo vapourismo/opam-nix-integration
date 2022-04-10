@@ -66,7 +66,10 @@ let
   reduceDependencyFormula = config: dep:
     let
       cnf = dep {
-        empty = [ ];
+        empty = {
+          eval = true;
+          string = "empty";
+        };
 
         atom = dep: {
           eval = evalDependency config dep != null;
