@@ -1,5 +1,5 @@
 { lib }:
-{ envLib, filterLib }:
+{ envLib, filterLib, constraintLib }:
 
 let
   evalCommands = commands:
@@ -45,59 +45,10 @@ let
     in
     evalAnds (builtins.map evalOrs cnf);
 
-  compareVersions = lhs: rhs: builtins.compareVersions (cleanVersion lhs) (cleanVersion rhs);
-
-  # Expressions of this DSL call exactly one of these functions.
-  constraintScope = {
-    always = filter: _: filterLib.eval filter;
-
-    equal = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) == 0;
-
-    notEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) != 0;
-
-    greaterEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) >= 0;
-
-    greaterThan = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) > 0;
-
-    lowerEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) <= 0;
-
-    lowerThan = versionFilter: packageVersion:
-      compareVersions packageVersion (filterLib.eval versionFilter) < 0;
-  };
-
-  evalConstraint = f: f constraintScope;
-
-  constraintStringScope = {
-    equal = versionFilter: packageName:
-      "${packageName} == ${filterLib.show versionFilter}";
-
-    notEqual = versionFilter: packageName:
-      "${packageName} != ${filterLib.show versionFilter}";
-
-    greaterEqual = versionFilter: packageName:
-      "${packageName} >= ${filterLib.show versionFilter}";
-
-    greaterThan = versionFilter: packageName:
-      "${packageName} > ${filterLib.show versionFilter}";
-
-    lowerEqual = versionFilter: packageName:
-      "${packageName} <= ${filterLib.show versionFilter}";
-
-    lowerThan = versionFilter: packageName:
-      "${packageName} < ${filterLib.show versionFilter}";
-  };
-
-  showConstraint = f: f constraintStringScope;
-
   constraintFormulaScope = {
     empty = _: true;
 
-    atom = evalConstraint;
+    atom = constraintLib.eval;
   };
 
   evalConstraintFormula = f:
@@ -120,7 +71,7 @@ let
   constraintFormulaStringScope = {
     empty = packageName: "${packageName}";
 
-    atom = showConstraint;
+    atom = constraintLib.show;
   };
 
   showConstraintFormula = f:
