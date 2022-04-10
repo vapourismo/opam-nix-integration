@@ -77,11 +77,10 @@ let
 
     ident = f:
       let value = envLib.eval { } f; in
-      {
+      f {
+        local = { name, ... }: "${value} (= ${name})";
 
-        local = { name, ... }: "${value} (${name})";
-
-        package = { packageName, name, ... }: "${value} (${packageName}:${name})";
+        package = { packageName, name, ... }: "${value} (= ${packageName}:${name})";
 
         combine = values:
           lib.foldl'
