@@ -1,3 +1,5 @@
+{ lib }:
+
 let
   evalFormula = { true, false, join, disjoin, atom }: formula:
     let
@@ -88,6 +90,49 @@ let
     in
     evalAnds (builtins.map (ors: "(${evalOrs ors})") cnf);
 
+  debugFormula = { showAtom, evalAtom }: formula:
+    let
+      cnf = formula {
+        empty = {
+          eval = true;
+          string = "empty";
+        };
+
+        atom = atom: {
+          eval = evalAtom atom;
+          string = showAtom atom;
+        };
+      };
+
+      evalOrs = ors:
+        if lib.length ors > 0 then
+          let negativeOrs = lib.filter (o: !o.eval) ors; in
+          (
+            if lib.length negativeOrs > 0 then
+              let components = lib.lists.map (o: o.string) negativeOrs; in
+              {
+                eval = false;
+                string = "(${lib.concatStringsSep " or " components})";
+              }
+            else
+              {
+                eval = true;
+                string = "true";
+              }
+          )
+
+        else
+          {
+            eval = false;
+            string = "empty disjunction";
+          };
+
+      evalAnds = ands:
+        lib.concatStringsSep " and " (lib.lists.map (a: a.string) (lib.filter (a: !a.eval) ands));
+
+    in
+    evalAnds (builtins.map evalOrs cnf);
+
 in
 {
   eval = evalFormula;
@@ -95,4 +140,5 @@ in
   evalBoolean = evalBooleanFormula;
   evalPredicate = evalPredicateFormula;
   show = showFormula;
+  debug = debugFormula;
 }

@@ -25,18 +25,18 @@ let
       compareVersions version (filterLib.eval versionFilter) < 0;
   };
 
-  showConstraint = constraint: constraint {
-    equal = versionFilter: "== ${filterLib.show versionFilter}";
+  showConstraint = subject: constraint: constraint {
+    equal = versionFilter: "${subject} == ${filterLib.show versionFilter}";
 
-    notEqual = versionFilter: "!= ${filterLib.show versionFilter}";
+    notEqual = versionFilter: "${subject} != ${filterLib.show versionFilter}";
 
-    greaterEqual = versionFilter: ">= ${filterLib.show versionFilter}";
+    greaterEqual = versionFilter: "${subject} >= ${filterLib.show versionFilter}";
 
-    greaterThan = versionFilter: "> ${filterLib.show versionFilter}";
+    greaterThan = versionFilter: "${subject} > ${filterLib.show versionFilter}";
 
-    lowerEqual = versionFilter: "<= ${filterLib.show versionFilter}";
+    lowerEqual = versionFilter: "${subject} <= ${filterLib.show versionFilter}";
 
-    lowerThan = versionFilter: "< ${filterLib.show versionFilter}";
+    lowerThan = versionFilter: "${subject} < ${filterLib.show versionFilter}";
   };
 
 in

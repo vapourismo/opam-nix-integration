@@ -24,7 +24,7 @@ let
 
   evalFilterFormula = formulaLib.evalBoolean { atom = filterLib.eval; };
 
-  showConstraintFormula = formulaLib.show { atom = constraintLib.show; };
+  showConstraintFormula = subject: formulaLib.show { atom = constraintLib.show subject; };
 
   evalConstraintFormula = formulaLib.evalPredicate { atom = constraintLib.eval; };
 
@@ -55,81 +55,31 @@ let
         let package = ocamlPackages.${packageName}.name; in
         (
           if evalFilterFormula enabled then
-            "${packageName}: ${showConstraintFormula constraint}"
+            "${showConstraintFormula package constraint}"
           else
-            "${packageName}: disabled"
+            "${packageName} disabled"
         )
       else
-        "${packageName}: unknown package";
+        "${packageName} is unknown";
   };
 
-  reduceDependencyFormula = config: dep:
-    let
-      cnf = dep {
-        empty = {
-          eval = true;
-          string = "empty";
-        };
-
-        atom = dep: {
-          eval = evalDependency config dep != null;
-          string = showDependency dep;
-        };
-      };
-
-      evalOrs =
-        builtins.foldl'
-          (lhs: rhs:
-            if lhs.eval || rhs.eval then
-              { eval = true; string = "true"; }
-            else
-              {
-                eval = false;
-                string = "${lhs.string} or \n${rhs.string}";
-              }
-          )
-          {
-            eval = false;
-            string = "false";
-          };
-
-      evalAnds =
-        builtins.foldl'
-          (lhs: rhs:
-            if lhs.eval && rhs.eval then
-              {
-                eval = true;
-                string = "true";
-              }
-            else if lhs.eval then
-              rhs
-            else if rhs.eval then
-              lhs
-            else
-              {
-                eval = false;
-                string = "${lhs.string}, \n${rhs.string}";
-              }
-          )
-          {
-            eval = true;
-            string = "true";
-          };
-
-      deps = evalAnds (builtins.map evalOrs cnf);
-
-    in
-    deps.string;
-
-  evalDependenciesFormula = { name, ... }@config: f:
+  evalDependenciesFormula = { name, ... }@config: depFormula:
     let downstreamConfig = builtins.removeAttrs config [ "name" ]; in
-    let deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } f; in
+    let deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } depFormula; in
     if builtins.isList deps then
       deps
     else
+      let debugged =
+        formulaLib.debug
+          {
+            evalAtom = dep: evalDependency downstreamConfig dep != null;
+            showAtom = showDependency;
+          }
+          depFormula;
+      in
       abort ''
         Dependency formula could not be satisfied for ${name}:
-        ${reduceDependencyFormula downstreamConfig f}
+        ${debugged}
       '';
 
   evalNativeDependencies = nativeDepends:

@@ -35,7 +35,7 @@ let
 
   constraintLib = import ./eval/constraint.nix { inherit filterLib; };
 
-  formulaLib = import ./eval/formula.nix;
+  formulaLib = callPackage ./eval/formula.nix { };
 
   opam =
     callPackage ./opam.nix
