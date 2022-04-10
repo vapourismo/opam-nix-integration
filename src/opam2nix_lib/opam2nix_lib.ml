@@ -1,3 +1,5 @@
+let make_scope name = Nix.(Pattern.ident name, ident name)
+
 let nix_of_variable_scoped scope packages name defaults =
   let open Nix in
   let packages = List.filter_map (Option.map OpamPackage.Name.to_string) packages in
@@ -31,44 +33,33 @@ let nix_of_variable_scoped scope packages name defaults =
 
 let nix_of_variable packages name defaults =
   let open Nix in
-  lambda
-    (Pattern.ident "__envScope")
-    (nix_of_variable_scoped (ident "__envScope") packages name defaults)
+  let pattern, scope = make_scope "__envScope" in
+  lambda pattern (nix_of_variable_scoped scope packages name defaults)
 ;;
 
 let nix_of_variable_string_scoped scope name =
+  let open Nix in
   let packages, name, defaults = OpamTypesBase.filter_ident_of_string name in
-  nix_of_variable_scoped scope packages name defaults
+  index scope "toString" @@ [ nix_of_variable_scoped scope packages name defaults ]
 ;;
 
-let nix_of_variable_string ?(force_string = false) name =
+let nix_of_variable_string name =
   let open Nix in
-  let force body =
-    if force_string then ident "__envScope.toString" @@ [ body ] else body
-  in
-  lambda
-    (Pattern.ident "__envScope")
-    (force (nix_of_variable_string_scoped (ident "__envScope") name))
-;;
-
-let nix_of_interpolated_string_scoped scope input =
-  let open Nix in
-  let segments =
-    Interpolated_string.parse
-      ~on_string:(fun str -> StringSegment str)
-      ~on_variable:(fun name ->
-        CodeSegment
-          (index scope "toString" @@ [ nix_of_variable_string_scoped scope name ]))
-      input
-  in
-  MultilineString [ segments ]
+  let pattern, scope = make_scope "__envScope" in
+  lambda pattern (nix_of_variable_string_scoped scope name)
 ;;
 
 let nix_of_interpolated_string input =
   let open Nix in
-  lambda
-    (Pattern.ident "__envScope")
-    (nix_of_interpolated_string_scoped (ident "__envScope") input)
+  let pattern, scope = make_scope "__envScope" in
+  let segments =
+    Interpolated_string.parse
+      ~on_string:(fun str -> StringSegment str)
+      ~on_variable:(fun name -> CodeSegment (nix_of_variable_string_scoped scope name))
+      input
+  in
+  let body = MultilineString [ segments ] in
+  lambda pattern body
 ;;
 
 let string_of_relop op =
@@ -194,7 +185,7 @@ let nix_of_args args =
          let arg =
            match arg with
            | OpamTypes.CString str -> nix_of_interpolated_string str
-           | CIdent name -> nix_of_variable_string ~force_string:true name
+           | CIdent name -> nix_of_variable_string name
          in
          attr_set [ "filter", filter; "arg", arg ])
        args)
