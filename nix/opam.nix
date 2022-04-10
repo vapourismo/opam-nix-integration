@@ -28,16 +28,14 @@ let
 
   evalConstraintFormula = formulaLib.evalPredicate { atom = constraintLib.eval; };
 
-  dependencyScope = {
-    package = packageName: enabled: constraints:
+  evalDependency = { optional ? false }: dep: dep {
+    package = packageName: enabled: constraint:
       if builtins.hasAttr packageName ocamlPackages then
+        let package = ocamlPackages.${packageName}; in
         (
-          let
-            package = ocamlPackages.${packageName};
-          in
           if evalFilterFormula enabled then
             (
-              if evalConstraintFormula constraints ocamlPackages.${packageName}.version then
+              if evalConstraintFormula constraint package.version then
                 [ package ]
               else
                 null
@@ -45,54 +43,19 @@ let
           else
             [ ]
         )
+      else if optional then
+        [ ]
       else
         null;
-
-    optionalPackage = packageName: enabled: constraints:
-      if builtins.hasAttr packageName ocamlPackages then
-        let package =
-          ocamlPackages.${packageName};
-        in
-        (
-          if evalFilterFormula enabled then
-            (
-              if evalConstraintFormula constraints package.version then
-                [ package ]
-              else
-                null
-            )
-          else
-            [ ]
-        )
-      else
-        [ ];
   };
 
-  evalDependency = f: f dependencyScope;
-
-  dependencyStringScope = {
-    package = packageName: enabled: constraints:
+  showDependency = dep: dep {
+    package = packageName: enabled: constraint:
       if builtins.hasAttr packageName ocamlPackages then
-        (
-          let package =
-            ocamlPackages.${packageName}.name;
-          in
-          if evalFilterFormula enabled then
-            "${packageName}: ${showConstraintFormula constraints}"
-          else
-            "${packageName}: disabled"
-        )
-      else
-        "${packageName}: unknown package";
-
-    optionalPackage = packageName: enabled: constraints:
-      if builtins.hasAttr packageName ocamlPackages then
-        let package =
-          ocamlPackages.${packageName}.name;
-        in
+        let package = ocamlPackages.${packageName}.name; in
         (
           if evalFilterFormula enabled then
-            "${packageName}: ${showConstraintFormula constraints}"
+            "${packageName}: ${showConstraintFormula constraint}"
           else
             "${packageName}: disabled"
         )
@@ -100,44 +63,16 @@ let
         "${packageName}: unknown package";
   };
 
-  showDependency = f: f dependencyStringScope;
-
-  dependenciesFormulaStringScope = {
-    empty = "empty";
-
-    atom = showDependency;
-  };
-
-  showDependenciesFormula = f:
+  reduceDependencyFormula = config: dep:
     let
-      cnf = f dependenciesFormulaStringScope;
+      cnf = dep {
+        empty = [ ];
 
-      evalOrs = ors:
-        if builtins.length ors > 0 then
-          builtins.foldl' (lhs: rhs: "${lhs} || ${rhs}") (builtins.head ors) (builtins.tail ors)
-        else
-          "false";
-
-      evalAnds = ands:
-        if builtins.length ands > 0 then
-          builtins.foldl' (lhs: rhs: "${lhs}\n${rhs}") (builtins.head ands) (builtins.tail ands)
-        else
-          "true";
-    in
-    evalAnds (builtins.map evalOrs cnf);
-
-  dependenciesFormulaReduceScope = {
-    empty = [ ];
-
-    atom = atom: {
-      eval = evalDependency atom != null;
-      string = showDependency atom;
-    };
-  };
-
-  reduceDependencyFormula = f:
-    let
-      cnf = f dependenciesFormulaReduceScope;
+        atom = dep: {
+          eval = evalDependency config dep != null;
+          string = showDependency dep;
+        };
+      };
 
       evalOrs =
         builtins.foldl'
@@ -183,14 +118,15 @@ let
     in
     deps.string;
 
-  evalDependenciesFormula = name: f:
-    let deps = formulaLib.evalList { atom = evalDependency; } f; in
+  evalDependenciesFormula = { name, ... }@config: f:
+    let downstreamConfig = builtins.removeAttrs config [ "name" ]; in
+    let deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } f; in
     if builtins.isList deps then
       deps
     else
       abort ''
         Dependency formula could not be satisfied for ${name}:
-        ${reduceDependencyFormula f}
+        ${reduceDependencyFormula downstreamConfig f}
       '';
 
   evalNativeDependencies = nativeDepends:

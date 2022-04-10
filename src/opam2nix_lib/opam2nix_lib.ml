@@ -4,7 +4,7 @@ module Constraint = Constraint
 module Filter = Filter
 module Formula = Formula
 
-let nix_of_dependency ?(optional = false) (name, formula) =
+let nix_of_dependency (name, formula) =
   let open Nix in
   let scope = ident "__dependencyScope" in
   let constraints =
@@ -26,7 +26,7 @@ let nix_of_dependency ?(optional = false) (name, formula) =
   lambda
     (Pattern.ident "__dependencyScope")
     (apply
-       (index scope (if optional then "optionalPackage" else "package"))
+       (index scope "package")
        [ string (OpamPackage.Name.to_string name)
        ; Formula.to_nix Filter.to_nix enabled
        ; Formula.to_nix Constraint.to_nix constraints
@@ -35,7 +35,7 @@ let nix_of_dependency ?(optional = false) (name, formula) =
 
 let nix_of_depends depends = Formula.to_nix nix_of_dependency depends
 
-let nix_of_depopts depots = Formula.to_nix (nix_of_dependency ~optional:true) depots
+let nix_of_depopts depots = Formula.to_nix nix_of_dependency depots
 
 let nix_of_depexts depexts =
   let open Nix in

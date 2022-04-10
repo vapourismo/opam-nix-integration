@@ -122,8 +122,8 @@ stdenv.mkDerivation ({
   buildInputs = with ocamlPackages; [ ocaml ocamlfind git ];
 
   propagatedBuildInputs =
-    opam.evalDependenciesFormula name depends
-      ++ opam.evalDependenciesFormula name optionalDepends;
+    opam.evalDependenciesFormula { inherit name; } depends
+      ++ opam.evalDependenciesFormula { inherit name; optional = true; } optionalDepends;
 
   propagatedNativeBuildInputs = opam.evalNativeDependencies nativeDepends;
 
