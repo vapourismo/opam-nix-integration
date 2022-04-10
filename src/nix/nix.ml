@@ -171,3 +171,5 @@ let infix left op right = Infix { left; op; right }
 let unary op exp = Unary { op; exp }
 
 let index expr field = Index { attr_set = expr; field = StringAccess field }
+
+let scoped name body = lambda (Pattern.ident name) (body (ident name))

@@ -1,5 +1,3 @@
-let make_scope name = Nix.(Pattern.ident name, ident name)
-
 let nix_of_variable_scoped scope packages name defaults =
   let open Nix in
   let packages = List.filter_map (Option.map OpamPackage.Name.to_string) packages in
@@ -32,9 +30,8 @@ let nix_of_variable_scoped scope packages name defaults =
 ;;
 
 let nix_of_variable packages name defaults =
-  let open Nix in
-  let pattern, scope = make_scope "__envScope" in
-  lambda pattern (nix_of_variable_scoped scope packages name defaults)
+  Nix.scoped "__envScope" (fun scope ->
+      nix_of_variable_scoped scope packages name defaults)
 ;;
 
 let nix_of_variable_string_scoped scope name =
@@ -44,22 +41,20 @@ let nix_of_variable_string_scoped scope name =
 ;;
 
 let nix_of_variable_string name =
-  let open Nix in
-  let pattern, scope = make_scope "__envScope" in
-  lambda pattern (nix_of_variable_string_scoped scope name)
+  Nix.scoped "__envScope" (fun scope -> nix_of_variable_string_scoped scope name)
 ;;
 
 let nix_of_interpolated_string input =
   let open Nix in
-  let pattern, scope = make_scope "__envScope" in
-  let segments =
-    Interpolated_string.parse
-      ~on_string:(fun str -> StringSegment str)
-      ~on_variable:(fun name -> CodeSegment (nix_of_variable_string_scoped scope name))
-      input
-  in
-  let body = MultilineString [ segments ] in
-  lambda pattern body
+  scoped "__envScope" (fun scope ->
+      let segments =
+        Interpolated_string.parse
+          ~on_string:(fun str -> StringSegment str)
+          ~on_variable:(fun name ->
+            CodeSegment (nix_of_variable_string_scoped scope name))
+          input
+      in
+      MultilineString [ segments ])
 ;;
 
 let string_of_relop op =
