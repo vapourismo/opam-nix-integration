@@ -1,19 +1,19 @@
 { lib }:
-{ env }:
+{ envLib, filterLib }:
 
 let
   evalCommands = commands:
     let
-      keptCommands = builtins.filter ({ filter, ... }: evalFilter filter) commands;
+      keptCommands = builtins.filter ({ filter, ... }: filterLib.eval filter) commands;
 
       prunedCommands = builtins.map
         ({ args, ... }:
           let
-            keptArgs = builtins.filter ({ filter, ... }: evalFilter filter) args;
+            keptArgs = builtins.filter ({ filter, ... }: filterLib.eval filter) args;
 
             prunedArgs =
               builtins.map
-                ({ arg, ... }: builtins.toJSON (env.eval { } arg))
+                ({ arg, ... }: builtins.toJSON (envLib.eval { } arg))
                 keptArgs;
           in
           prunedArgs
@@ -22,86 +22,10 @@ let
     in
     prunedCommands;
 
-  # Filter DSL.
-  filterScope = {
-    bool = value: value;
-
-    string = value: value;
-
-    ident = env.eval { };
-
-    equal = lhs: rhs: lhs == rhs;
-
-    notEqual = lhs: rhs: lhs != rhs;
-
-    greaterEqual = lhs: rhs: lhs >= rhs;
-
-    greaterThan = lhs: rhs: lhs > rhs;
-
-    lowerEqual = lhs: rhs: lhs <= rhs;
-
-    lowerThan = lhs: rhs: lhs < rhs;
-
-    and = lhs: rhs: lhs && rhs;
-
-    or = lhs: rhs: lhs || rhs;
-
-    not = x: !x;
-
-    def = _: abort "filterScope.def";
-
-    undef = _: abort "filterScope.undef";
-  };
-
-  evalFilter = f: f filterScope;
-
-  filterStringScope = {
-    bool = builtins.toJSON;
-
-    string = builtins.toJSON;
-
-    ident = f:
-      let value = env.eval { } f; in
-      {
-
-        local = { name, ... }: "${value} (${name})";
-
-        package = { packageName, name, ... }: "${value} (${packageName}:${name})";
-
-        combine = values:
-          lib.foldl'
-            (lhs: rhs: "${lhs} & ${rhs}")
-            (lib.head values)
-            (lib.tail values);
-      };
-
-    equal = lhs: rhs: "${lhs} == ${rhs}";
-
-    notEqual = lhs: rhs: "${lhs} != ${rhs}";
-
-    greaterEqual = lhs: rhs: "${lhs} >= ${rhs}";
-
-    greaterThan = lhs: rhs: "${lhs} > ${rhs}";
-
-    lowerEqual = lhs: rhs: "${lhs} <= ${rhs}";
-
-    lowerThan = lhs: rhs: "${lhs} < ${rhs}";
-
-    and = lhs: rhs: "${lhs} && ${rhs}";
-
-    or = lhs: rhs: "${lhs} || ${rhs}";
-
-    def = _: abort "filterScope.def";
-
-    undef = _: abort "filterScope.undef";
-  };
-
-  showFilter = f: f filterStringScope;
-
   filterFormulaScope = {
     empty = true;
 
-    atom = evalFilter;
+    atom = filterLib.eval;
   };
 
   evalFilterFormula = f:
@@ -125,47 +49,47 @@ let
 
   # Expressions of this DSL call exactly one of these functions.
   constraintScope = {
-    always = filter: _: evalFilter filter;
+    always = filter: _: filterLib.eval filter;
 
     equal = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) == 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) == 0;
 
     notEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) != 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) != 0;
 
     greaterEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) >= 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) >= 0;
 
     greaterThan = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) > 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) > 0;
 
     lowerEqual = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) <= 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) <= 0;
 
     lowerThan = versionFilter: packageVersion:
-      compareVersions packageVersion (evalFilter versionFilter) < 0;
+      compareVersions packageVersion (filterLib.eval versionFilter) < 0;
   };
 
   evalConstraint = f: f constraintScope;
 
   constraintStringScope = {
     equal = versionFilter: packageName:
-      "${packageName} == ${showFilter versionFilter}";
+      "${packageName} == ${filterLib.show versionFilter}";
 
     notEqual = versionFilter: packageName:
-      "${packageName} != ${showFilter versionFilter}";
+      "${packageName} != ${filterLib.show versionFilter}";
 
     greaterEqual = versionFilter: packageName:
-      "${packageName} >= ${showFilter versionFilter}";
+      "${packageName} >= ${filterLib.show versionFilter}";
 
     greaterThan = versionFilter: packageName:
-      "${packageName} > ${showFilter versionFilter}";
+      "${packageName} > ${filterLib.show versionFilter}";
 
     lowerEqual = versionFilter: packageName:
-      "${packageName} <= ${showFilter versionFilter}";
+      "${packageName} <= ${filterLib.show versionFilter}";
 
     lowerThan = versionFilter: packageName:
-      "${packageName} < ${showFilter versionFilter}";
+      "${packageName} < ${filterLib.show versionFilter}";
   };
 
   showConstraint = f: f constraintStringScope;
@@ -427,7 +351,7 @@ let
     in
     builtins.concatMap
       ({ packages, ... }: builtins.map findDep packages)
-      (builtins.filter ({ filter, ... }: evalFilter filter) nativeDepends);
+      (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
 
   cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
 

@@ -26,20 +26,22 @@
 }@args:
 
 let
-  env =
+  envLib =
     callPackage ./eval/env.nix
       { inherit opamvars2nix ocamlPackages; }
       { inherit name version; };
 
-  opam = callPackage ./opam.nix { } { inherit env; };
+  filterLib = callPackage ./eval/filter.nix { } { inherit envLib; };
+
+  opam = callPackage ./opam.nix { } { inherit envLib filterLib; };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
-        --prefix="${env.local.prefix}" \
-        --libdir="${env.local.lib}" \
-        --docdir="${env.local.doc}" \
-        --mandir="${env.local.man}" \
+        --prefix="${envLib.local.prefix}" \
+        --libdir="${envLib.local.lib}" \
+        --docdir="${envLib.local.doc}" \
+        --mandir="${envLib.local.man}" \
         --name="${name}" \
         --install "${name}.install"
     fi
@@ -48,7 +50,7 @@ let
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
-      [ "ocaml" "-I" env.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
+      [ "ocaml" "-I" envLib.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
     else
       args;
 
@@ -131,7 +133,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p ${env.local.bin} ${env.local.lib}
+    mkdir -p ${envLib.local.bin} ${envLib.local.lib}
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';

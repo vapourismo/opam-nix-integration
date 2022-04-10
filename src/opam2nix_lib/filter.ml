@@ -1,4 +1,4 @@
-let to_nix filter =
+let rec to_nix filter =
   let open Nix in
   scoped "__filterScope" (fun scope ->
       let rec go = function
@@ -11,7 +11,7 @@ let to_nix filter =
         | FAnd (left, right) -> index scope "and" @@ [ go left; go right ]
         | FOr (left, right) -> index scope "or" @@ [ go left; go right ]
         | FNot filter -> index scope "not" @@ [ go filter ]
-        | FDefined filter -> index scope "def" @@ [ go filter ]
+        | FDefined filter -> index scope "def" @@ [ to_nix filter ]
         | FUndef filter -> index scope "undef" @@ [ go filter ]
       in
       go filter)
