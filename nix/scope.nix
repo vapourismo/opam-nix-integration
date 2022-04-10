@@ -28,16 +28,15 @@ let
 
   opam2NixFlake = import ../default.nix;
 
+  baseScope = callPackage ./scope/base.nix {
+    inherit ocaml findlib;
+  };
+
 in
-lib.makeScope newScope (self: {
-  inherit ocaml;
-  ocaml-base-compiler = self.ocaml;
-
-  ocamlfind = findlib.override { inherit (self) ocaml; };
-
+baseScope.overrideScope' (final: prev: {
   mkOpam2NixPackage = callPackage ./make-package.nix {
-    inherit (self) opamvars2nix opamsubst2nix;
-    ocamlPackages = self;
+    inherit (final) opamvars2nix opamsubst2nix;
+    ocamlPackages = final;
   };
 
   opam2nix = justExecutable opam2NixFlake.packages.${system}.opam2nix;
@@ -51,7 +50,7 @@ lib.makeScope newScope (self: {
       runCommand
         "opam2nix-${name}-${version}"
         {
-          buildInputs = [ self.opam2nix ];
+          buildInputs = [ final.opam2nix ];
           inherit src patches;
         }
         ''
@@ -64,13 +63,13 @@ lib.makeScope newScope (self: {
         ''
     );
 
-  callOpam2Nix = args: self.callPackage (self.generateOpam2Nix args);
+  callOpam2Nix = args: final.callPackage (final.generateOpam2Nix args);
 
   callOpam = { name, version, patches ? [ ] }:
     let
       src = "${opamRepository}/packages/${name}/${name}.${version}/opam";
     in
-    args: self.callOpam2Nix { inherit name version src patches; } ({
+    args: final.callOpam2Nix { inherit name version src patches; } ({
       resolveExtraFile = { path, ... }@args: {
         inherit path;
         source = "${opamRepository}/packages/${name}/${name}.${version}/files/${path}";
@@ -85,11 +84,11 @@ lib.makeScope newScope (self: {
             builtins.map
               (version: {
                 name = version;
-                value = self.callOpam { inherit name version; } { };
+                value = final.callOpam { inherit name version; } { };
               })
               versions
           ) // {
-          latest = self.callOpam { inherit name; version = repoInfo.latest name; } { };
+          latest = final.callOpam { inherit name; version = repoInfo.latest name; } { };
         })
       repoInfo.versions;
 })
