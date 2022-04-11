@@ -76,7 +76,7 @@ let parse_package_arg package_str =
 let main config =
   let open Options in
   let targets = List.map parse_package_arg config.targets in
-  let env =
+  let std_env =
     Dir_context.std_env
       ~ocaml_native:true
       ~sys_ocaml_version:"4.13.1"
@@ -86,6 +86,15 @@ let main config =
       ~os_family:"nixos"
       ~os_version:"1"
       ()
+  in
+  let env = function
+    | "with-test" -> Some (OpamVariable.B true)
+    | "with-doc" -> Some (OpamVariable.B true)
+    | "build" -> Some (OpamVariable.B true)
+    | "post" -> Some (OpamVariable.B false)
+    | "pinned" -> Some (OpamVariable.B false)
+    | "dev" -> Some (OpamVariable.B false)
+    | other -> std_env other
   in
   let constraints =
     List.filter_map
