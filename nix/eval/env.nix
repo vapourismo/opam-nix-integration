@@ -1,9 +1,7 @@
 { lib
 , runCommand
 , gnumake
-, ocaml
 , opamvars2nix
-, ocamlPackages
 , opamVersion ? "2.1.2"
 }:
 
@@ -49,6 +47,7 @@ in
 , jobs ? 1
 , enableTests ? false
 , enableDocs ? false
+, ocamlPackages
 , disabledPackages ? [ ]
 }:
 
@@ -75,7 +74,7 @@ let
     inherit (package) name version;
 
     prefix = "${package}";
-    lib = "${prefix}/lib/ocaml/${ocaml.version}/site-lib";
+    lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
     bin = "${prefix}/bin";
     share = "${prefix}/share";
     doc = "${prefix}/share/doc";

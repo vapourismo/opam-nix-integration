@@ -106,9 +106,13 @@ let
 
       evalOrs = ors:
         if lib.length ors > 0 then
-          let negativeOrs = lib.filter (o: !o.eval) ors; in
+          let
+            negativeOrs = lib.filter (o: !o.eval) ors;
+
+            isTrue = lib.lists.any (o: o.eval) ors;
+          in
           (
-            if lib.length negativeOrs > 0 then
+            if lib.length negativeOrs > 0 && !isTrue then
               let components = lib.lists.map (o: o.string) negativeOrs; in
               {
                 eval = false;

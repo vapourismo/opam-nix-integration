@@ -1,5 +1,5 @@
-{ lib, pkgs, ocamlPackages }:
-{ envLib, filterLib, constraintLib, formulaLib }:
+{ lib, pkgs }:
+{ envLib, filterLib, constraintLib, formulaLib, ocamlPackages }:
 
 let
   evalCommands = commands:
@@ -94,9 +94,8 @@ let
       ({ nativePackage, ... }: builtins.map findDep nativePackage)
       (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
 
-  cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
-
 in
+
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies cleanVersion;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies;
 }

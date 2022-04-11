@@ -1,16 +1,22 @@
 { pkgs
-, callPackage
+, stdenv
+, lib
 , runCommand
 , writeText
-, lib
-, stdenv
-, ocamlPackages
 , gnumake
+, git
 , opamvars2nix
 , opamsubst2nix
 , opam-installer
-, git
-}:
+}@args:
+
+let
+  callPackage = lib.callPackageWith args;
+
+  ocamlLib = callPackage ./lib.nix { };
+in
+
+ocamlPackages:
 
 { name
 , version
@@ -26,29 +32,26 @@
 }@args:
 
 let
-  envLib =
-    callPackage ./eval/env.nix
-      { inherit opamvars2nix ocamlPackages; }
-      { inherit name version; };
-
-  filterLib = callPackage ./eval/filter.nix { } { inherit envLib; };
-
-  constraintLib = import ./eval/constraint.nix { inherit filterLib; };
-
-  formulaLib = callPackage ./eval/formula.nix { };
+  evalLib = ocamlLib.makeEvalLib { inherit name version ocamlPackages; };
 
   opam =
     callPackage ./opam.nix
-      { inherit ocamlPackages; }
-      { inherit envLib filterLib constraintLib formulaLib; };
+      { }
+      {
+        inherit ocamlPackages;
+        envLib = evalLib.env;
+        filterLib = evalLib.filter;
+        constraintLib = evalLib.constraint;
+        formulaLib = evalLib.formula;
+      };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
-        --prefix="${envLib.local.prefix}" \
-        --libdir="${envLib.local.lib}" \
-        --docdir="${envLib.local.doc}" \
-        --mandir="${envLib.local.man}" \
+        --prefix="${evalLib.env.local.prefix}" \
+        --libdir="${evalLib.env.local.lib}" \
+        --docdir="${evalLib.env.local.doc}" \
+        --mandir="${evalLib.env.local.man}" \
         --name="${name}" \
         --install "${name}.install"
     fi
@@ -57,7 +60,7 @@ let
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
-      [ "ocaml" "-I" envLib.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
+      [ "ocaml" "-I" evalLib.env.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
     else
       args;
 
@@ -76,7 +79,7 @@ let
   );
 
   overlayedSource = stdenv.mkDerivation {
-    name = "opam2nix-extra-files-${name}-${opam.cleanVersion version}";
+    name = "opam2nix-extra-files-${name}-${ocamlLib.cleanVersion version}";
 
     inherit src;
     dontUnpack = src == null;
@@ -115,7 +118,7 @@ let
 in
 stdenv.mkDerivation ({
   pname = name;
-  version = opam.cleanVersion version;
+  version = ocamlLib.cleanVersion version;
 
   src = overlayedSource;
 
@@ -140,7 +143,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p ${envLib.local.bin} ${envLib.local.lib}
+    mkdir -p ${evalLib.env.local.bin} ${evalLib.env.local.lib}
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';
