@@ -6,7 +6,7 @@
  (name opam2nix)
  (synopsis "Opam file converted")
  (description "Convert .opam files to .nix expressions.")
- (depends opam-format opam-state cmdliner zarith ppx_deriving angstrom))
+ (depends opam-format opam-state cmdliner zarith ppx_deriving))
 
 (package
  (name opamvars2nix)
@@ -15,5 +15,8 @@
  (depends opam-format opam-state))
 
 (package
- (name opamsubst2nix)
- (depends angstrom))
+ (name opamsubst2nix))
+
+(package
+ (name opam0install2nix)
+ (depends opam-0install cmdliner str))

@@ -1,0 +1,5 @@
+(executable
+ (name opam0install2nix)
+ (package opam0install2nix)
+ (public_name opam0install2nix)
+ (libraries opam-0install cmdliner opam2nix_lib str))
