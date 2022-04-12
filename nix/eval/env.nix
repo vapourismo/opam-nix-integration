@@ -86,7 +86,18 @@ let
     preinstalled = true;
   };
 
-  packageVars = lib.mapAttrs (_: mkPackageVars) ocamlPackages;
+  packageVars = lib.mapAttrs (_: mkPackageVars) ocamlPackages // {
+    _ = rec {
+      inherit name version;
+
+      prefix = "$out";
+      lib = "$OCAMLFIND_DESTDIR/${name}";
+      bin = "${prefix}/bin";
+      share = "${prefix}/share/${name}";
+      doc = "${prefix}/share/doc/${name}";
+      man = "${prefix}/share/man/${name}";
+    };
+  };
 
   lookupPackageVar = packageName:
     let
