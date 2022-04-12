@@ -88,12 +88,12 @@ let main config =
       ()
   in
   let env = function
-    | "with-test" -> Some (OpamVariable.B true)
-    | "with-doc" -> Some (OpamVariable.B true)
+    | "with-test" -> Some (OpamVariable.B false)
+    | "with-doc" -> Some (OpamVariable.B false)
     | "build" -> Some (OpamVariable.B true)
     | "post" -> Some (OpamVariable.B false)
     | "pinned" -> Some (OpamVariable.B false)
-    | "dev" -> Some (OpamVariable.B false)
+    | "dev" -> Some (OpamVariable.B true)
     | other -> std_env other
   in
   let constraints =
