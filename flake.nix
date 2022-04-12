@@ -132,7 +132,10 @@
           rnix-lsp
         ];
 
-        buildInputs = self.defaultPackage.${system}.buildInputs;
+        buildInputs =
+          builtins.concatMap
+            (pkg: pkg.buildInputs)
+            (builtins.attrValues self.packages.${system});
       };
     }
   );
