@@ -74,11 +74,12 @@ let
     inherit (package) name version;
 
     prefix = "${package}";
-    lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
+    lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib/${name}";
     bin = "${prefix}/bin";
-    share = "${prefix}/share";
-    doc = "${prefix}/share/doc";
+    share = "${prefix}/share/${name}";
+    doc = "${prefix}/share/doc/${name}";
     man = "${prefix}/share/man";
+    etc = "${prefix}/etc/${name}";
 
     # For 'ocaml' package
     native = true;
@@ -91,11 +92,12 @@ let
       inherit name version;
 
       prefix = "$out";
-      lib = "$OCAMLFIND_DESTDIR/${name}";
+      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib/${name}";
       bin = "${prefix}/bin";
       share = "${prefix}/share/${name}";
-      doc = "${prefix}/share/doc/${name}";
-      man = "${prefix}/share/man/${name}";
+      doc = "${prefix}/share/doc";
+      man = "${prefix}/share/man";
+      etc = "${prefix}/etc/${name}";
     };
   };
 
