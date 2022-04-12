@@ -30,20 +30,16 @@ let
 
   evalDependency = { optional ? false }: dep: dep {
     package = packageName: enabled: constraint:
-      if builtins.hasAttr packageName ocamlPackages then
+      let want = evalFilterFormula enabled; in
+      if builtins.hasAttr packageName ocamlPackages && want then
         let package = ocamlPackages.${packageName}; in
         (
-          if evalFilterFormula enabled then
-            (
-              if evalConstraintFormula constraint package.version then
-                [ package ]
-              else
-                null
-            )
+          if evalConstraintFormula constraint package.version then
+            [ package ]
           else
-            [ ]
+            null
         )
-      else if optional then
+      else if optional || !want then
         [ ]
       else
         null;
