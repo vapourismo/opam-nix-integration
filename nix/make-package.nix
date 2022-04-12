@@ -60,7 +60,11 @@ let
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
-      [ "ocaml" "-I" evalLib.env.packages.ocamlfind.lib ] ++ lib.lists.drop 1 args
+      [
+        "ocaml"
+        "-I"
+        "${ocamlPackages.ocamlfind}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib"
+      ] ++ lib.lists.drop 1 args
     else
       args;
 
