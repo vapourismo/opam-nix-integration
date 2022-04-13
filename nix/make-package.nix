@@ -5,6 +5,7 @@
 , writeText
 , gnumake
 , git
+, which
 , opamvars2nix
 , opamsubst2nix
 , opam-installer
@@ -126,7 +127,7 @@ stdenv.mkDerivation ({
 
   src = overlayedSource;
 
-  buildInputs = [ git ];
+  buildInputs = [ git which ];
 
   propagatedBuildInputs =
     (with ocamlPackages; [ ocaml ocamlfind ])

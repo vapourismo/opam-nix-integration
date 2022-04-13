@@ -6,6 +6,7 @@
 , writeText
 , gnumake
 , git
+, which
 , ocaml
 , findlib
 , opam-installer
