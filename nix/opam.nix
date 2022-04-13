@@ -90,8 +90,10 @@ let
       ({ nativePackage, ... }: builtins.map findDep nativePackage)
       (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
 
+  interpolate = envLib.eval { onMissing = _: _: null; };
+
 in
 
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies;
+  inherit evalDependenciesFormula evalCommands evalNativeDependencies interpolate;
 }
