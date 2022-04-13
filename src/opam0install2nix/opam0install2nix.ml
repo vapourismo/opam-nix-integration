@@ -79,7 +79,7 @@ let main config =
   let std_env =
     Dir_context.std_env
       ~ocaml_native:true
-      ~sys_ocaml_version:"4.13.1"
+      ~sys_ocaml_version:config.ocaml_version
       ~arch
       ~os
       ~os_distribution:"nixos"
@@ -96,13 +96,24 @@ let main config =
     | "dev" -> Some (OpamVariable.B true)
     | other -> std_env other
   in
-  let constraints =
+  let package_constraints =
     List.filter_map
       (fun (name, constr) -> Option.map (fun constr -> name, constr) constr)
       targets
     |> OpamPackage.Name.Map.of_list
   in
-  let context = Dir_context.create ~constraints ~env config.packages_dir in
+  let ocaml_constraints =
+    OpamPackage.Name.Map.singleton
+      (OpamPackage.Name.of_string "ocaml")
+      (`Eq, OpamPackage.Version.of_string config.ocaml_version)
+  in
+  let context =
+    Dir_context.create
+      ~constraints:
+        (OpamPackage.Name.Map.union (fun _ r -> r) package_constraints ocaml_constraints)
+      ~env
+      config.packages_dir
+  in
   let solved = List.map (fun (name, _) -> name) targets |> Solver.solve context in
   let open Nix in
   match solved with
