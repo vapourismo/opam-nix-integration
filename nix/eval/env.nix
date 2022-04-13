@@ -57,11 +57,19 @@ let
   localVars =
     defaultOpamVars
     // defaultLocalVars
-    // {
+    // rec {
       inherit name version jobs;
 
       with-test = enableTests;
       with-doc = enableDocs;
+
+      prefix = "$out";
+      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
+      bin = "${prefix}/bin";
+      share = "${prefix}/share";
+      doc = "${prefix}/share/doc";
+      man = "${prefix}/share/man";
+      etc = "${prefix}/etc";
     };
 
   lookupLocalVar = name:
