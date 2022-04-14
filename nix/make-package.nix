@@ -89,6 +89,14 @@ let
     inherit src;
     dontUnpack = src == null;
 
+    setSourceRoot = ''
+      export sourceRoot="$(find . -type d -mindepth 1 -maxdepth 1 ! -name env-vars)"
+      if [[ $(echo "$sourceRoot" | wc -l) -gt 1 ]]; then
+
+        export sourceRoot="."
+      fi
+    '';
+
     phases = [ "unpackPhase" "installPhase" ];
 
     installPhase = ''
@@ -98,9 +106,9 @@ let
     '';
   };
 
-  substs = builtins.map
-    (file:
-      {
+  substs =
+    builtins.map
+      (file: {
         path = file;
         source = writeText "opam2nix-subst-file" (opam.interpolate (import (
           runCommand
@@ -110,9 +118,8 @@ let
             }
             "opamsubst2nix < ${overlayedSource}/${file}.in > $out"
         )));
-      }
-    )
-    substFiles;
+      })
+      substFiles;
 
   writeSubsts = builtins.concatStringsSep "\n" (
     builtins.map
