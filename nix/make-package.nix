@@ -50,9 +50,6 @@ let
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
         --prefix="${evalLib.env.local.prefix}" \
-        --libdir="${evalLib.env.local.lib}" \
-        --docdir="${evalLib.env.local.doc}" \
-        --mandir="${evalLib.env.local.man}" \
         --name="${name}" \
         --install "${name}.install"
     fi
@@ -64,7 +61,7 @@ let
       [
         "ocaml"
         "-I"
-        "${ocamlPackages.ocamlfind}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib"
+        "${ocamlPackages.ocamlfind}/lib"
       ] ++ lib.lists.drop 1 args
     else
       args;

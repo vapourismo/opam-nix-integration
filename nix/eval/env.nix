@@ -64,8 +64,10 @@ let
       with-doc = enableDocs;
 
       prefix = "$out";
-      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib";
+      lib = "${prefix}/lib";
+      libexec = "${prefix}/lib";
       bin = "${prefix}/bin";
+      sbin = "${prefix}/bin";
       share = "${prefix}/share";
       doc = "${prefix}/share/doc";
       man = "${prefix}/share/man";
@@ -82,9 +84,15 @@ let
     inherit (package) name version;
 
     prefix = "${package}";
-    lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib/${name}";
+    lib = "${prefix}/lib/${name}";
+    lib_root = "${prefix}/lib";
+    libexec = lib;
+    libexec_root = lib_root;
+    stublibs = "${prefix}/lib/stublibs";
     bin = "${prefix}/bin";
+    sbin = "${prefix}/bin";
     share = "${prefix}/share/${name}";
+    share_root = "${prefix}/share";
     doc = "${prefix}/share/doc/${name}";
     man = "${prefix}/share/man";
     etc = "${prefix}/etc/${name}";
@@ -100,9 +108,15 @@ let
       inherit name version;
 
       prefix = "$out";
-      lib = "${prefix}/lib/ocaml/${ocamlPackages.ocaml.version}/site-lib/${name}";
+      lib = "${prefix}/lib/${name}";
+      lib_root = "${prefix}/lib";
+      libexec = lib;
+      libexec_root = lib_root;
+      stublibs = "${prefix}/lib/stublibs";
       bin = "${prefix}/bin";
+      sbin = "${prefix}/bin";
       share = "${prefix}/share/${name}";
+      share_root = "${prefix}/share";
       doc = "${prefix}/share/doc";
       man = "${prefix}/share/man";
       etc = "${prefix}/etc/${name}";
