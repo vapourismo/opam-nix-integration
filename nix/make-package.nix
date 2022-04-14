@@ -99,6 +99,8 @@ let
       fi
     '';
 
+    buildInputs = [ pkgs.unzip ];
+
     phases = [ "unpackPhase" "installPhase" ];
 
     installPhase = ''
