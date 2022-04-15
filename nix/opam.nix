@@ -13,7 +13,7 @@ let
 
             prunedArgs =
               builtins.map
-                ({ arg, ... }: builtins.toJSON (envLib.eval { } arg))
+                ({ arg, ... }: envLib.eval { } arg)
                 keptArgs;
           in
           prunedArgs

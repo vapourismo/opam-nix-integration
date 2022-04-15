@@ -57,7 +57,7 @@ let
 
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
-    if lib.lists.take 2 args == [ "\"ocaml\"" "\"pkg/pkg.ml\"" ] then
+    if lib.lists.take 2 args == [ "ocaml" "pkg/pkg.ml" ] then
       [
         "ocaml"
         "-I"
@@ -67,7 +67,7 @@ let
       args;
 
   renderCommands = cmds: builtins.concatStringsSep "\n" (
-    builtins.map (builtins.concatStringsSep " ") cmds
+    builtins.map (args: builtins.concatStringsSep " " (builtins.map builtins.toJSON args)) cmds
   );
 
   renderedBuildScript = renderCommands (
