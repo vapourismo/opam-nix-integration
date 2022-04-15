@@ -1,6 +1,7 @@
 { buildDunePackage
 , opam-format
 , zarith
+, pkgs
 }:
 
 buildDunePackage {
@@ -14,5 +15,6 @@ buildDunePackage {
   buildInputs = [
     opam-format
     zarith
+    pkgs.git
   ];
 }

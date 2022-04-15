@@ -2,6 +2,7 @@
 , opam-0install
 , cmdliner
 , zarith
+, pkgs
 }:
 
 buildDunePackage {
@@ -16,5 +17,6 @@ buildDunePackage {
     opam-0install
     cmdliner
     zarith
+    pkgs.git
   ];
 }

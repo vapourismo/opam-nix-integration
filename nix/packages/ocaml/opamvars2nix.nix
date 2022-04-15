@@ -2,6 +2,7 @@
 , opam-format
 , opam-state
 , zarith
+, pkgs
 }:
 
 buildDunePackage {
@@ -16,5 +17,6 @@ buildDunePackage {
     opam-format
     opam-state
     zarith
+    pkgs.git
   ];
 }

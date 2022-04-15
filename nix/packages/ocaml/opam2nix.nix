@@ -5,6 +5,7 @@
 , ppx_deriving
 , cmdliner
 , zarith
+, pkgs
 }:
 
 buildDunePackage {
@@ -22,5 +23,6 @@ buildDunePackage {
     ppx_deriving
     cmdliner
     zarith
+    pkgs.git
   ];
 }
