@@ -71,15 +71,13 @@ let
     else
       args;
 
-  renderCommands = cmds: builtins.concatStringsSep "\n" (
-    builtins.map (args: builtins.concatStringsSep " " (builtins.map builtins.toJSON args)) cmds
+  renderedBuildScript = opamLib.commands.render (
+    builtins.map
+      (cmd: fixNakedOcamlScript (fixTopkgCommand cmd))
+      (opamLib.commands.eval buildScript)
   );
 
-  renderedBuildScript = renderCommands (
-    builtins.map (cmd: fixNakedOcamlScript (fixTopkgCommand cmd)) (opam.evalCommands buildScript)
-  );
-
-  renderedInstallScript = renderCommands (opam.evalCommands installScript);
+  renderedInstallScript = opamLib.commands.render (opamLib.commands.eval installScript);
 
   copyExtraFiles = builtins.concatStringsSep "\n" (
     builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles

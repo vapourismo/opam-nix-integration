@@ -17,6 +17,8 @@ let
   filterLib = import ./filter { inherit lib envLib; };
 
   constraintLib = import ./constraint { inherit filterLib cleanVersion; };
+
+  commandsLib = import ./commands { inherit lib envLib filterLib; };
 in
 
 {
@@ -24,4 +26,5 @@ in
   env = envLib;
   filter = filterLib;
   constraint = constraintLib;
+  commands = commandsLib;
 }

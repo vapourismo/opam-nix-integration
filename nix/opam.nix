@@ -2,26 +2,6 @@
 { envLib, filterLib, constraintLib, formulaLib, ocamlPackages }:
 
 let
-  evalCommands = commands:
-    let
-      keptCommands = builtins.filter ({ filter, ... }: filterLib.eval filter) commands;
-
-      prunedCommands = builtins.map
-        ({ args, ... }:
-          let
-            keptArgs = builtins.filter ({ filter, ... }: filterLib.eval filter) args;
-
-            prunedArgs =
-              builtins.map
-                ({ arg, ... }: envLib.eval { } arg)
-                keptArgs;
-          in
-          prunedArgs
-        )
-        keptCommands;
-    in
-    prunedCommands;
-
   evalFilterFormula = formulaLib.evalBoolean { atom = filterLib.eval; };
 
   showConstraintFormula = subject: formulaLib.show { atom = constraintLib.show subject; };
@@ -95,5 +75,5 @@ let
 in
 
 {
-  inherit evalDependenciesFormula evalCommands evalNativeDependencies interpolate;
+  inherit evalDependenciesFormula evalNativeDependencies interpolate;
 }
