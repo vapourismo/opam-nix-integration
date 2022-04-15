@@ -4,19 +4,20 @@
 
 (package
  (name opam2nix)
- (synopsis "Opam file converted")
- (description "Convert .opam files to .nix expressions.")
+ (synopsis "Convert .opam files to Nix expressions")
  (depends opam-format opam-state cmdliner zarith ppx_deriving))
 
 (package
  (name opamvars2nix)
- (synopsis "Nix OPAM variable utility")
- (description "Print OPAM variables as Nix expressions")
- (depends opam-format opam-state))
+ (synopsis "Express OPAM system-level variables as Nix expression")
+ (depends opam-format opam-state zarith))
 
 (package
- (name opamsubst2nix))
+ (name opamsubst2nix)
+ (synopsis "Convert interpolation target files to Nix expressions")
+ (depends opam-format zarith))
 
 (package
  (name opam0install2nix)
- (depends opam-0install cmdliner str))
+ (synopsis "Solve package constraints as Nix expressions")
+ (depends opam-format opam-0install cmdliner str zarith))
