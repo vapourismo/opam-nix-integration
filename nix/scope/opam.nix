@@ -4,6 +4,7 @@
 , newScope
 , runCommand
 , writeText
+, writeScript
 , gnumake
 , git
 , which

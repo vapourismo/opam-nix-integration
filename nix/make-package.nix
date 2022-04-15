@@ -3,6 +3,7 @@
 , lib
 , runCommand
 , writeText
+, writeScript
 , gnumake
 , git
 , which
@@ -80,6 +81,11 @@ let
     builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles
   );
 
+  fixCargoChecksums = writeScript "fix-cargo-checksum" ''
+    jq "{package: .package, files: { }}" "$1" | tee "$1.empty"
+    mv "$1.empty" "$1"
+  '';
+
   overlayedSource = stdenv.mkDerivation {
     name = "opam2nix-extra-files-${name}-${ocamlLib.cleanVersion version}";
 
@@ -96,14 +102,24 @@ let
       fi
     '';
 
-    buildInputs = [ pkgs.unzip ];
+    buildInputs = with pkgs; [ unzip jq ];
 
     phases = [ "unpackPhase" "installPhase" ];
 
     installPhase = ''
       mkdir -p $out
+
+      # Resolve extra files
       ${copyExtraFiles}
+
+      # Copy local source over
       cp -r . $out
+
+      # Patch shebangs in shell scripts
+      patchShebangsAuto
+
+      # Delete Rust checksum files
+      find $out -name .cargo-checksum.json -exec ${fixCargoChecksums} {} \;
     '';
   };
 
