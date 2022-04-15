@@ -1,5 +1,4 @@
-{ lib }:
-{ envLib }:
+{ lib, envLib }:
 
 let
   filterScopeEval =

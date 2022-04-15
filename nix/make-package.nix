@@ -15,7 +15,7 @@
 let
   callPackage = lib.callPackageWith args;
 
-  ocamlLib = callPackage ./lib.nix { };
+  extraLib = callPackage ./lib { };
 in
 
 ocamlPackages:
@@ -34,23 +34,20 @@ ocamlPackages:
 }@args:
 
 let
-  evalLib = ocamlLib.makeEvalLib { inherit name version ocamlPackages; };
+  opamLib = extraLib.makeOpamLib { inherit name version ocamlPackages; };
 
-  opam =
-    callPackage ./opam.nix
-      { }
-      {
-        inherit ocamlPackages;
-        envLib = evalLib.env;
-        filterLib = evalLib.filter;
-        constraintLib = evalLib.constraint;
-        formulaLib = evalLib.formula;
-      };
+  opam = callPackage ./opam.nix { } {
+    inherit ocamlPackages;
+    envLib = opamLib.env;
+    filterLib = opamLib.filter;
+    constraintLib = opamLib.constraint;
+    formulaLib = opamLib.formula;
+  };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
-        --prefix="${evalLib.env.local.prefix}" \
+        --prefix="${opamLib.env.local.prefix}" \
         --name="${name}" \
         --install "${name}.install"
     fi
@@ -94,7 +91,7 @@ let
   '';
 
   overlayedSource = stdenv.mkDerivation {
-    name = "opam2nix-extra-files-${name}-${ocamlLib.cleanVersion version}";
+    name = "opam2nix-extra-files-${name}-${extraLib.cleanVersion version}";
 
     inherit src;
     dontUnpack = src == null;
@@ -154,7 +151,7 @@ let
 in
 stdenv.mkDerivation ({
   pname = name;
-  version = ocamlLib.cleanVersion version;
+  version = extraLib.cleanVersion version;
 
   src = overlayedSource;
 
@@ -180,7 +177,7 @@ stdenv.mkDerivation ({
 
   installPhase = ''
     # Install Opam package
-    mkdir -p ${evalLib.env.local.bin} ${evalLib.env.local.lib}
+    mkdir -p ${opamLib.env.local.bin} ${opamLib.env.local.lib}
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';
