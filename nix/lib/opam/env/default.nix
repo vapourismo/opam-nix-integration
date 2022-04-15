@@ -198,10 +198,11 @@ let
           foldl' (x: y: x && y) (head values) (tail values);
     };
 
+  interpolate = eval { onMissing = _: _: null; };
 in
 
 {
-  inherit eval lookupLocalVar lookupPackageVar defaultOnMissing;
+  inherit eval interpolate lookupLocalVar lookupPackageVar defaultOnMissing;
   local = localVars;
   packages = packageVars;
 }

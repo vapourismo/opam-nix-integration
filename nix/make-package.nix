@@ -36,14 +36,6 @@ ocamlPackages:
 let
   opamLib = extraLib.makeOpamLib { inherit name version ocamlPackages; };
 
-  opam = callPackage ./opam.nix { } {
-    inherit ocamlPackages;
-    envLib = opamLib.env;
-    filterLib = opamLib.filter;
-    constraintLib = opamLib.constraint;
-    formulaLib = opamLib.formula;
-  };
-
   defaultInstallScript = ''
     if test -r "${name}.install"; then
       ${opam-installer}/bin/opam-installer \
@@ -129,7 +121,7 @@ let
     builtins.map
       (file: {
         path = file;
-        source = writeText "opam2nix-subst-file" (opam.interpolate (import (
+        source = writeText "opam2nix-subst-file" (opamLib.env.interpolate (import (
           runCommand
             "opam2nix-subst-expr"
             {
@@ -157,10 +149,10 @@ stdenv.mkDerivation ({
 
   propagatedBuildInputs =
     (with ocamlPackages; [ ocaml ocamlfind ])
-      ++ opam.evalDependenciesFormula { inherit name; } depends
-      ++ opam.evalDependenciesFormula { inherit name; optional = true; } optionalDepends;
+      ++ opamLib.depends.eval { inherit name; } depends
+      ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
 
-  propagatedNativeBuildInputs = opam.evalNativeDependencies nativeDepends;
+  propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;
 
   dontConfigure = true;
 

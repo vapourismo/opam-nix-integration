@@ -1,4 +1,5 @@
 { stdenv
+, pkgs
 , lib
 , runCommand
 , gnumake

@@ -1,20 +1,23 @@
-{ lib, pkgs }:
-{ envLib, filterLib, constraintLib, formulaLib, ocamlPackages }:
+{ lib, pkgs, envLib, filterLib, constraintLib, formulaLib }:
 
 let
-  evalFilterFormula = formulaLib.evalBoolean { atom = filterLib.eval; };
+  evalCondition = formulaLib.evalBoolean { atom = filterLib.eval; };
 
-  showConstraintFormula = subject: formulaLib.show { atom = constraintLib.show subject; };
+  showConstraint = subject: formulaLib.show { atom = constraintLib.show subject; };
 
-  evalConstraintFormula = formulaLib.evalPredicate { atom = constraintLib.eval; };
+  evalConstraint = formulaLib.evalPredicate { atom = constraintLib.eval; };
+in
 
+{ ocamlPackages }:
+
+let
   evalDependency = { optional ? false }: dep: dep {
     package = packageName: enabled: constraint:
-      let want = evalFilterFormula enabled; in
+      let want = evalCondition enabled; in
       if builtins.hasAttr packageName ocamlPackages && want then
         let package = ocamlPackages.${packageName}; in
         (
-          if evalConstraintFormula constraint package.version then
+          if evalConstraint constraint package.version then
             [ package ]
           else
             null
@@ -30,8 +33,8 @@ let
       if builtins.hasAttr packageName ocamlPackages then
         let package = ocamlPackages.${packageName}.name; in
         (
-          if evalFilterFormula enabled then
-            "${showConstraintFormula package constraint}"
+          if evalCondition enabled then
+            "${showConstraint package constraint}"
           else
             "${packageName} disabled"
         )
@@ -39,9 +42,11 @@ let
         "${packageName} is unknown";
   };
 
-  evalDependenciesFormula = { name, ... }@config: depFormula:
-    let downstreamConfig = builtins.removeAttrs config [ "name" ]; in
-    let deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } depFormula; in
+  eval = { name, ... }@config: depFormula:
+    let
+      downstreamConfig = builtins.removeAttrs config [ "name" ];
+      deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } depFormula;
+    in
     if builtins.isList deps then
       deps
     else
@@ -58,7 +63,7 @@ let
         ${debugged}
       '';
 
-  evalNativeDependencies = nativeDepends:
+  evalNative = nativeDepends:
     let
       findDep = packageName:
         if builtins.hasAttr packageName pkgs then
@@ -69,11 +74,8 @@ let
     builtins.concatMap
       ({ nativePackage, ... }: builtins.map findDep nativePackage)
       (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
-
-  interpolate = envLib.eval { onMissing = _: _: null; };
-
 in
 
 {
-  inherit evalDependenciesFormula evalNativeDependencies interpolate;
+  inherit eval evalNative;
 }
