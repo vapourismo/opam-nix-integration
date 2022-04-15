@@ -67,12 +67,19 @@ let
     else
       args;
 
+  fixNakedOcamlScript = args:
+    # XXX: Hack to patch invocation of OCaml scripts that rely on shebang.
+    if lib.lists.length args > 0 && lib.strings.hasSuffix ".ml" (lib.lists.elemAt args 0) then
+      [ "${ocamlPackages.ocaml}/bin/ocaml" ] ++ args
+    else
+      args;
+
   renderCommands = cmds: builtins.concatStringsSep "\n" (
     builtins.map (args: builtins.concatStringsSep " " (builtins.map builtins.toJSON args)) cmds
   );
 
   renderedBuildScript = renderCommands (
-    builtins.map fixTopkgCommand (opam.evalCommands buildScript)
+    builtins.map (cmd: fixNakedOcamlScript (fixTopkgCommand cmd)) (opam.evalCommands buildScript)
   );
 
   renderedInstallScript = renderCommands (opam.evalCommands installScript);
