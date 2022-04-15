@@ -89,7 +89,7 @@ let
   );
 
   fixCargoChecksums = writeScript "fix-cargo-checksum" ''
-    jq "{package: .package, files: { }}" "$1" | tee "$1.empty"
+    jq "{ package: .package, files: { } }" "$1" > "$1.empty"
     mv "$1.empty" "$1"
   '';
 
@@ -125,7 +125,7 @@ let
       # Patch shebangs in shell scripts
       patchShebangsAuto
 
-      # Delete Rust checksum files
+      # Fix Cargo checksum files
       find $out -name .cargo-checksum.json -exec ${fixCargoChecksums} {} \;
     '';
   };
