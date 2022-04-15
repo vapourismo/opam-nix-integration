@@ -13,6 +13,7 @@ buildDunePackage {
   version = "0.0.0";
 
   useDune2 = true;
+  minimumOCamlVersion = "4.13";
 
   src = ../../..;
 
