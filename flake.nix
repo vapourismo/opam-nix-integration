@@ -36,11 +36,8 @@
 
         devShell = mkShell {
           nativeBuildInputs = with ocamlPackages; [
-            ocaml
             ocaml-lsp
             ocamlformat
-            findlib
-            dune_2
             utop
             nixpkgs-fmt
             odoc
@@ -50,7 +47,11 @@
 
           buildInputs =
             builtins.concatMap
-              (pkg: pkg.buildInputs)
+              (pkg:
+                pkg.buildInputs
+                ++ pkg.propagatedBuildInputs
+                ++ pkg.nativeBuildInputs
+                ++ pkg.propagatedNativeBuildInputs)
               (builtins.attrValues self.packages.${system});
         };
       }
