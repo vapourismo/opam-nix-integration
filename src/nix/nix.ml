@@ -102,7 +102,8 @@ let rec render_prec ?(want_parens = false) exp =
         " "
         (StringMap.to_seq attrs
         |> List.of_seq
-        |> List.map (fun (k, v) -> k ^ " = " ^ render_prec v ^ ";"))
+        |> List.map (fun (k, v) ->
+               "\"" ^ render_segment (StringSegment k) ^ "\" = " ^ render_prec v ^ ";"))
     ^ " }"
   | Lambda { head; body } ->
     (if want_parens then parens else Fun.id)
