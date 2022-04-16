@@ -6,6 +6,8 @@
 , writeText
 , writeScript
 , gnumake
+, unzip
+, jq
 , git
 , which
 , ocaml

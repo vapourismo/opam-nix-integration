@@ -5,6 +5,8 @@
 , writeText
 , writeScript
 , gnumake
+, unzip
+, jq
 , git
 , which
 , opamvars2nix
@@ -71,65 +73,7 @@ let
 
   renderedInstallScript = opamLib.commands.render (opamLib.commands.eval installScript);
 
-  copyExtraFiles = builtins.concatStringsSep "\n" (
-    builtins.map ({ source, path }: "cp ${source} ${path}") extraFiles
-  );
-
-  fixCargoChecksums = writeScript "fix-cargo-checksum" ''
-    jq "{ package: .package, files: { } }" "$1" > "$1.empty"
-    mv "$1.empty" "$1"
-  '';
-
-  overlayedSource = stdenv.mkDerivation {
-    name = "opam2nix-extra-files-${name}-${extraLib.cleanVersion version}";
-
-    inherit src;
-    dontUnpack = src == null;
-
-    setSourceRoot = ''
-      export sourceRoot="$(find . -type d -mindepth 1 -maxdepth 1 ! -name env-vars)"
-
-      # If the unpack command creates multiple directories we'll choose the most top-level directory
-      # as our source root.
-      if [[ $(echo "$sourceRoot" | wc -l) -gt 1 ]]; then
-        export sourceRoot="."
-      fi
-    '';
-
-    buildInputs = with pkgs; [ unzip jq ];
-
-    phases = [ "unpackPhase" "installPhase" ];
-
-    installPhase = ''
-      mkdir -p $out
-
-      # Resolve extra files
-      ${copyExtraFiles}
-
-      # Copy local source over
-      cp -r . $out
-
-      # Patch shebangs in shell scripts
-      patchShebangsAuto
-
-      # Fix Cargo checksum files
-      find $out -name .cargo-checksum.json -exec ${fixCargoChecksums} {} \;
-    '';
-  };
-
-  substs =
-    builtins.map
-      (file: {
-        path = file;
-        source = opamLib.subst.rewrite "${overlayedSource}/${file}.in";
-      })
-      substFiles;
-
-  writeSubsts = builtins.concatStringsSep "\n" (
-    builtins.map
-      ({ path, source }: "cp -v ${source} ${path}")
-      substs
-  );
+  overlayedSource = opamLib.source.fix { inherit name version src extraFiles substFiles; };
 
 in
 stdenv.mkDerivation ({
@@ -148,10 +92,6 @@ stdenv.mkDerivation ({
   propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;
 
   dontConfigure = true;
-
-  patchPhase = ''
-    ${writeSubsts}
-  '';
 
   buildPhase = ''
     # Build Opam package

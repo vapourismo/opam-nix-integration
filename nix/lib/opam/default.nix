@@ -1,8 +1,12 @@
-{ lib
+{ stdenv
 , pkgs
+, lib
 , writeText
+, writeScript
 , runCommand
 , gnumake
+, unzip
+, jq
 , opamvars2nix
 , opamsubst2nix
 , cleanVersion
@@ -31,6 +35,8 @@ let
       { inherit (args) ocamlPackages; };
 
   substLib = callPackage ./subst { inherit envLib; };
+
+  sourceLib = callPackage ./source { inherit substLib; };
 in
 
 {
@@ -41,4 +47,5 @@ in
   commands = commandsLib;
   depends = dependsLib;
   subst = substLib;
+  source = sourceLib;
 }

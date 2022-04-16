@@ -2,8 +2,11 @@
 , pkgs
 , lib
 , writeText
+, writeScript
 , runCommand
 , gnumake
+, unzip
+, jq
 , opamvars2nix
 , opamsubst2nix
 }@args:
