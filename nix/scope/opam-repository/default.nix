@@ -19,7 +19,7 @@
 , opam0install2nix
 , opamRepository
 , packageConstraints ? [ ]
-, enableTests ? false
+, testablePackages ? [ ]
 }@args:
 
 let
@@ -27,9 +27,12 @@ let
 
   opamScope = callPackage ../opam { };
 
-  # repositoryIndex = callPackage ./repository-index.nix { } opamRepository;
+  repositoryIndex = callPackage ./repository-index.nix { } opamRepository;
 
   packagePath = name: version: "${opamRepository}/packages/${name}/${name}.${version}";
+
+  testTargetArgs =
+    builtins.map (name: "--with-test-for=${name}") testablePackages;
 
   selectedPackageVersions =
     let
@@ -38,11 +41,11 @@ let
           "opam0install2nix-solver"
           {
             buildInputs = [ opam0install2nix ];
-            inherit packageConstraints;
+            inherit testTargetArgs packageConstraints;
           }
           ''
             opam0install2nix \
-              ${if enableTests then "--with-test" else ""} \
+              $testTargetArgs \
               --ocaml-version="${ocaml.version}" \
               --packages-dir="${opamRepository}/packages" \
               $packageConstraints \
@@ -76,22 +79,24 @@ opamScope.overrideScope' (final: prev: {
         // args
       );
 
-  # opamRepository =
-  #   builtins.mapAttrs
-  #     (name: collection:
-  #       builtins.listToAttrs
-  #         (
-  #           builtins.map
-  #             (version: {
-  #               name = version;
-  #               value = final.callOpam { inherit name version; } { };
-  #             })
-  #             collection.versions
-  #         ) // {
-  #         latest =
-  #           final.callOpam
-  #             { inherit name; version = collection.latest; }
-  #             { };
-  #       })
-  #     repositoryIndex;
+  opamRepository = {
+    packages =
+      builtins.mapAttrs
+        (name: collection:
+          builtins.listToAttrs
+            (
+              builtins.map
+                (version: {
+                  name = version;
+                  value = final.callOpam { inherit name version; } { };
+                })
+                collection.versions
+            ) // {
+            latest =
+              final.callOpam
+                { inherit name; version = collection.latest; }
+                { };
+          })
+        repositoryIndex;
+  };
 } // selectedPackages final prev)

@@ -12,8 +12,7 @@ module Options = struct
     { ocaml_version : string
     ; packages_dir : string
     ; targets : string list
-    ; with_test : bool
-    ; with_doc : bool
+    ; test_targets : string list
     }
 
   let ocaml_version_term =
@@ -22,23 +21,19 @@ module Options = struct
 
   let file_term = Arg.(info ~docv:"PATH" [ "packages-dir" ] |> req file |> required)
 
+  let test_targets =
+    Arg.(info ~docv:"PACKAGE" [ "with-test-for" ] |> opt_all string [] |> value)
+  ;;
+
   let targets_term = Arg.(info ~docv:"PACKAGE" [] |> many string |> value)
 
   let with_test_term = Arg.(info [ "with-test" ] |> flag |> value)
 
-  let with_doc_term = Arg.(info [ "with-doc" ] |> flag |> value)
-
   let term =
-    let combine ocaml_version packages_dir targets with_test with_doc =
-      { ocaml_version; packages_dir; targets; with_test; with_doc }
+    let combine ocaml_version packages_dir targets test_targets =
+      { ocaml_version; packages_dir; targets; test_targets }
     in
-    Term.(
-      const combine
-      $ ocaml_version_term
-      $ file_term
-      $ targets_term
-      $ with_test_term
-      $ with_doc_term)
+    Term.(const combine $ ocaml_version_term $ file_term $ targets_term $ test_targets)
   ;;
 end
 
@@ -101,8 +96,6 @@ let main config =
       ()
   in
   let env = function
-    | "with-test" -> Some (OpamVariable.B config.with_test)
-    | "with-doc" -> Some (OpamVariable.B config.with_doc)
     | "build" -> Some (OpamVariable.B true)
     | "post" -> Some (OpamVariable.B false)
     | "pinned" -> Some (OpamVariable.B false)
@@ -121,13 +114,14 @@ let main config =
       (`Eq, OpamPackage.Version.of_string config.ocaml_version)
   in
   let test_packages =
-    if config.with_test then Some (OpamPackage.Name.Set.of_list target_names) else None
+    List.map OpamPackage.Name.of_string config.test_targets
+    |> OpamPackage.Name.Set.of_list
   in
   let context =
     Dir_context.create
       ~constraints:
         (OpamPackage.Name.Map.union (fun _ r -> r) package_constraints ocaml_constraints)
-      ?test:test_packages
+      ~test:test_packages
       ~env
       config.packages_dir
   in
