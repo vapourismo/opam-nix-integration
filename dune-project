@@ -20,4 +20,4 @@
 (package
  (name opam0install2nix)
  (synopsis "Solve package constraints as Nix expressions")
- (depends opam-format opam-0install cmdliner str zarith))
+ (depends opam-format opam-0install cmdliner zarith))
