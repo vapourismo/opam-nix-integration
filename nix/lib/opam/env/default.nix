@@ -1,6 +1,6 @@
-{ lib
+{ pkgs
+, lib
 , runCommand
-, gnumake
 , opamvars2nix
 , opamVersion ? "2.1.2"
 }:
@@ -19,7 +19,7 @@ let
       os-version = "1";
       opam-version = opamVersion;
 
-      make = "${gnumake}/bin/make";
+      make = "${pkgs.gnumake}/bin/make";
 
       build = true;
       post = false;

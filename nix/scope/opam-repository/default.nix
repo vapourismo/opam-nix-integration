@@ -5,11 +5,6 @@
 , runCommand
 , writeText
 , writeScript
-, gnumake
-, unzip
-, jq
-, git
-, which
 , ocaml
 , findlib
 , opam-installer

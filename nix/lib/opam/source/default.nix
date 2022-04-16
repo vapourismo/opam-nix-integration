@@ -1,7 +1,6 @@
-{ stdenv
+{ pkgs
+, stdenv
 , writeScript
-, unzip
-, jq
 , cleanVersion
 , substLib
 }:
@@ -32,7 +31,7 @@ let
       fi
     '';
 
-    buildInputs = [ unzip ];
+    buildInputs = [ pkgs.unzip ];
 
     phases = [ "unpackPhase" "installPhase" ];
 
@@ -61,7 +60,7 @@ let
 
       inherit src;
 
-      buildInputs = [ jq ];
+      buildInputs = [ pkgs.jq ];
 
       phases = [ "unpackPhase" "installPhase" ];
 
