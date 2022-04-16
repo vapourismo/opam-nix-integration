@@ -4,11 +4,6 @@
 , runCommand
 , writeText
 , writeScript
-, gnumake
-, unzip
-, jq
-, git
-, which
 , opamvars2nix
 , opamsubst2nix
 , opam-installer
@@ -92,7 +87,7 @@ stdenv.mkDerivation ({
 
   src = overlayedSource;
 
-  buildInputs = [ git which ];
+  buildInputs = with pkgs; [ git which ];
 
   propagatedBuildInputs =
     (with ocamlPackages; [ ocaml ocamlfind ])
