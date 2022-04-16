@@ -6,29 +6,31 @@
 , opamvars2nix
 , opamsubst2nix
 , cleanVersion
-}:
+}@depends:
 
 let
-  formulaLib = import ./formula { inherit lib; };
+  callPackage = lib.callPackageWith depends;
+
+  formulaLib = callPackage ./formula { };
 in
 
 args:
 
 let
-  envLib = import ./env { inherit lib runCommand gnumake opamvars2nix; } args;
+  envLib = callPackage ./env { } args;
 
-  filterLib = import ./filter { inherit lib envLib; };
+  filterLib = callPackage ./filter { inherit envLib; };
 
-  constraintLib = import ./constraint { inherit filterLib cleanVersion; };
+  constraintLib = callPackage ./constraint { inherit filterLib; };
 
-  commandsLib = import ./commands { inherit lib envLib filterLib; };
+  commandsLib = callPackage ./commands { inherit envLib filterLib; };
 
   dependsLib =
-    import ./depends
-      { inherit lib pkgs envLib filterLib constraintLib formulaLib; }
+    callPackage ./depends
+      { inherit envLib filterLib constraintLib formulaLib; }
       { inherit (args) ocamlPackages; };
 
-  substLib = import ./subst { inherit writeText runCommand opamsubst2nix envLib; };
+  substLib = callPackage ./subst { inherit envLib; };
 in
 
 {
