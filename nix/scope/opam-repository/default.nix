@@ -18,8 +18,6 @@
 , opamsubst2nix
 , opam0install2nix
 , opamRepository
-, packageConstraints ? [ ]
-, testablePackages ? [ ]
 }@args:
 
 let
@@ -31,11 +29,13 @@ let
 
   packagePath = name: version: "${opamRepository}/packages/${name}/${name}.${version}";
 
-  testTargetArgs =
-    builtins.map (name: "--with-test-for=${name}") testablePackages;
-
-  selectedPackageVersions =
+  solvePackageVersions =
+    { packageConstraints ? [ ]
+    , testablePackages ? [ ]
+    }:
     let
+      testTargetArgs = builtins.map (name: "--with-test-for=${name}") testablePackages;
+
       versions = import (
         runCommand
           "opam0install2nix-solver"
@@ -53,13 +53,7 @@ let
           ''
       );
     in
-    prev: lib.filterAttrs (name: _: !(lib.elem name (lib.attrNames prev))) versions;
-
-  selectedPackages = final: prev:
-    builtins.mapAttrs
-      (name: version: final.callOpam { inherit name version; } { })
-      (selectedPackageVersions prev);
-
+    lib.filterAttrs (name: _: !(lib.hasAttr name opamScope)) versions;
 in
 
 opamScope.overrideScope' (final: prev: {
@@ -98,5 +92,12 @@ opamScope.overrideScope' (final: prev: {
                 { };
           })
         repositoryIndex;
+
+    select = { testablePackages ? [ ], ... }@args:
+      builtins.mapAttrs
+        (name: version:
+          let pkg = final.callOpam { inherit name version; } { }; in
+          pkg.overrideAttrs (_: { doCheck = lib.elem name testablePackages; }))
+        (solvePackageVersions args);
   };
-} // selectedPackages final prev)
+})
