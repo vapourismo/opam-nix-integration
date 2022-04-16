@@ -27,6 +27,7 @@ ocamlPackages:
 , src ? null
 , buildScript ? [ ]
 , installScript ? [ ]
+, testScript ? [ ]
 , depends ? (_: [ ])
 , optionalDepends ? (_: [ ])
 , nativeDepends ? [ ]
@@ -36,7 +37,14 @@ ocamlPackages:
 }@args:
 
 let
-  opamLib = extraLib.makeOpamLib { inherit name version ocamlPackages; };
+  opamLib = extraLib.makeOpamLib {
+    inherit name version ocamlPackages;
+  };
+
+  opamTestLib = extraLib.makeOpamLib {
+    inherit name version ocamlPackages;
+    enableTests = true;
+  };
 
   defaultInstallScript = ''
     if test -r "${name}.install"; then
@@ -73,6 +81,8 @@ let
 
   renderedInstallScript = opamLib.commands.render (opamLib.commands.eval installScript);
 
+  renderedTestScript = opamLib.commands.render (opamLib.commands.eval testScript);
+
   overlayedSource = opamLib.source.fix { inherit name version src extraFiles substFiles; };
 
 in
@@ -91,6 +101,11 @@ stdenv.mkDerivation ({
 
   propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;
 
+  checkInputs =
+    opamTestLib.depends.eval { inherit name; } depends
+      ++ opamTestLib.depends.eval { inherit name; optional = true; } optionalDepends
+      ++ opamTestLib.depends.evalNative nativeDepends;
+
   dontConfigure = true;
 
   buildPhase = ''
@@ -104,12 +119,20 @@ stdenv.mkDerivation ({
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';
+
+  doCheck = false;
+
+  checkPhase = ''
+    # Test Opam package
+    ${renderedTestScript}
+  '';
 } // builtins.removeAttrs args [
   "name"
   "version"
   "src"
   "buildScript"
   "installScript"
+  "testScript"
   "depends"
   "optionalDepends"
   "nativeDepends"

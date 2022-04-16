@@ -38,6 +38,7 @@ let main options =
   let opam = read_opam options.Options.file in
   let build = Lib.nix_of_commands opam.build in
   let install = Lib.nix_of_commands opam.install in
+  let test = Lib.nix_of_commands opam.run_test in
   let source =
     Option.map
       (fun url ->
@@ -84,6 +85,7 @@ let main options =
                  ; "version", string options.version
                  ; "buildScript", build
                  ; "installScript", install
+                 ; "testScript", test
                  ; "depends", depends
                  ; "optionalDepends", depopts
                  ; "nativeDepends", native_depends

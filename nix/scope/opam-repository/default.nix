@@ -19,6 +19,7 @@
 , opam0install2nix
 , opamRepository
 , packageConstraints ? [ ]
+, enableTests ? false
 }@args:
 
 let
@@ -41,7 +42,7 @@ let
           }
           ''
             opam0install2nix \
-              --with-test \
+              ${if enableTests then "--with-test" else ""} \
               --ocaml-version="${ocaml.version}" \
               --packages-dir="${opamRepository}/packages" \
               $packageConstraints \

@@ -88,6 +88,7 @@ let parse_package_arg package_str =
 let main config =
   let open Options in
   let targets = List.map parse_package_arg config.targets in
+  let target_names = List.map fst targets in
   let std_env =
     Dir_context.std_env
       ~ocaml_native:true
@@ -120,10 +121,7 @@ let main config =
       (`Eq, OpamPackage.Version.of_string config.ocaml_version)
   in
   let test_packages =
-    if config.with_test
-    then
-      Some (OpamPackage.Name.Map.keys package_constraints |> OpamPackage.Name.Set.of_list)
-    else None
+    if config.with_test then Some (OpamPackage.Name.Set.of_list target_names) else None
   in
   let context =
     Dir_context.create
@@ -133,7 +131,7 @@ let main config =
       ~env
       config.packages_dir
   in
-  let solved = List.map (fun (name, _) -> name) targets |> Solver.solve context in
+  let solved = Solver.solve context target_names in
   let open Nix in
   match solved with
   | Ok selection ->
