@@ -41,4 +41,9 @@ baseScope.overrideScope' (final: prev: {
     );
 
   callOpam2Nix = args: final.callPackage (final.generateOpam2Nix args);
+
+  callOpam2NixLocal = { src, ... }@args: pkgArgs:
+    (final.callOpam2Nix args pkgArgs).overrideAttrs (old: {
+      src = builtins.dirOf src;
+    });
 })
