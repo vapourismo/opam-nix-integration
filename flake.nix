@@ -4,23 +4,23 @@
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs;
     flake-utils.url = github:numtide/flake-utils;
-    flake-compat = {
-      url = github:edolstra/flake-compat;
+    opam-repository = {
+      url = github:ocaml/opam-repository;
       flake = false;
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, flake-compat }:
+  outputs = { self, nixpkgs, flake-utils, opam-repository }:
     {
-      overlay = import (self + /nix/packages/ocaml/overlay.nix);
+      overlays.ocamlBool = import (self + /nix/packages/ocaml/overlay.nix);
     }
     // flake-utils.lib.eachDefaultSystem (system:
       with import nixpkgs { inherit system; };
 
       let
-        ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlay;
-
+        ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlays.ocamlBool;
       in
+
       {
         defaultPackage = self.packages.${system}.opam2nix;
 
@@ -32,6 +32,10 @@
           opamsubst2nix = ocamlPackages.opamsubst2nix;
 
           opam0install2nix = ocamlPackages.opam0install2nix;
+
+          emptyScope = ocamlPackages.callPackage (self + /nix/scope/opam-repository) {
+            opamRepository = opam-repository;
+          };
         };
 
         devShell = mkShell {
@@ -47,12 +51,13 @@
 
           buildInputs =
             builtins.concatMap
-              (pkg:
+              (name:
+                let pkg = self.packages.${system}.${name}; in
                 pkg.buildInputs
                 ++ pkg.propagatedBuildInputs
                 ++ pkg.nativeBuildInputs
                 ++ pkg.propagatedNativeBuildInputs)
-              (builtins.attrValues self.packages.${system});
+              [ "opam2nix" "opamvars2nix" "opamsubst2nix" "opam0install2nix" ];
         };
       }
     );

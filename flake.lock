@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "flake-compat": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1648199409,
-        "narHash": "sha256-JwPKdC2PoVBkG6E+eWw3j6BMR6sL3COpYWfif7RVb8Y=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "64a525ee38886ab9028e6f61790de0832aa3ef03",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
     "flake-utils": {
       "locked": {
         "lastModified": 1648297722,
@@ -46,11 +30,27 @@
         "type": "github"
       }
     },
+    "opam-repository": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1650107461,
+        "narHash": "sha256-jr8/re+CEqZ5xyuhGOgezTWirfzV5aA4nkUNj1R5z3M=",
+        "owner": "ocaml",
+        "repo": "opam-repository",
+        "rev": "0d3c2ef65372f58cae5fc7cf49915c137ff7c627",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ocaml",
+        "repo": "opam-repository",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
-        "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "opam-repository": "opam-repository"
       }
     }
   },
