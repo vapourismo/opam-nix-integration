@@ -12,6 +12,8 @@ module Options = struct
     { ocaml_version : string
     ; packages_dir : string
     ; targets : string list
+    ; with_test : bool
+    ; with_doc : bool
     }
 
   let ocaml_version_term =
@@ -22,11 +24,21 @@ module Options = struct
 
   let targets_term = Arg.(info ~docv:"PACKAGE" [] |> many string |> value)
 
+  let with_test_term = Arg.(info [ "with-test" ] |> flag |> value)
+
+  let with_doc_term = Arg.(info [ "with-doc" ] |> flag |> value)
+
   let term =
-    let combine ocaml_version packages_dir targets =
-      { ocaml_version; packages_dir; targets }
+    let combine ocaml_version packages_dir targets with_test with_doc =
+      { ocaml_version; packages_dir; targets; with_test; with_doc }
     in
-    Term.(const combine $ ocaml_version_term $ file_term $ targets_term)
+    Term.(
+      const combine
+      $ ocaml_version_term
+      $ file_term
+      $ targets_term
+      $ with_test_term
+      $ with_doc_term)
   ;;
 end
 
@@ -88,8 +100,8 @@ let main config =
       ()
   in
   let env = function
-    | "with-test" -> Some (OpamVariable.B false)
-    | "with-doc" -> Some (OpamVariable.B false)
+    | "with-test" -> Some (OpamVariable.B config.with_test)
+    | "with-doc" -> Some (OpamVariable.B config.with_doc)
     | "build" -> Some (OpamVariable.B true)
     | "post" -> Some (OpamVariable.B false)
     | "pinned" -> Some (OpamVariable.B false)
@@ -107,10 +119,17 @@ let main config =
       (OpamPackage.Name.of_string "ocaml")
       (`Eq, OpamPackage.Version.of_string config.ocaml_version)
   in
+  let test_packages =
+    if config.with_test
+    then
+      Some (OpamPackage.Name.Map.keys package_constraints |> OpamPackage.Name.Set.of_list)
+    else None
+  in
   let context =
     Dir_context.create
       ~constraints:
         (OpamPackage.Name.Map.union (fun _ r -> r) package_constraints ocaml_constraints)
+      ?test:test_packages
       ~env
       config.packages_dir
   in

@@ -41,6 +41,7 @@ let
           }
           ''
             opam0install2nix \
+              --with-test \
               --ocaml-version="${ocaml.version}" \
               --packages-dir="${opamRepository}/packages" \
               $packageConstraints \
