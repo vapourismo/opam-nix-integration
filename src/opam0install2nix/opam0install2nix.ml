@@ -72,11 +72,15 @@ let parse_package_arg package_str =
         (String.length package)
         (String.length input - (String.length version + String.length package))
     in
+    let package = String.trim package in
+    let version = String.trim version in
     (match parse_relop op with
     | Some op ->
       OpamPackage.Name.of_string package, Some (op, OpamPackage.Version.of_string version)
     | None -> failwith (Printf.sprintf "Unknown relational operator %s" op))
-  | [ package ] -> OpamPackage.Name.of_string package, None
+  | [ package ] ->
+    let package = String.trim package in
+    OpamPackage.Name.of_string package, None
   | _ -> failwith (Printf.sprintf "Unknown package format %s" package_str)
 ;;
 

@@ -29,21 +29,24 @@ let
     , testablePackages ? [ ]
     }:
     let
-      testTargetArgs = builtins.map (name: "--with-test-for=${name}") testablePackages;
+      testTargetArgs = lib.strings.escapeShellArgs (
+        builtins.map (name: "--with-test-for=${name}") testablePackages
+      );
+
+      packageConstraintArgs = lib.strings.escapeShellArgs packageConstraints;
 
       versions = import (
         runCommand
           "opam0install2nix-solver"
           {
             buildInputs = [ opam0install2nix ];
-            inherit testTargetArgs packageConstraints;
           }
           ''
             opam0install2nix \
-              $testTargetArgs \
               --ocaml-version="${ocaml.version}" \
               --packages-dir="${opamRepository}/packages" \
-              $packageConstraints \
+              ${testTargetArgs} \
+              ${packageConstraintArgs} \
               > $out
           ''
       );
