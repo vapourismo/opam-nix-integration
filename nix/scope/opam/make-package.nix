@@ -121,14 +121,7 @@ let
     builtins.map
       (file: {
         path = file;
-        source = writeText "opam2nix-subst-file" (opamLib.env.interpolate (import (
-          runCommand
-            "opam2nix-subst-expr"
-            {
-              buildInputs = [ opamsubst2nix ];
-            }
-            "opamsubst2nix < ${overlayedSource}/${file}.in > $out"
-        )));
+        source = opamLib.subst.rewrite "${overlayedSource}/${file}.in";
       })
       substFiles;
 

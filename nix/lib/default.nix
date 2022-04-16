@@ -1,9 +1,11 @@
 { stdenv
 , pkgs
 , lib
+, writeText
 , runCommand
 , gnumake
 , opamvars2nix
+, opamsubst2nix
 }@args:
 
 let
@@ -23,8 +25,8 @@ let
       cp -r ${deriv}/bin $out
     '';
   };
-
 in
+
 {
   inherit justExecutable makeOpamLib cleanVersion;
 }

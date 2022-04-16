@@ -1,8 +1,10 @@
 { lib
 , pkgs
+, writeText
 , runCommand
 , gnumake
 , opamvars2nix
+, opamsubst2nix
 , cleanVersion
 }:
 
@@ -25,6 +27,8 @@ let
     import ./depends
       { inherit lib pkgs envLib filterLib constraintLib formulaLib; }
       { inherit (args) ocamlPackages; };
+
+  substLib = import ./subst { inherit writeText runCommand opamsubst2nix envLib; };
 in
 
 {
@@ -34,4 +38,5 @@ in
   constraint = constraintLib;
   commands = commandsLib;
   depends = dependsLib;
+  subst = substLib;
 }
