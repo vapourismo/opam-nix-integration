@@ -4,7 +4,7 @@ lib.makeScope newScope (self: {
   inherit ocaml;
   ocaml-base-compiler = self.ocaml;
 
-  ocamlfind = import ../fix-findlib.nix {
+  ocamlfind = import ./fix-findlib.nix {
     inherit writeText;
 
     findlib = findlib.override {

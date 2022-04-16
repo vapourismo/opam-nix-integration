@@ -22,9 +22,9 @@
 let
   callPackage = lib.callPackageWith args;
 
-  opamScope = callPackage ./opam.nix { };
+  opamScope = callPackage ../opam { };
 
-  repositoryIndex = callPackage ../repository-index.nix { } opamRepository;
+  # repositoryIndex = callPackage ./repository-index.nix { } opamRepository;
 
   packagePath = name: version: "${opamRepository}/packages/${name}/${name}.${version}";
 

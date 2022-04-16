@@ -19,11 +19,11 @@
 let
   callPackage = lib.callPackageWith args;
 
-  baseScope = callPackage ./base.nix { };
+  baseScope = callPackage ../base { };
 in
 
 baseScope.overrideScope' (final: prev: {
-  mkOpam2NixPackage = callPackage ../make-package.nix { } final;
+  mkOpam2NixPackage = callPackage ./make-package.nix { } final;
 
   generateOpam2Nix = { name, version, src, patches ? [ ] }:
     import (

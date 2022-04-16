@@ -15,7 +15,7 @@
 let
   callPackage = lib.callPackageWith args;
 
-  extraLib = callPackage ./lib { };
+  extraLib = callPackage ../../lib { };
 in
 
 ocamlPackages:
