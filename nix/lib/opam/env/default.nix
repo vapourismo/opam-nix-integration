@@ -101,7 +101,7 @@ let
     # For 'ocaml' package
     native = true;
     native-dynlink = true;
-    preinstalled = false;
+    preinstalled = true;
   };
 
   packageVars = lib.mapAttrs (_: mkPackageVars) ocamlPackages // {
