@@ -34,7 +34,7 @@ let parse ~on_string ~on_variable input =
         let var = start_variable head in
         start tail (fun xs -> k (var :: xs)))
       else (
-        let str = on_string ("%" ^ head) in
+        let str = on_string (if String.length head > 0 then "%" ^ head else head) in
         after_percent tail (fun xs -> k (str :: xs)))
   and start segments k =
     match segments with
