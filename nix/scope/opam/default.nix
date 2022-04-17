@@ -45,10 +45,7 @@ baseScope.overrideScope' (final: prev: {
         inherit path;
         source = "${builtins.dirOf args.src}/files/${path}";
       };
-    } // extra);
 
-  callOpam2NixLocal = { src, ... }@args: pkgArgs:
-    (final.callOpam2Nix args pkgArgs).overrideAttrs (old: {
-      src = builtins.dirOf src;
-    });
+      altSrc = builtins.dirOf args.src;
+    } // extra);
 })

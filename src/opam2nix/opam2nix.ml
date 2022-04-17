@@ -78,21 +78,22 @@ let main options =
   in
   let expr =
     Nix.(
-      Pattern.attr_set [ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile" ]
+      Pattern.attr_set
+        [ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile"; "altSrc ? null" ]
       => ident "mkOpam2NixPackage"
          @@ [ attr_set
-                ([ "name", string options.name
-                 ; "version", string options.version
-                 ; "buildScript", build
-                 ; "installScript", install
-                 ; "testScript", test
-                 ; "depends", depends
-                 ; "optionalDepends", depopts
-                 ; "nativeDepends", native_depends
-                 ; "extraFiles", list extra_files
-                 ; "substFiles", list substs
-                 ]
-                @ Option.fold ~none:[] ~some:(fun src -> [ "src", src ]) source)
+                [ "name", string options.name
+                ; "version", string options.version
+                ; "buildScript", build
+                ; "installScript", install
+                ; "testScript", test
+                ; "depends", depends
+                ; "optionalDepends", depopts
+                ; "nativeDepends", native_depends
+                ; "extraFiles", list extra_files
+                ; "substFiles", list substs
+                ; "src", Option.value ~default:(ident "altSrc") source
+                ]
             ])
   in
   print_endline (Nix.render expr)
