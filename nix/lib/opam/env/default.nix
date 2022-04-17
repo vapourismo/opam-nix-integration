@@ -81,7 +81,8 @@ let
       null;
 
   mkPackageVars = package: rec {
-    inherit (package) name version;
+    inherit (package) version;
+    name = package.pname;
 
     prefix = "${package}";
     lib = "${prefix}/lib/${name}";
