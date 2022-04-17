@@ -11,6 +11,8 @@ module Options = struct
     { name : string
     ; version : string
     ; file : string
+    ; source : string option
+    ; extra_source : string option
     }
 
   let name_term = Arg.(info ~docv:"NAME" [ "n"; "name" ] |> req string |> required)
@@ -21,9 +23,23 @@ module Options = struct
 
   let file_term = Arg.(info ~docv:"FILE" [ "f"; "file" ] |> req file |> required)
 
+  let source_term = Arg.(info ~docv:"PATH" [ "s"; "source" ] |> req file |> value)
+
+  let extra_source_term =
+    Arg.(info ~docv:"PATH" [ "e"; "extra-source" ] |> req string |> value)
+  ;;
+
   let term =
-    let combine name version file = { name; version; file } in
-    Term.(const combine $ name_term $ version_term $ file_term)
+    let combine name version file source extra_source =
+      { name; version; file; source; extra_source }
+    in
+    Term.(
+      const combine
+      $ name_term
+      $ version_term
+      $ file_term
+      $ source_term
+      $ extra_source_term)
   ;;
 end
 
@@ -61,16 +77,18 @@ let main options =
     Option.fold
       ~none:[]
       ~some:(fun files ->
-        List.map
-          (fun (name, hash) ->
-            Nix.(
-              ident "resolveExtraFile"
-              @@ [ attr_set
-                     ([ "path", string (OpamFilename.Base.to_string name) ]
-                     @ Option.fold ~none:[] ~some:(fun hash -> [ hash ]) (hash_attrs hash)
-                     )
-                 ]))
-          files)
+        match files, options.extra_source with
+        | [], _ -> []
+        | files, Some extra_source ->
+          List.map
+            (fun (name, _hash) ->
+              let open Nix in
+              let name = OpamFilename.Base.to_string name in
+              attr_set
+                [ "path", string name; "src", ident (Filename.concat extra_source name) ])
+            files
+        | _, None ->
+          failwith "Got extra files from Opam, but no --extra-source flag was provided!")
       opam.extra_files
   in
   let substs =
@@ -78,22 +96,25 @@ let main options =
   in
   let expr =
     Nix.(
-      Pattern.attr_set
-        [ "mkOpam2NixPackage"; "fetchurl"; "resolveExtraFile"; "altSrc ? null" ]
+      Pattern.attr_set [ "mkOpam2NixPackage"; "fetchurl" ]
       => ident "mkOpam2NixPackage"
          @@ [ attr_set
-                [ "name", string options.name
-                ; "version", string options.version
-                ; "buildScript", build
-                ; "installScript", install
-                ; "testScript", test
-                ; "depends", depends
-                ; "optionalDepends", depopts
-                ; "nativeDepends", native_depends
-                ; "extraFiles", list extra_files
-                ; "substFiles", list substs
-                ; "src", Option.value ~default:(ident "altSrc") source
-                ]
+                ([ "name", string options.name
+                 ; "version", string options.version
+                 ; "buildScript", build
+                 ; "installScript", install
+                 ; "testScript", test
+                 ; "depends", depends
+                 ; "optionalDepends", depopts
+                 ; "nativeDepends", native_depends
+                 ; "extraFiles", list extra_files
+                 ; "substFiles", list substs
+                 ]
+                @
+                match source, options.source with
+                | Some src, _ -> [ "src", src ]
+                | None, Some src -> [ "src", ident src ]
+                | _, _ -> [])
             ])
   in
   print_endline (Nix.render expr)

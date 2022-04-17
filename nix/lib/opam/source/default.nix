@@ -7,7 +7,7 @@
 
 let
   mkCopyExtraFilesScript = extraFiles: builtins.concatStringsSep "\n" (
-    builtins.map ({ source, path }: "cp ${source} $out/${path}") extraFiles
+    builtins.map ({ src, path }: "cp ${src} $out/${path}") extraFiles
   );
 
   fixCargoChecksumsScript = writeScript "fix-cargo-checksum" ''

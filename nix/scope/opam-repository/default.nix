@@ -56,7 +56,8 @@ opamScope.overrideScope' (final: prev: {
   callOpam = { name, version, patches ? [ ] }:
     final.callOpam2Nix {
       inherit name version patches;
-      src = "${packagePath name version}/opam";
+      opam = "${packagePath name version}/opam";
+      extraSrc = "${packagePath name version}/files";
     };
 
   opamRepository = {
