@@ -49,7 +49,7 @@ let
           ''
       );
     in
-    lib.filterAttrs (name: _: !(lib.hasAttr name opamScope)) versions;
+    versions;
 in
 
 opamScope.overrideScope' (final: prev: {
