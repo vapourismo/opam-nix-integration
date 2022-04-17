@@ -1,5 +1,5 @@
 {
-  description = "opam2nix";
+  description = "OPAM integration with Nix";
 
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs;
