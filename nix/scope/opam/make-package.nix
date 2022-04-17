@@ -135,7 +135,10 @@ stdenv.mkDerivation ({
   buildInputs = with pkgs; [ git which setupHookDeriv ];
 
   propagatedBuildInputs =
-    opamLib.depends.eval { inherit name; } depends
+    # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
+    # correctly for us when 'ocamlfind' can't be found by it.
+    lib.optional (name == "dune") ocamlPackages.ocamlfind
+      ++ opamLib.depends.eval { inherit name; } depends
       ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
 
   propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;
