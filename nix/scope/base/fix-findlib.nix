@@ -1,4 +1,4 @@
-{ writeText, findlib }:
+{ system, writeText, findlib }:
 
 findlib.overrideAttrs (old: {
   # This should only differ from the upstream findlib in the '-sitelib' flag which has been adjusted
@@ -14,35 +14,17 @@ findlib.overrideAttrs (old: {
     "${placeholder "out"}/etc/findlib.conf"
   ];
 
-  # The '/lib' and '/lib/stublibs' paths have been updated below to match Opam behavior.
+  # The Nix-native 'findlib' has a setup hook. Unfortunately that hook only triggers when
+  # packages actually have a dependency this package. Lots of OPAM packages do not specify this
+  # dependency explicitly and would therefore miss out on this setup hook. In order for all packages
+  # to have access to it, this hook is separately injected in the build phase of each package.
   setupHook = writeText "setupHook.sh" ''
-    addOCamlPath () {
-        if test -d "''$1/lib"; then
-            export OCAMLPATH="''${OCAMLPATH-}''${OCAMLPATH:+:}''$1/lib"
-        fi
-
-        if test -d "''$1/lib/stublibs"; then
-            export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/stublibs"
-        fi
-    }
-
-    exportOcamlDestDir () {
-        export OCAMLFIND_DESTDIR="''$out/lib"
-    }
-
-    createOcamlDestDir () {
-        if test -n "''${createFindlibDestdir-}"; then
-          mkdir -p $OCAMLFIND_DESTDIR
-        fi
-    }
-
-    # run for every buildInput
-    addEnvHooks "$targetOffset" addOCamlPath
-
-    # run before installPhase, even without buildInputs, and not in nix-shell
-    preInstallHooks+=(createOcamlDestDir)
-
-    # run even in nix-shell, and even without buildInputs
-    addEnvHooks "$hostOffset" exportOcamlDestDir
+    # Nothing
   '';
+
+  meta = old.meta // {
+    # ocamlfind gets the list of platforms from the 'ocaml' package but defaults to the empty list
+    # if not set. When using 'opam2nix' to compile the 'ocaml' package, 'meta.platforms' is not set.
+    platforms = [ system ];
+  };
 })

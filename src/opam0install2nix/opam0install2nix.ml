@@ -9,15 +9,10 @@ module Options = struct
   let many body infos = Arg.(pos_all body [] infos)
 
   type t =
-    { ocaml_version : string
-    ; packages_dir : string
+    { packages_dir : string
     ; targets : string list
     ; test_targets : string list
     }
-
-  let ocaml_version_term =
-    Arg.(info ~docv:"VERSION" [ "ocaml-version" ] |> req string |> required)
-  ;;
 
   let file_term = Arg.(info ~docv:"PATH" [ "packages-dir" ] |> req file |> required)
 
@@ -30,10 +25,10 @@ module Options = struct
   let with_test_term = Arg.(info [ "with-test" ] |> flag |> value)
 
   let term =
-    let combine ocaml_version packages_dir targets test_targets =
-      { ocaml_version; packages_dir; targets; test_targets }
+    let combine packages_dir targets test_targets =
+      { packages_dir; targets; test_targets }
     in
-    Term.(const combine $ ocaml_version_term $ file_term $ targets_term $ test_targets)
+    Term.(const combine $ file_term $ targets_term $ test_targets)
   ;;
 end
 
@@ -91,7 +86,6 @@ let main config =
   let std_env =
     Dir_context.std_env
       ~ocaml_native:true
-      ~sys_ocaml_version:config.ocaml_version
       ~arch
       ~os
       ~os_distribution:"nixos"
@@ -112,19 +106,13 @@ let main config =
       targets
     |> OpamPackage.Name.Map.of_list
   in
-  let ocaml_constraints =
-    OpamPackage.Name.Map.singleton
-      (OpamPackage.Name.of_string "ocaml")
-      (`Eq, OpamPackage.Version.of_string config.ocaml_version)
-  in
   let test_packages =
     List.map OpamPackage.Name.of_string config.test_targets
     |> OpamPackage.Name.Set.of_list
   in
   let context =
     Dir_context.create
-      ~constraints:
-        (OpamPackage.Name.Map.union (fun _ r -> r) package_constraints ocaml_constraints)
+      ~constraints:package_constraints
       ~test:test_packages
       ~env
       config.packages_dir

@@ -1,11 +1,11 @@
 { pkgs
 , stdenv
 , lib
+, system
 , newScope
 , runCommand
 , writeText
 , writeScript
-, ocaml
 , findlib
 , opam-installer
 , opam2nix

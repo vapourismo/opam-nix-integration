@@ -64,7 +64,7 @@ let
   fixNakedOcamlScript = args:
     # XXX: Hack to patch invocation of OCaml scripts that rely on shebang.
     if lib.lists.length args > 0 && lib.strings.hasSuffix ".ml" (lib.lists.elemAt args 0) then
-      [ "${ocamlPackages.ocaml}/bin/ocaml" ] ++ args
+      [ "ocaml" ] ++ args
     else
       args;
 
@@ -80,18 +80,57 @@ let
 
   overlayedSource = opamLib.source.fix { inherit name version src extraFiles substFiles; };
 
+  setupHookDeriv = stdenv.mkDerivation {
+    name = "ocaml-setup-hook";
+
+    dontUnpack = true;
+    dontConfigure = true;
+    dontBuild = true;
+
+    installPhase = ''
+      mkdir -p $out
+    '';
+
+    setupHook = writeScript "setup-hook.sh" ''
+      function addOCamlPath {
+        if test -d "''$1/lib"; then
+          export OCAMLPATH="''${OCAMLPATH-}''${OCAMLPATH:+:}''$1/lib"
+        fi
+
+        if test -d "''$1/lib/stublibs"; then
+          export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/stublibs"
+        fi
+      }
+
+      addEnvHooks "$targetOffset" addOCamlPath
+
+      function exportOcamlDestDir {
+        export OCAMLFIND_DESTDIR="''$out/lib"
+      }
+
+      addEnvHooks "$hostOffset" exportOcamlDestDir
+
+      function createOcamlDestDir {
+        if test -n "''${createFindlibDestdir-}"; then
+          mkdir -p $OCAMLFIND_DESTDIR
+        fi
+      }
+
+      preInstallHooks+=(createOcamlDestDir)
+    '';
+  };
 in
+
 stdenv.mkDerivation ({
   pname = name;
   version = extraLib.cleanVersion version;
 
   src = overlayedSource;
 
-  buildInputs = with pkgs; [ git which ];
+  buildInputs = with pkgs; [ git which setupHookDeriv ];
 
   propagatedBuildInputs =
-    (with ocamlPackages; [ ocaml ocamlfind ])
-      ++ opamLib.depends.eval { inherit name; } depends
+    opamLib.depends.eval { inherit name; } depends
       ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
 
   propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;

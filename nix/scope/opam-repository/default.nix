@@ -1,11 +1,11 @@
 { pkgs
 , stdenv
 , lib
+, system
 , newScope
 , runCommand
 , writeText
 , writeScript
-, ocaml
 , findlib
 , opam-installer
 , opam2nix
@@ -43,7 +43,6 @@ let
           }
           ''
             opam0install2nix \
-              --ocaml-version="${ocaml.version}" \
               --packages-dir="${opamRepository}/packages" \
               ${testTargetArgs} \
               ${packageConstraintArgs} \

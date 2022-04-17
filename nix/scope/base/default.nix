@@ -1,14 +1,11 @@
-{ lib, writeText, newScope, ocaml, findlib }:
+{ lib, system, writeText, newScope, findlib }:
 
 lib.makeScope newScope (self: {
-  inherit ocaml;
-  ocaml-base-compiler = self.ocaml;
-
   ocamlfind = import ./fix-findlib.nix {
-    inherit writeText;
+    inherit system writeText;
 
     findlib = findlib.override {
-      inherit (self) ocaml;
+      ocaml = self.ocaml-base-compiler;
     };
   };
 })
