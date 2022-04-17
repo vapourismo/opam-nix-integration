@@ -40,7 +40,13 @@ baseScope.overrideScope' (final: prev: {
         ''
     );
 
-  callOpam2Nix = args: final.callPackage (final.generateOpam2Nix args);
+  callOpam2Nix = args: extra:
+    final.callPackage (final.generateOpam2Nix args) ({
+      resolveExtraFile = { path, ... }: {
+        inherit path;
+        source = "${builtins.dirOf args.src}/files/${path}";
+      };
+    } // extra);
 
   callOpam2NixLocal = { src, ... }@args: pkgArgs:
     (final.callOpam2Nix args pkgArgs).overrideAttrs (old: {
