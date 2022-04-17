@@ -6,7 +6,6 @@
 , runCommand
 , writeText
 , writeScript
-, findlib
 , opam-installer
 , opam2nix
 , opamvars2nix

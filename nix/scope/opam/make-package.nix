@@ -127,6 +127,11 @@ stdenv.mkDerivation ({
 
   src = overlayedSource;
 
+  patches = lib.optionals (name == "ocamlfind") [
+    ./topfind.patch
+    ./ldconf.patch
+  ];
+
   buildInputs = with pkgs; [ git which setupHookDeriv ];
 
   propagatedBuildInputs =
