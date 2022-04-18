@@ -28,12 +28,13 @@ ocamlPackages:
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
 , substFiles ? [ ]
+, enableTests ? false
 , ...
 }@args:
 
 let
   opamLib = extraLib.makeOpamLib {
-    inherit name version ocamlPackages;
+    inherit name version ocamlPackages enableTests;
   };
 
   opamTestLib = extraLib.makeOpamLib {
@@ -162,7 +163,7 @@ stdenv.mkDerivation ({
     ${renderedInstallScript}
   '';
 
-  doCheck = false;
+  doCheck = enableTests;
 
   checkPhase = ''
     # Test Opam package

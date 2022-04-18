@@ -96,7 +96,7 @@ let main options =
   in
   let expr =
     Nix.(
-      Pattern.attr_set [ "mkOpamDerivation"; "fetchurl" ]
+      Pattern.attr_set [ "mkOpamDerivation"; "fetchurl"; "enableTests ? false" ]
       => ident "mkOpamDerivation"
          @@ [ attr_set
                 ([ "name", string options.name
@@ -109,6 +109,7 @@ let main options =
                  ; "nativeDepends", native_depends
                  ; "extraFiles", list extra_files
                  ; "substFiles", list substs
+                 ; "enableTests", ident "enableTests"
                  ]
                 @
                 match source, options.source with
