@@ -63,7 +63,7 @@ packageSet.callOpam2Nix {
 
 ## Building the initial package set
 
-When calling the `opam-nix-integration` entrypoint, you can supply the following optional arguments:
+When calling the `opam-nix-integration.makePackageSet` entrypoint, you can supply the following arguments:
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
