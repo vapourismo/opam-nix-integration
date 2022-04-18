@@ -21,7 +21,15 @@ in
 baseScope.overrideScope' (final: prev: {
   mkOpamDerivation = callPackage ./make-opam-derivation.nix { } final;
 
-  generateOpam2Nix = { name, version, opam, src ? null, extraSrc ? null, patches ? [ ] }:
+  selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
+
+  resolveOpamExtraSrc = extraSrc: file:
+    if builtins.isPath extraSrc || builtins.isString extraSrc then
+      "${extraSrc}/${file}"
+    else
+      abort "OPAM file needs 'extraSrc' to be a string or path! Got: ${builtins.typeOf extraSrc}";
+
+  generateOpam2Nix = { name, version, opam, patches ? [ ] }:
     import (
       runCommand
         "opam2nix-${name}-${version}"
@@ -38,15 +46,13 @@ baseScope.overrideScope' (final: prev: {
           opam2nix \
             --name ${name} \
             --version ${version} \
-            ${lib.optionalString (src != null) "--source ${src}"} \
-            ${lib.optionalString (extraSrc != null) "--extra-source ${extraSrc}"} \
             --file opam > $out
         ''
     );
 
-  callOpam2Nix = { name, opam ? null, src ? null, ... }@args:
+  callOpam2Nix = { name, opam ? null, src ? null, ... }@args: extra:
     let
-      extraArgs =
+      argOverride =
         if opam != null then
           { }
         else if src != null then
@@ -54,5 +60,7 @@ baseScope.overrideScope' (final: prev: {
         else
           abort "'opam' mustn't be null if 'src' is also null!";
     in
-    final.callPackage (final.generateOpam2Nix (args // extraArgs));
+    final.callPackage
+      (final.generateOpam2Nix (builtins.removeAttrs args [ "src" ] // argOverride))
+      ({ altSrc = src; } // extra);
 })

@@ -11,8 +11,6 @@ module Options = struct
     { name : string
     ; version : string
     ; file : string
-    ; source : string option
-    ; extra_source : string option
     }
 
   let name_term = Arg.(info ~docv:"NAME" [ "n"; "name" ] |> req string |> required)
@@ -23,23 +21,9 @@ module Options = struct
 
   let file_term = Arg.(info ~docv:"FILE" [ "f"; "file" ] |> req file |> required)
 
-  let source_term = Arg.(info ~docv:"PATH" [ "s"; "source" ] |> req file |> value)
-
-  let extra_source_term =
-    Arg.(info ~docv:"PATH" [ "e"; "extra-source" ] |> req string |> value)
-  ;;
-
   let term =
-    let combine name version file source extra_source =
-      { name; version; file; source; extra_source }
-    in
-    Term.(
-      const combine
-      $ name_term
-      $ version_term
-      $ file_term
-      $ source_term
-      $ extra_source_term)
+    let combine name version file = { name; version; file } in
+    Term.(const combine $ name_term $ version_term $ file_term)
   ;;
 end
 
@@ -77,18 +61,18 @@ let main options =
     Option.fold
       ~none:[]
       ~some:(fun files ->
-        match files, options.extra_source with
-        | [], _ -> []
-        | files, Some extra_source ->
+        match files with
+        | [] -> []
+        | files ->
           List.map
             (fun (name, _hash) ->
               let open Nix in
               let name = OpamFilename.Base.to_string name in
               attr_set
-                [ "path", string name; "src", ident (Filename.concat extra_source name) ])
-            files
-        | _, None ->
-          failwith "Got extra files from Opam, but no --extra-source flag was provided!")
+                [ "path", string name
+                ; "src", ident "resolveOpamExtraSrc" @@ [ ident "extraSrc"; string name ]
+                ])
+            files)
       opam.extra_files
   in
   let substs =
@@ -98,7 +82,11 @@ let main options =
     Nix.(
       Pattern.attr_set
         [ "mkOpamDerivation"
+        ; "selectOpamSrc"
+        ; "resolveOpamExtraSrc"
         ; "fetchurl"
+        ; "altSrc ? null"
+        ; "extraSrc ? null"
         ; "jobs ? 1"
         ; "enableTests ? false"
         ; "enableDocs ? false"
@@ -120,10 +108,9 @@ let main options =
                  ; "enableDocs", ident "enableDocs"
                  ]
                 @
-                match source, options.source with
-                | Some src, _ -> [ "src", src ]
-                | None, Some src -> [ "src", ident src ]
-                | _, _ -> [])
+                match source with
+                | Some src -> [ "src", ident "selectOpamSrc" @@ [ src; ident "altSrc" ] ]
+                | None -> [ "src", ident "altSrc" ])
             ])
   in
   print_endline (Nix.render expr)
