@@ -1,11 +1,17 @@
-{ overrideScope', opamRepository }:
+{ pkgs
+, overrideScope'
+, opamRepository ? pkgs.callPackage ./opam-repository.nix { }
+, packageSelection ? { }
+}:
 
 let
   bootPackages = overrideScope' (
     import ./nix/packages/ocaml/overlay.nix
   );
+
+  emptyScope = bootPackages.callPackage ./nix/scope/opam-repository {
+    inherit opamRepository;
+  };
 in
 
-bootPackages.callPackage ./nix/scope/opam-repository {
-  inherit opamRepository;
-}
+emptyScope.overrideScope' (final: prev: prev.opamRepository.select packageSelection)
