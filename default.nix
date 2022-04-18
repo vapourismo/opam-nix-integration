@@ -1,6 +1,6 @@
-{ callPackage
+{ pkgs
 , overrideScope'
-, opamRepository ? callPackage ./opam-repository.nix { }
+, opamRepository ? pkgs.callPackage ./opam-repository.nix { }
 , packageSelection ? { }
 }:
 
