@@ -96,8 +96,8 @@ let main options =
   in
   let expr =
     Nix.(
-      Pattern.attr_set [ "mkOpam2NixPackage"; "fetchurl" ]
-      => ident "mkOpam2NixPackage"
+      Pattern.attr_set [ "mkOpamDerivation"; "fetchurl" ]
+      => ident "mkOpamDerivation"
          @@ [ attr_set
                 ([ "name", string options.name
                  ; "version", string options.version

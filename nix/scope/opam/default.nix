@@ -19,7 +19,7 @@ let
 in
 
 baseScope.overrideScope' (final: prev: {
-  mkOpam2NixPackage = callPackage ./make-package.nix { } final;
+  mkOpamDerivation = callPackage ./make-opam-derivation.nix { } final;
 
   generateOpam2Nix = { name, version, opam, src ? null, extraSrc ? null, patches ? [ ] }:
     import (
