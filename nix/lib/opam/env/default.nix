@@ -45,8 +45,8 @@ in
 { name
 , version
 , jobs ? 1
-, enableTests ? false
-, enableDocs ? false
+, with-test ? false
+, with-doc ? false
 , ocamlPackages
 , disabledPackages ? [ ]
 }:
@@ -58,10 +58,7 @@ let
     defaultOpamVars
     // defaultLocalVars
     // rec {
-      inherit name version jobs;
-
-      with-test = enableTests;
-      with-doc = enableDocs;
+      inherit name version jobs with-test with-doc;
 
       prefix = "$out";
       lib = "${prefix}/lib";

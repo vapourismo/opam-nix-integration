@@ -29,19 +29,19 @@ ocamlPackages:
 , extraFiles ? [ ]
 , substFiles ? [ ]
 , jobs ? 1
-, enableTests ? false
-, enableDocs ? false
+, with-test ? false
+, with-doc ? false
 , ...
 }@args:
 
 let
   opamLib = extraLib.makeOpamLib {
-    inherit name version ocamlPackages jobs enableDocs enableTests;
+    inherit name version ocamlPackages jobs with-doc with-test;
   };
 
   opamTestLib = extraLib.makeOpamLib {
-    inherit name version ocamlPackages jobs enableDocs;
-    enableTests = true;
+    inherit name version ocamlPackages jobs with-doc;
+    with-test = true;
   };
 
   defaultInstallScript = ''
@@ -165,7 +165,7 @@ stdenv.mkDerivation ({
     ${renderedInstallScript}
   '';
 
-  doCheck = enableTests;
+  doCheck = with-test;
 
   checkPhase = ''
     # Test Opam package

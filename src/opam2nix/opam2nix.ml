@@ -88,8 +88,8 @@ let main options =
         ; "altSrc ? null"
         ; "extraSrc ? null"
         ; "jobs ? 1"
-        ; "enableTests ? false"
-        ; "enableDocs ? false"
+        ; "with-test ? false"
+        ; "with-doc ? false"
         ]
       => ident "mkOpamDerivation"
          @@ [ attr_set
@@ -104,8 +104,8 @@ let main options =
                  ; "extraFiles", list extra_files
                  ; "substFiles", list substs
                  ; "jobs", ident "jobs"
-                 ; "enableTests", ident "enableTests"
-                 ; "enableDocs", ident "enableDocs"
+                 ; "with-test", ident "with-test"
+                 ; "with-doc", ident "with-doc"
                  ]
                 @
                 match source with

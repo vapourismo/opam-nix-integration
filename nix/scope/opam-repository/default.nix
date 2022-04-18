@@ -85,7 +85,7 @@ opamScope.overrideScope' (final: prev: {
       builtins.mapAttrs
         (name: version:
           let pkg = final.callOpam { inherit name version; } { }; in
-          pkg.override { enableTests = lib.elem name testablePackages; })
+          pkg.override { with-test = lib.elem name testablePackages; })
         (solvePackageVersions args);
   };
 })
