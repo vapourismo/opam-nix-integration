@@ -1,11 +1,23 @@
 let
   pkgs =
     import
-      (fetchTarball
-        "https://github.com/NixOS/nixpkgs/archive/759a1f7742c76594955b8fc1c04b66dc409b8ff2.tar.gz")
+      (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
       { };
 
-  defaultScope = pkgs.ocamlPackages.callPackage ../.. {
+  opam-repository = pkgs.fetchFromGitHub {
+    owner = "ocaml";
+    repo = "opam-repository";
+    rev = "5269af290fff3fc631a8855e4255b4b53713b467";
+    sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
+  };
+
+  opam-nix-integration = import (
+    fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz"
+  );
+
+  defaultScope = pkgs.ocamlPackages.callPackage opam-nix-integration {
+    opamRepository = opam-repository;
+
     packageSelection = {
       packageConstraints = [
         "ocaml = 4.13.1"
