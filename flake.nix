@@ -13,9 +13,15 @@
   outputs = { self, nixpkgs, flake-utils, opam-repository }:
     {
       overlays.ocamlBool = import (self + /nix/packages/ocaml/overlay.nix);
+
+      overlay = import (self + /overlay.nix);
     }
     // flake-utils.lib.eachDefaultSystem (system:
-      with import nixpkgs { inherit system; };
+      with import nixpkgs
+        {
+          inherit system;
+          overlays = [ self.overlay ];
+        };
 
       let
         ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlays.ocamlBool;
@@ -33,8 +39,9 @@
 
           opam0install2nix = ocamlPackages.opam0install2nix;
 
-          emptyScope = ocamlPackages.callPackage (self + /nix/scope/opam-repository) {
+          makePackageSet = { packageSelection ? { } }: opam-nix-integration.makePackageSet {
             repository = opam-repository;
+            inherit packageSelection;
           };
         };
 

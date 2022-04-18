@@ -13,10 +13,16 @@ The following sets up a package set using a version of [opam-repository][opam-re
 
 ```nix
 let
+  # Fetch the Opam Nix integration library.
+  opam-nix-integration =
+    import
+      (fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz");
+
+  # Fetch Nixpkgs and inject our overlay.
   pkgs =
     import
       (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
-      { };
+      { overlays = [ opam-nix-integration.overlay ]; };
 
   # Fetch the opam-repository.
   opam-repository = pkgs.fetchFromGitHub {
@@ -26,14 +32,9 @@ let
     sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
   };
 
-  # Fetch the Opam Nix integration library.
-  opam-nix-integration =
-    import
-      (fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz");
-
   # Create a package set using some constraints against the packages available in opam-repository.
-  packageSet = pkgs.ocamlPackages.callPackage opam-nix-integration {
-    # This is optional. Opam Nix integration comes with a version for ease of use.
+  packageSet = pkgs.opam-nix-integration.makePackageSet {
+    # Set the opam-repository which has all our package descriptions.
     repository = opam-repository;
 
     # Specify the constraints we have.
