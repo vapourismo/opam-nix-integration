@@ -1,0 +1,182 @@
+# opam-nix-integration
+
+This project aims to provide an integration mechanism for OPAM packages into Nix.
+
+To achieve this, it supplies two key solutions for common use cases:
+
+  * Build a package set from a list of constraints and an [opam-repository][opam-repository].
+  * Produce a Nix derivation from an OPAM file.
+
+## Getting started
+
+The following sets up a package set using a version of [opam-repository][opam-repository] and some constraints we have against those packages. After that it produces a derivation for the OPAM package in the current directory.
+
+```nix
+let
+  pkgs =
+    import
+      (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
+      { };
+
+  # Fetch the opam-repository.
+  opam-repository = pkgs.fetchFromGitHub {
+    owner = "ocaml";
+    repo = "opam-repository";
+    rev = "5269af290fff3fc631a8855e4255b4b53713b467";
+    sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
+  };
+
+  # Fetch the Opam Nix integration library.
+  opam-nix-integration =
+    import
+      (fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz");
+
+  # Create a package set using some constraints against the packages available in opam-repository.
+  packageSet = pkgs.ocamlPackages.callPackage opam-nix-integration {
+    # This is optional. Opam Nix integration comes with a version for ease of use.
+    opamRepository = opam-repository;
+
+    # Specify the constraints we have.
+    packageSelection = {
+      packageConstraints = [
+        "ocaml = 4.13.1"
+        "dune < 3"
+        "zarith"
+        "opam-format"
+        "opam-state"
+        "opam-0install"
+        "cmdliner"
+        "ppx_deriving"
+      ];
+    };
+  };
+in
+
+# Generate a Nix derivation from our OPAM package in the current directory.
+packageSet.callOpam2Nix {
+  name = "opam2nix";
+  version = "0.0.0";
+  src = ./.;
+} {}
+```
+
+## Building the initial package set
+
+When calling the `opam-nix-integration` entrypoint, you can supply the following optional arguments:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `opamRepository` | `path` | This is an `opam-repository` checkout. You don't have to provide this, but it is highly recommended. |
+| `packageSelection.packageConstraints` | `list` of `string`s | Here you can specify which packages you'd like to have in the package set including an optional version constraint. A constraint is imposed if you add a relation operator and version after the package name like so: `package = 1.2.3`. |
+| `packageSelection.testablePackages` | `list` of `string`s | These are the names of packages whose test dependencies should be included in the package set. |
+
+## Package set functionality
+
+### `callOpam2Nix`
+
+`callOpam2Nix` takes 2 attribute set parameters and generates a derivation. The first configures the generation of the Nix derivation from the OPAM file. Whereas the second is passed directly to the derivation in a similar way to `callPackage`.
+
+Example:
+
+```nix
+packageSet.callOpam2Nix
+  {
+    name = "my_package";
+    version = "1.2.3";
+    src = /source/of/my_package;
+  }
+  {
+    jobs = 16;
+    enableTests = true;
+  }
+```
+
+Options for the first parameter:
+
+| Name | Type | Required? | Description |
+|------|------|-----------|-------------|
+| `name` | `string` | Yes | OPAM package name |
+| `version` | `string` | Yes | Package version |
+| `opam` | `path` | No | Path to the OPAM file to processed. This will default to `${src}/${name}.opam` if you omit it. That means you have to provide `src` when skipping `opam`. |
+| `src` | `path` | No | You can specify this parameter if you'd like to override the source for the package. If you skip it, the source specified in the OPAM file will be used. |
+| `patches` | `list` of `path`s | No | These patches will be applied to the OPAM file ahead of processing. |
+
+These are some of the options for the second parameter:
+
+| Name | Type | Description |
+|------|------|-------------|
+| `jobs` | `int` | Sets the `jobs` OPAM variable for that package. This can be used to scale the build parallelism. |
+| `with-test` | `bool` | Sets the `with-test` OPAM variable for that package. Usually that enables building and running tests. |
+| `with-doc` | `bool` | Sets the `with-doc` OPAM variable for that package. In most cases documentation will be built and installed if set to `true`. |
+| `extraSrc` | `path` | Some packages need extra files via the `extra-files` stanza. Those files will be looked up in `extraSrc`.  |
+
+### `callOpam`
+
+`callOpam` is almost identical to `callOpam2Nix` except that it finds the right values for `opam` and `extraSrc` parameters specific to the configured OPAM repository for you.
+
+### `opamRepository.packages.${name}.${version}`
+
+This is a shortcut for calling `callOpam { inherit name version; } {}`.
+
+
+Example:
+
+```nix
+let
+  packageSet = ...;
+
+  dune_2 = packageSet.callOpam {
+    name = "dune";
+    version = "2.9.3";
+  } {};
+in
+...
+```
+
+### `opamRepository.packages.${name}.latest`
+
+Example:
+
+```nix
+let
+  packageSet = ...;
+
+  dune_2 = packageSet.opamRepository.packages.dune."2.9.3";
+in
+...
+```
+
+Like `opamRepository.packages.${name}.${version}` but for the latest version of that package.
+
+Example:
+
+```nix
+let
+  packageSet = ...;
+
+  latest_dune = packageSet.opamRepository.packages.dune.latest;
+in
+...
+```
+
+### `opamRepository.select`
+
+## Known problems
+
+### Dune 3+ direct installation mode
+
+As reported in [ocaml/dune#5455][dune-install-issue], Dune 3+ wants either an explicit `--prefix` command-line argument or the `opam` executable in scope when installing build results directly. We can't do either at the moment unfortunately.
+
+Luckily, this installation method is not super common - most Dune-based projects generate `.install` files instead which work fine.
+
+A workaround is being proposed: [ocaml/dune#5589][dune-install-fix].
+
+### Missing acceptable checksums in OPAM files
+
+Some OPAM packages express checksums using MD5 which is not accepted by Nix' `fetchurl` mechanism. The source of these packages therefore can't be fetched when running Nix in pure mode. Nix Flakes run pure mode by default.
+
+When you encounter Nix complaining about missing checksums in pure mode, try running with `--impure` while the package in question migrates to SHA256 checksums.
+
+[opam-repository]: https://github.com/ocaml/opam-repository
+[dune-install-issue]: https://github.com/ocaml/dune/issues/5455
+[dune-install-fix]: https://github.com/ocaml/dune/pull/5589
