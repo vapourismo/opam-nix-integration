@@ -28,17 +28,19 @@ ocamlPackages:
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
 , substFiles ? [ ]
+, jobs ? 1
 , enableTests ? false
+, enableDocs ? false
 , ...
 }@args:
 
 let
   opamLib = extraLib.makeOpamLib {
-    inherit name version ocamlPackages enableTests;
+    inherit name version ocamlPackages jobs enableDocs enableTests;
   };
 
   opamTestLib = extraLib.makeOpamLib {
-    inherit name version ocamlPackages;
+    inherit name version ocamlPackages jobs enableDocs;
     enableTests = true;
   };
 
