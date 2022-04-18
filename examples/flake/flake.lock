@@ -67,7 +67,7 @@
         "opam-repository": "opam-repository"
       },
       "locked": {
-        "narHash": "sha256-ResjHekyPkYcwtwLzLnRb5wbGingSeZd0pslWMWwAGM=",
+        "narHash": "sha256-3GooNB1FZnqAWskap0iAmLUlOBDE4GmJzrNCkIHIxkQ=",
         "path": "../..",
         "type": "path"
       },

@@ -16,6 +16,8 @@
       overlay = final: prev:
         let
           defaultScope = prev.ocamlPackages.callPackage opam-nix-integration {
+            opamRepository = opam-repository;
+
             packageSelection = {
               packageConstraints = [
                 "ocaml = 4.13.1"
