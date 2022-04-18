@@ -11,7 +11,7 @@
 , opamvars2nix
 , opamsubst2nix
 , opam0install2nix
-, opamRepository
+, repository
 }@args:
 
 let
@@ -19,9 +19,9 @@ let
 
   opamScope = callPackage ../opam { };
 
-  repositoryIndex = callPackage ./repository-index.nix { } opamRepository;
+  repositoryIndex = callPackage ./repository-index.nix { } repository;
 
-  packagePath = name: version: "${opamRepository}/packages/${name}/${name}.${version}";
+  packagePath = name: version: "${repository}/packages/${name}/${name}.${version}";
 
   solvePackageVersions =
     { packageConstraints ? [ ]
@@ -42,7 +42,7 @@ let
           }
           ''
             opam0install2nix \
-              --packages-dir="${opamRepository}/packages" \
+              --packages-dir="${repository}/packages" \
               ${testTargetArgs} \
               ${packageConstraintArgs} \
               > $out
@@ -61,7 +61,7 @@ opamScope.overrideScope' (final: prev: {
       }
       ({ extraSrc = "${packagePath name version}/files"; } // args);
 
-  opamRepository = {
+  repository = {
     packages =
       builtins.mapAttrs
         (name: collection:

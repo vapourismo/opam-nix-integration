@@ -16,7 +16,7 @@ let
   );
 
   defaultScope = pkgs.ocamlPackages.callPackage opam-nix-integration {
-    opamRepository = opam-repository;
+    repository = opam-repository;
 
     packageSelection = {
       packageConstraints = [

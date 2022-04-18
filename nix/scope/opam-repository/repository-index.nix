@@ -1,9 +1,9 @@
 { lib }:
 
-opamRepository:
+repository:
 
 let
-  packageDirs = builtins.readDir "${opamRepository}/packages";
+  packageDirs = builtins.readDir "${repository}/packages";
 
   packageNames =
     builtins.filter
@@ -12,7 +12,7 @@ let
 
   getPackage = packageName:
     let
-      versionDirs = builtins.readDir "${opamRepository}/packages/${packageName}";
+      versionDirs = builtins.readDir "${repository}/packages/${packageName}";
 
       versionedNames =
         builtins.filter

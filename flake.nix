@@ -34,7 +34,7 @@
           opam0install2nix = ocamlPackages.opam0install2nix;
 
           emptyScope = ocamlPackages.callPackage (self + /nix/scope/opam-repository) {
-            opamRepository = opam-repository;
+            repository = opam-repository;
           };
         };
 

@@ -34,7 +34,7 @@ let
   # Create a package set using some constraints against the packages available in opam-repository.
   packageSet = pkgs.ocamlPackages.callPackage opam-nix-integration {
     # This is optional. Opam Nix integration comes with a version for ease of use.
-    opamRepository = opam-repository;
+    repository = opam-repository;
 
     # Specify the constraints we have.
     packageSelection = {
@@ -66,7 +66,7 @@ When calling the `opam-nix-integration` entrypoint, you can supply the following
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `opamRepository` | `path` | This is an `opam-repository` checkout. You don't have to provide this, but it is highly recommended. |
+| `repository` | `path` | This is an `opam-repository` checkout. You don't have to provide this, but it is highly recommended. |
 | `packageSelection.packageConstraints` | `list` of `string`s | Here you can specify which packages you'd like to have in the package set including an optional version constraint. A constraint is imposed if you add a relation operator and version after the package name like so: `package = 1.2.3`. |
 | `packageSelection.testablePackages` | `list` of `string`s | These are the names of packages whose test dependencies should be included in the package set. |
 
@@ -114,7 +114,7 @@ These are some of the options for the second parameter:
 
 `callOpam` is almost identical to `callOpam2Nix` except that it finds the right values for `opam` and `extraSrc` parameters specific to the configured OPAM repository for you.
 
-### `opamRepository.packages.${name}.${version}`
+### `repository.packages.${name}.${version}`
 
 This is a shortcut for calling `callOpam { inherit name version; } {}`.
 
@@ -133,7 +133,7 @@ in
 ...
 ```
 
-### `opamRepository.packages.${name}.latest`
+### `repository.packages.${name}.latest`
 
 Example:
 
@@ -141,12 +141,12 @@ Example:
 let
   packageSet = ...;
 
-  dune_2 = packageSet.opamRepository.packages.dune."2.9.3";
+  dune_2 = packageSet.repository.packages.dune."2.9.3";
 in
 ...
 ```
 
-Like `opamRepository.packages.${name}.${version}` but for the latest version of that package.
+Like `repository.packages.${name}.${version}` but for the latest version of that package.
 
 Example:
 
@@ -154,12 +154,12 @@ Example:
 let
   packageSet = ...;
 
-  latest_dune = packageSet.opamRepository.packages.dune.latest;
+  latest_dune = packageSet.repository.packages.dune.latest;
 in
 ...
 ```
 
-### `opamRepository.select`
+### `repository.select`
 
 ## Known problems
 
