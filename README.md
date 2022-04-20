@@ -68,8 +68,7 @@ When calling the `opam-nix-integration.makePackageSet` entrypoint, you can suppl
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `repository` | `path` | This is an `opam-repository` checkout. You don't have to provide this, but it is highly recommended. |
-| `packageSelection.packageConstraints` | `list` of `string`s | Here you can specify which packages you'd like to have in the package set including an optional version constraint. A constraint is imposed if you add a relation operator and version after the package name like so: `package = 1.2.3`. |
-| `packageSelection.testablePackages` | `list` of `string`s | These are the names of packages whose test dependencies should be included in the package set. |
+| `packageSelection` | `attrset` | See `repository.select` function below for specification. |
 
 ## Package set functionality
 
@@ -114,12 +113,6 @@ These are some of the options for the second parameter:
 ### `callOpam`
 
 `callOpam` is almost identical to `callOpam2Nix` except that it finds the right values for `opam` and `extraSrc` parameters specific to the configured OPAM repository for you.
-
-### `repository.packages.${name}.${version}`
-
-This is a shortcut for calling `callOpam { inherit name version; } {}`.
-
-
 Example:
 
 ```nix
@@ -134,7 +127,9 @@ in
 ...
 ```
 
-### `repository.packages.${name}.latest`
+### `repository.packages.${name}.${version}`
+
+This is a shortcut for calling `callOpam { inherit name version; } {}`.
 
 Example:
 
@@ -146,6 +141,8 @@ let
 in
 ...
 ```
+
+### `repository.packages.${name}.latest`
 
 Like `repository.packages.${name}.${version}` but for the latest version of that package.
 
@@ -161,6 +158,26 @@ in
 ```
 
 ### `repository.select`
+
+This function allows you to select an attribute set of packages given some constraints.
+Its argument corresponds to `makePackageSet`'s `packageSelection` argument.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `packageConstraints` | `list` of `string`s | Here you can specify which packages you'd like to have in the package set including an optional version constraint. A constraint is imposed if you add a relation operator and version after the package name like so: `package = 1.2.3`. |
+| `testablePackages` | `list` of `string`s | These are the names of packages whose test dependencies should be included in the package set. |
+
+Example:
+
+```nix
+let
+  packageSet = ...;
+in
+packageSet.overrideScope' (final: prev: prev.repository.select {
+  packageConstraints = ["dune > 2"];
+})
+```
+
 
 ## Known problems
 
