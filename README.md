@@ -188,7 +188,7 @@ Luckily, this installation method is not super common - most Dune-based projects
 
 A [workaround][dune-install-fix] has been accepted in Dune that will be available from version 3.2 onwards.
 
-### Missing acceptable checksums in OPAM files
+### MD5 checksums in OPAM files
 
 Some OPAM packages express checksums using MD5 which is not accepted by Nix' `fetchurl` mechanism. The source of these packages therefore can't be fetched when running Nix in pure mode. Nix Flakes run pure mode by default.
 
