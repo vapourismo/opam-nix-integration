@@ -28,6 +28,7 @@ module Options = struct
 end
 
 let main options =
+  let open Nix in
   let opam = read_opam options.Options.file in
   let build = Lib.nix_of_commands opam.build in
   let install = Lib.nix_of_commands opam.install in
@@ -45,7 +46,6 @@ let main options =
         | files ->
           List.map
             (fun (path, _hash) ->
-              let open Nix in
               let path = OpamFilename.Base.to_string path in
               attr_set
                 [ "path", string path
@@ -57,50 +57,59 @@ let main options =
   let extra_sources =
     List.map
       (fun (path, url) ->
-        let open Nix in
         let name = OpamFilename.Base.to_string path in
         attr_set [ "path", string name; "src", Lib.nix_of_url url ])
       opam.extra_sources
   in
   let substs =
-    List.map (fun path -> OpamFilename.Base.to_string path |> Nix.string) opam.substs
+    List.map (fun path -> OpamFilename.Base.to_string path |> string) opam.substs
+  in
+  let patches =
+    List.map
+      (fun (path, filter) ->
+        attr_set
+          [ "path", string (OpamFilename.Base.to_string path)
+          ; ( "filter"
+            , Option.fold ~none:Lib.Filter.nix_of_true ~some:Lib.Filter.to_nix filter )
+          ])
+      opam.patches
   in
   let expr =
-    Nix.(
-      Pattern.attr_set
-        [ "mkOpamDerivation"
-        ; "selectOpamSrc"
-        ; "resolveOpamExtraSrc"
-        ; "fetchurl"
-        ; "altSrc ? null"
-        ; "extraSrc ? null"
-        ; "jobs ? 1"
-        ; "with-test ? false"
-        ; "with-doc ? false"
-        ]
-      => ident "mkOpamDerivation"
-         @@ [ attr_set
-                ([ "name", string options.name
-                 ; "version", string options.version
-                 ; "buildScript", build
-                 ; "installScript", install
-                 ; "testScript", test
-                 ; "depends", depends
-                 ; "optionalDepends", depopts
-                 ; "nativeDepends", native_depends
-                 ; "extraFiles", list (extra_files @ extra_sources)
-                 ; "substFiles", list substs
-                 ; "jobs", ident "jobs"
-                 ; "with-test", ident "with-test"
-                 ; "with-doc", ident "with-doc"
-                 ]
-                @
-                match source with
-                | Some src -> [ "src", ident "selectOpamSrc" @@ [ src; ident "altSrc" ] ]
-                | None -> [ "src", ident "altSrc" ])
-            ])
+    Pattern.attr_set
+      [ "mkOpamDerivation"
+      ; "selectOpamSrc"
+      ; "resolveOpamExtraSrc"
+      ; "fetchurl"
+      ; "altSrc ? null"
+      ; "extraSrc ? null"
+      ; "jobs ? 1"
+      ; "with-test ? false"
+      ; "with-doc ? false"
+      ]
+    => ident "mkOpamDerivation"
+       @@ [ attr_set
+              ([ "name", string options.name
+               ; "version", string options.version
+               ; "buildScript", build
+               ; "installScript", install
+               ; "testScript", test
+               ; "depends", depends
+               ; "optionalDepends", depopts
+               ; "nativeDepends", native_depends
+               ; "extraFiles", list (extra_files @ extra_sources)
+               ; "substFiles", list substs
+               ; "patches", list patches
+               ; "jobs", ident "jobs"
+               ; "with-test", ident "with-test"
+               ; "with-doc", ident "with-doc"
+               ]
+              @
+              match source with
+              | Some src -> [ "src", ident "selectOpamSrc" @@ [ src; ident "altSrc" ] ]
+              | None -> [ "src", ident "altSrc" ])
+          ]
   in
-  print_endline (Nix.render expr)
+  print_endline (render expr)
 ;;
 
 let () =

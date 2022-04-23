@@ -31,6 +31,7 @@ ocamlPackages:
 , jobs ? 1
 , with-test ? false
 , with-doc ? false
+, patches ? [ ]
 , ...
 }@args:
 
@@ -122,6 +123,11 @@ let
       preInstallHooks+=(createOcamlDestDir)
     '';
   };
+
+  selectedPatches =
+    builtins.map
+      ({ path, ... }: "${overlayedSource}/${path}")
+      (builtins.filter ({ filter, ... }: opamLib.filter.eval filter) patches);
 in
 
 stdenv.mkDerivation ({
@@ -133,7 +139,7 @@ stdenv.mkDerivation ({
   patches = lib.optionals (name == "ocamlfind") [
     ./topfind.patch
     ./ldconf.patch
-  ];
+  ] ++ selectedPatches;
 
   buildInputs = with pkgs; [ git which ];
 
@@ -185,4 +191,5 @@ stdenv.mkDerivation ({
   "nativeDepends"
   "extraFiles"
   "substFiles"
+  "patches"
 ])
