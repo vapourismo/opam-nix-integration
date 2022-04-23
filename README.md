@@ -174,10 +174,9 @@ let
   packageSet = ...;
 in
 packageSet.overrideScope' (final: prev: prev.repository.select {
-  packageConstraints = ["dune > 2"];
+  packageConstraints = ["dune >= 3.2"];
 })
 ```
-
 
 ## Known problems
 
@@ -187,7 +186,7 @@ As reported in [ocaml/dune#5455][dune-install-issue], Dune 3+ wants either an ex
 
 Luckily, this installation method is not super common - most Dune-based projects generate `.install` files instead which work fine.
 
-A workaround is being proposed: [ocaml/dune#5589][dune-install-fix].
+A [workaround][dune-install-fix] has been accepted in Dune that will be available from version 3.2 onwards.
 
 ### Missing acceptable checksums in OPAM files
 

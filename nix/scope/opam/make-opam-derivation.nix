@@ -162,6 +162,7 @@ stdenv.mkDerivation ({
   installPhase = ''
     # Install Opam package
     mkdir -p ${opamLib.env.local.bin} ${opamLib.env.local.lib}
+    export DUNE_INSTALL_PREFIX=$out
     ${defaultInstallScript}
     ${renderedInstallScript}
   '';
