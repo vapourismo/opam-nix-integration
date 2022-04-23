@@ -113,14 +113,6 @@ let
       }
 
       addEnvHooks "$hostOffset" exportOcamlDestDir
-
-      function createOcamlDestDir {
-        if test -n "''${createFindlibDestdir-}"; then
-          mkdir -p $OCAMLFIND_DESTDIR
-        fi
-      }
-
-      preInstallHooks+=(createOcamlDestDir)
     '';
   };
 
