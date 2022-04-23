@@ -17,12 +17,16 @@ in
         ./nix/scope/opam-repository
         { repository = final.opam-nix-integration.emptyRepository; };
 
-    makePackageSet = { repository, packageSelection ? { } }:
+    makePackageSet = { repository, packageSelection ? { }, overlays ? [ ] }:
       let
         repoScope = final.opam-nix-integration.emptyPackageSet.override {
           inherit repository;
         };
+
+        selectionOverride = final: prev: prev.repository.select packageSelection;
       in
-      repoScope.overrideScope' (final: prev: prev.repository.select packageSelection);
+      repoScope.overrideScope' (
+        final.lib.composeManyExtensions ([ selectionOverride ] ++ overlays)
+      );
   };
 }
