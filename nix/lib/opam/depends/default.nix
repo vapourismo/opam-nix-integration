@@ -67,7 +67,11 @@ let
     let
       pkgToAttrEntry = pkg: {
         name = pkg;
-        value = if builtins.hasAttr pkg pkgs then pkgs.${pkg} else null;
+        value =
+          if builtins.hasAttr pkg pkgs && (builtins.tryEval pkgs.${pkg}).success then
+            pkgs.${pkg}
+          else
+            null;
       };
 
       pkgsSet = builtins.listToAttrs (
