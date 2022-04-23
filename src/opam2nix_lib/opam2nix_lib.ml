@@ -78,3 +78,24 @@ let nix_of_commands commands =
          attr_set [ "filter", filter; "args", nix_of_args args ])
        commands)
 ;;
+
+let hash_attrs hash =
+  match OpamHash.kind hash with
+  | `MD5 -> None
+  | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
+  | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash))
+;;
+
+let nix_of_url url =
+  let open Nix in
+  let src = OpamUrl.to_string (OpamFile.URL.url url) in
+  let check_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
+  let fetchurl =
+    match check_attrs with
+    | [] ->
+      (* The built-in fetchurl does not required checksums. *)
+      "builtins.fetchurl"
+    | _ -> "fetchurl"
+  in
+  ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]
+;;

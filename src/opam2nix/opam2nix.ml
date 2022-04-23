@@ -27,33 +27,12 @@ module Options = struct
   ;;
 end
 
-let hash_attrs hash =
-  match OpamHash.kind hash with
-  | `MD5 -> None
-  | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
-  | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash))
-;;
-
 let main options =
   let opam = read_opam options.Options.file in
   let build = Lib.nix_of_commands opam.build in
   let install = Lib.nix_of_commands opam.install in
   let test = Lib.nix_of_commands opam.run_test in
-  let source =
-    Option.map
-      (fun url ->
-        let src = OpamFile.URL.url url |> OpamUrl.to_string in
-        let check_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
-        let fetchurl =
-          match check_attrs with
-          | [] ->
-            (* The built-in fetchurl does not required checksums. *)
-            "builtins.fetchurl"
-          | _ -> "fetchurl"
-        in
-        Nix.(ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]))
-      opam.url
-  in
+  let source = Option.map Lib.nix_of_url opam.url in
   let depends = Lib.nix_of_depends opam.depends in
   let depopts = Lib.nix_of_depopts opam.depopts in
   let native_depends = Lib.nix_of_depexts opam.depexts in
@@ -65,15 +44,23 @@ let main options =
         | [] -> []
         | files ->
           List.map
-            (fun (name, _hash) ->
+            (fun (path, _hash) ->
               let open Nix in
-              let name = OpamFilename.Base.to_string name in
+              let path = OpamFilename.Base.to_string path in
               attr_set
-                [ "path", string name
-                ; "src", ident "resolveOpamExtraSrc" @@ [ ident "extraSrc"; string name ]
+                [ "path", string path
+                ; "src", ident "resolveOpamExtraSrc" @@ [ ident "extraSrc"; string path ]
                 ])
             files)
       opam.extra_files
+  in
+  let extra_sources =
+    List.map
+      (fun (path, url) ->
+        let open Nix in
+        let name = OpamFilename.Base.to_string path in
+        attr_set [ "path", string name; "src", Lib.nix_of_url url ])
+      opam.extra_sources
   in
   let substs =
     List.map (fun path -> OpamFilename.Base.to_string path |> Nix.string) opam.substs
@@ -101,7 +88,7 @@ let main options =
                  ; "depends", depends
                  ; "optionalDepends", depopts
                  ; "nativeDepends", native_depends
-                 ; "extraFiles", list extra_files
+                 ; "extraFiles", list (extra_files @ extra_sources)
                  ; "substFiles", list substs
                  ; "jobs", ident "jobs"
                  ; "with-test", ident "with-test"
