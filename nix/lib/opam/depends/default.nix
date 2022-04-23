@@ -63,6 +63,25 @@ let
         ${debugged}
       '';
 
+  guessNativeDepends = nativeDepends:
+    let
+      pkgToAttrEntry = pkg: {
+        name = pkg;
+        value = if builtins.hasAttr pkg pkgs then pkgs.${pkg} else null;
+      };
+
+      pkgsSet = builtins.listToAttrs (
+        builtins.concatMap
+          ({ nativePackages, ... }:
+            builtins.map
+              pkgToAttrEntry
+              nativePackages
+          )
+          nativeDepends
+      );
+    in
+    builtins.attrValues (lib.filterAttrs (_: value: value != null) pkgsSet);
+
   evalNative = nativeDepends:
     let
       findDep = packageName:
@@ -70,10 +89,17 @@ let
           pkgs.${packageName}
         else
           abort "Unknown native package ${packageName}";
+
+      nativeDeps =
+        builtins.concatMap
+          ({ nativePackages, ... }: builtins.map findDep nativePackages)
+          (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
     in
-    builtins.concatMap
-      ({ nativePackage, ... }: builtins.map findDep nativePackage)
-      (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
+    if builtins.length nativeDeps > 0 then
+      nativeDeps
+    else
+      guessNativeDepends nativeDepends;
+
 in
 
 {
