@@ -63,6 +63,7 @@ let
       prefix = "$out";
       lib = "${prefix}/lib";
       libexec = "${prefix}/lib";
+      stublibs = "${prefix}/lib/stublibs";
       bin = "${prefix}/bin";
       sbin = "${prefix}/bin";
       share = "${prefix}/share";
