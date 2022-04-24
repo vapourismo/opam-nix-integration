@@ -54,6 +54,13 @@ let
     fi
   '';
 
+  fixBadInstallsScript = ''
+    # Some packages install the shared libraries into the 'lib' directory, where they won't be
+    # found. So we link them.
+    mkdir -p ${opamLib.env.packages."_".stublibs}
+    find ${opamLib.env.local.lib} -iname '*.so' -type f -exec ln -svt ${opamLib.env.packages."_".stublibs} {} \;
+  '';
+
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
     if lib.lists.take 2 args == [ "ocaml" "pkg/pkg.ml" ] then
@@ -163,6 +170,7 @@ stdenv.mkDerivation ({
     export DUNE_INSTALL_PREFIX=$out
     ${defaultInstallScript}
     ${renderedInstallScript}
+    ${fixBadInstallsScript}
   '';
 
   doCheck = with-test;
