@@ -6,9 +6,7 @@ let
     sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
   };
 
-  opam-nix-integration = import (
-    fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz"
-  );
+  opam-nix-integration = import ../..;
 
   pkgs =
     import

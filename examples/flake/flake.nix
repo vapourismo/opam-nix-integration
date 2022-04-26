@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = github:NixOS/nixpkgs;
     flake-utils.url = github:numtide/flake-utils;
-    opam-nix-integration.url = github:vapourismo/opam-nix-integration;
+    opam-nix-integration.url = path:../..;
   };
 
   outputs = { self, nixpkgs, flake-utils, opam-nix-integration }:
