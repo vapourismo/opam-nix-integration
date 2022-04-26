@@ -80,7 +80,7 @@ let
       args;
 
   renderedBuildScript = opamLib.commands.render (
-    builtins.map
+    lib.lists.map
       (cmd: fixNakedOcamlScript (fixTopkgCommand cmd))
       (opamLib.commands.eval buildScript)
   );
@@ -124,9 +124,9 @@ let
   };
 
   selectedPatches =
-    builtins.map
+    lib.lists.map
       ({ path, ... }: "${overlayedSource}/${path}")
-      (builtins.filter ({ filter, ... }: opamLib.filter.eval filter) patches);
+      (lib.filter ({ filter, ... }: opamLib.filter.eval filter) patches);
 in
 
 stdenv.mkDerivation ({

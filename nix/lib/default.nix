@@ -11,7 +11,7 @@
 let
   callPackage = lib.callPackageWith args;
 
-  cleanVersion = builtins.replaceStrings [ "~" ] [ "-" ];
+  cleanVersion = lib.replaceStrings [ "~" ] [ "-" ];
 
   makeOpamLib = callPackage ./opam { inherit cleanVersion; };
 

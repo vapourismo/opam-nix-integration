@@ -6,43 +6,42 @@ let
   packageDirs = builtins.readDir "${repository}/packages";
 
   packageNames =
-    builtins.filter
+    lib.filter
       (name: packageDirs.${name} == "directory")
-      (builtins.attrNames packageDirs);
+      (lib.attrNames packageDirs);
 
   getPackage = packageName:
     let
       versionDirs = builtins.readDir "${repository}/packages/${packageName}";
 
       versionedNames =
-        builtins.filter
+        lib.filter
           (versionedName:
             versionDirs.${versionedName} == "directory"
             && lib.strings.hasPrefix "${packageName}." versionedName
           )
-          (builtins.attrNames versionDirs);
+          (lib.attrNames versionDirs);
 
       versions =
-        builtins.map
-          (builtins.substring (builtins.stringLength packageName + 1) (-1))
+        lib.lists.map
+          (lib.substring (lib.stringLength packageName + 1) (-1))
           versionedNames;
 
       withLatest =
-        if builtins.length versions > 0 then {
+        if lib.length versions > 0 then {
           latest =
-            builtins.elemAt
-              (builtins.sort
-                (lhs: rhs: builtins.compareVersions lhs rhs >= 0)
+            lib.elemAt
+              (lib.sort
+                (lhs: rhs: lib.strings.compareVersions lhs rhs >= 0)
                 versions)
               0;
         } else { };
     in
     { inherit versions; } // withLatest;
-
 in
 
-builtins.listToAttrs (
-  builtins.map
+lib.listToAttrs (
+  lib.lists.map
     (name: {
       inherit name;
       value = getPackage name;

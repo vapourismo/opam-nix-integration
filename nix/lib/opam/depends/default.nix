@@ -14,7 +14,7 @@ let
   evalDependency = { optional ? false }: dep: dep {
     package = packageName: enabled: constraint:
       let want = evalCondition enabled; in
-      if builtins.hasAttr packageName ocamlPackages && want then
+      if lib.hasAttr packageName ocamlPackages && want then
         let package = ocamlPackages.${packageName}; in
         (
           if evalConstraint constraint package.version then
@@ -30,7 +30,7 @@ let
 
   showDependency = dep: dep {
     package = packageName: enabled: constraint:
-      if builtins.hasAttr packageName ocamlPackages then
+      if lib.hasAttr packageName ocamlPackages then
         let package = ocamlPackages.${packageName}.name; in
         (
           if evalCondition enabled then
@@ -47,7 +47,7 @@ let
       downstreamConfig = builtins.removeAttrs config [ "name" ];
       deps = formulaLib.evalList { atom = evalDependency downstreamConfig; } depFormula;
     in
-    if builtins.isList deps then
+    if lib.isList deps then
       deps
     else
       let debugged =
@@ -68,38 +68,38 @@ let
       pkgToAttrEntry = pkg: {
         name = pkg;
         value =
-          if builtins.hasAttr pkg pkgs && (builtins.tryEval pkgs.${pkg}).success then
+          if lib.hasAttr pkg pkgs && (lib.tryEval pkgs.${pkg}).success then
             pkgs.${pkg}
           else
             null;
       };
 
-      pkgsSet = builtins.listToAttrs (
-        builtins.concatMap
+      pkgsSet = lib.listToAttrs (
+        lib.concatMap
           ({ nativePackages, ... }:
-            builtins.map
+            lib.lists.map
               pkgToAttrEntry
               nativePackages
           )
           nativeDepends
       );
     in
-    builtins.attrValues (lib.filterAttrs (_: value: value != null) pkgsSet);
+    lib.attrValues (lib.filterAttrs (_: value: value != null) pkgsSet);
 
   evalNative = nativeDepends:
     let
       findDep = packageName:
-        if builtins.hasAttr packageName pkgs then
+        if lib.hasAttr packageName pkgs then
           pkgs.${packageName}
         else
           abort "Unknown native package ${packageName}";
 
       nativeDeps =
-        builtins.concatMap
-          ({ nativePackages, ... }: builtins.map findDep nativePackages)
-          (builtins.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
+        lib.concatMap
+          ({ nativePackages, ... }: lib.lists.map findDep nativePackages)
+          (lib.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
     in
-    if builtins.length nativeDeps > 0 then
+    if lib.length nativeDeps > 0 then
       nativeDeps
     else
       guessNativeDepends nativeDepends;

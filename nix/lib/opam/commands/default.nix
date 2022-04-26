@@ -5,12 +5,14 @@ let
 
   pruneArg = { arg, ... }: envLib.eval { } arg;
 
-  pruneCommand = { args, ... }: builtins.map pruneArg (builtins.filter shouldKeep args);
+  pruneCommand = { args, ... }: lib.lists.map pruneArg (lib.filter shouldKeep args);
 
-  eval = cmds: builtins.map pruneCommand (builtins.filter shouldKeep cmds);
+  eval = cmds: lib.lists.map pruneCommand (lib.filter shouldKeep cmds);
 
-  render = cmds: builtins.concatStringsSep "\n" (
-    builtins.map (args: builtins.concatStringsSep " " (builtins.map builtins.toJSON args)) cmds
+  renderArg = arg: ''"${lib.strings.escape [ "\"" ] arg}"'';
+
+  render = cmds: lib.concatStringsSep "\n" (
+    lib.lists.map (args: lib.concatStringsSep " " (lib.lists.map renderArg args)) cmds
   );
 in
 

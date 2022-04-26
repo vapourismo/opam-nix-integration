@@ -9,12 +9,12 @@ let
         inherit atom;
       };
 
-      evalOrs = builtins.foldl' disjoin false;
+      evalOrs = lib.foldl' disjoin false;
 
-      evalAnds = builtins.foldl' join true;
+      evalAnds = lib.foldl' join true;
 
     in
-    evalAnds (builtins.map evalOrs cnf);
+    evalAnds (lib.lists.map evalOrs cnf);
 
   evalListFormula = { atom }: evalFormula {
     true = [ ];
@@ -67,28 +67,28 @@ let
       };
 
       evalOrs = inputOrs:
-        if builtins.length inputOrs > 0 then
-          let ors = builtins.filter (x: x != "true") inputOrs; in
-          if builtins.length ors > 0 then
-            builtins.foldl'
+        if lib.length inputOrs > 0 then
+          let ors = lib.filter (x: x != "true") inputOrs; in
+          if lib.length ors > 0 then
+            lib.foldl'
               (lhs: rhs: "${lhs} || ${rhs}")
-              (builtins.head ors)
-              (builtins.tail ors)
+              (lib.head ors)
+              (lib.tail ors)
           else
             "true"
         else
           "false";
 
       evalAnds = ands:
-        if builtins.length ands > 0 then
-          builtins.foldl'
+        if lib.length ands > 0 then
+          lib.foldl'
             (lhs: rhs: "${lhs} && ${rhs}")
-            (builtins.head ands)
-            (builtins.tail ands)
+            (lib.head ands)
+            (lib.tail ands)
         else
           "true";
     in
-    evalAnds (builtins.map (ors: "(${evalOrs ors})") cnf);
+    evalAnds (lib.lists.map (ors: "(${evalOrs ors})") cnf);
 
   debugFormula = { showAtom, evalAtom }: formula:
     let
@@ -135,7 +135,7 @@ let
         lib.concatStringsSep " and " (lib.lists.map (a: a.string) (lib.filter (a: !a.eval) ands));
 
     in
-    evalAnds (builtins.map evalOrs cnf);
+    evalAnds (lib.lists.map evalOrs cnf);
 
 in
 {

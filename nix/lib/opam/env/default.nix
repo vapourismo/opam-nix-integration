@@ -185,7 +185,7 @@ let
       package = lookup;
 
       toString = x:
-        if builtins.isString x then
+        if lib.isString x then
           x
         else
           builtins.toJSON x;

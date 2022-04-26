@@ -1,4 +1,5 @@
 { pkgs
+, lib
 , stdenv
 , writeScript
 , cleanVersion
@@ -6,8 +7,8 @@
 }:
 
 let
-  mkCopyExtraFilesScript = extraFiles: builtins.concatStringsSep "\n" (
-    builtins.map ({ src, path }: "cp ${src} $out/${path}") extraFiles
+  mkCopyExtraFilesScript = extraFiles: lib.concatStringsSep "\n" (
+    lib.lists.map ({ src, path }: "cp ${src} $out/${path}") extraFiles
   );
 
   fixCargoChecksumsScript = writeScript "fix-cargo-checksum" ''
@@ -45,8 +46,8 @@ let
   };
 
   writeSubsts = { src, substFiles }:
-    builtins.concatStringsSep "\n" (
-      builtins.map
+    lib.concatStringsSep "\n" (
+      lib.lists.map
         (file:
           "cp -v ${substLib.rewrite "${src}/${file}.in"} $out/${file}")
         substFiles

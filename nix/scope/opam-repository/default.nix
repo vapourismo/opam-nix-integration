@@ -29,7 +29,7 @@ let
     }:
     let
       testTargetArgs = lib.strings.escapeShellArgs (
-        builtins.map (name: "--with-test-for=${name}") testablePackages
+        lib.lists.map (name: "--with-test-for=${name}") testablePackages
       );
 
       packageConstraintArgs = lib.strings.escapeShellArgs packageConstraints;
@@ -63,11 +63,11 @@ opamScope.overrideScope' (final: prev: {
 
   repository = {
     packages =
-      builtins.mapAttrs
+      lib.mapAttrs
         (name: collection:
-          builtins.listToAttrs
+          lib.listToAttrs
             (
-              builtins.map
+              lib.lists.map
                 (version: {
                   name = version;
                   value = final.callOpam { inherit name version; } { };
@@ -82,7 +82,7 @@ opamScope.overrideScope' (final: prev: {
         repositoryIndex;
 
     select = { testablePackages ? [ ], ... }@args:
-      builtins.mapAttrs
+      lib.mapAttrs
         (name: version:
           let pkg = final.callOpam { inherit name version; } { }; in
           pkg.override { with-test = lib.elem name testablePackages; })

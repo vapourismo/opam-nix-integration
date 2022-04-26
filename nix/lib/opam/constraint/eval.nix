@@ -1,7 +1,7 @@
-{ filterLib, cleanVersion }:
+{ lib, filterLib, cleanVersion }:
 
 let
-  compareVersions = lhs: rhs: builtins.compareVersions (cleanVersion lhs) (cleanVersion rhs);
+  compareVersions = lhs: rhs: lib.strings.compareVersions (cleanVersion lhs) (cleanVersion rhs);
 in
 
 constraint: version: constraint {
