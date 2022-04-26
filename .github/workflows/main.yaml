@@ -35,4 +35,5 @@ jobs:
           nix_conf: |
             extra-experimental-features = nix-command flakes
 
-      - run: nix -vL build --impure ./examples/flake
+      - run: |
+          nix -vL build --impure ./examples/flake --override-input opam-nix-integration path:./.
