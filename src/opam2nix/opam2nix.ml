@@ -80,6 +80,7 @@ let main options =
       ; "selectOpamSrc"
       ; "resolveOpamExtraSrc"
       ; "fetchurl"
+      ; "fetchgit"
       ; "altSrc ? null"
       ; "extraSrc ? null"
       ; "jobs ? 1"

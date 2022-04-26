@@ -88,14 +88,33 @@ let hash_attrs hash =
 
 let nix_of_url url =
   let open Nix in
-  let src = OpamUrl.to_string (OpamFile.URL.url url) in
-  let check_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
-  let fetchurl =
-    match check_attrs with
-    | [] ->
-      (* The built-in fetchurl does not required checksums. *)
-      "builtins.fetchurl"
-    | _ -> "fetchurl"
-  in
-  ident fetchurl @@ [ attr_set ([ "url", string src ] @ check_attrs) ]
+  let checksum_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
+  let url = OpamFile.URL.url url in
+  match url.backend with
+  | `git ->
+    let transport =
+      (* [fetchgit] doesn't understand the [git+] bit in the URL, so we have to remove it. *)
+      String.split_on_char '+' url.transport
+      |> List.filter (fun schema -> not (String.equal schema "git"))
+      |> String.concat "+"
+    in
+    let rev_args =
+      match url.hash with
+      | Some ref -> [ "rev", string ref ]
+      | None -> []
+    in
+    let url = { url with transport; hash = None } in
+    ident "fetchgit"
+    @@ [ attr_set ([ "url", string (OpamUrl.to_string url) ] @ checksum_attrs @ rev_args)
+       ]
+  | _ ->
+    let fetcher =
+      match checksum_attrs with
+      | [] ->
+        (* The built-in fetchurl does not required checksums. *)
+        "builtins.fetchurl"
+      | _ -> "fetchurl"
+    in
+    ident fetcher
+    @@ [ attr_set ([ "url", string (OpamUrl.to_string url) ] @ checksum_attrs) ]
 ;;
