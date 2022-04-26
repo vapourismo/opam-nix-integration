@@ -127,6 +127,12 @@ let
     lib.lists.map
       ({ path, ... }: "${overlayedSource}/${path}")
       (lib.filter ({ filter, ... }: opamLib.filter.eval filter) patches);
+
+  specialDuneDeps =
+    if name == "dune" && lib.hasAttr "ocamlfind" ocamlPackages then
+      [ ocamlPackages.ocamlfind ]
+    else
+      [ ];
 in
 
 stdenv.mkDerivation ({
@@ -146,7 +152,7 @@ stdenv.mkDerivation ({
     # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
     # correctly for us when 'ocamlfind' can't be found by it.
     [ setupHookDeriv ]
-      ++ lib.optional (name == "dune") ocamlPackages.ocamlfind
+      ++ specialDuneDeps
       ++ opamLib.depends.eval { inherit name; } depends
       ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
 
