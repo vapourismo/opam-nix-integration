@@ -92,18 +92,12 @@ let nix_of_url url =
   let url = OpamFile.URL.url url in
   match url.backend with
   | `git ->
-    let transport =
-      (* [fetchgit] doesn't understand the [git+] bit in the URL, so we have to remove it. *)
-      String.split_on_char '+' url.transport
-      |> List.filter (fun schema -> not (String.equal schema "git"))
-      |> String.concat "+"
-    in
     let rev_args =
       match url.hash with
       | Some ref -> [ "rev", string ref ]
       | None -> []
     in
-    let url = { url with transport; hash = None } in
+    let url = { url with backend = `http; hash = None } in
     ident "fetchgit"
     @@ [ attr_set ([ "url", string (OpamUrl.to_string url) ] @ checksum_attrs @ rev_args)
        ]
