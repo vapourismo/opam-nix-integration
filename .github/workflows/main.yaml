@@ -1,0 +1,38 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - master
+      - feature/*
+
+  pull_request:
+    branches:
+      - master
+
+  schedule:
+    - cron: "0 8 * * *"
+
+jobs:
+  examples-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Nix
+        uses: nixbuild/nix-quick-install-action@v9
+
+      - run: nix-shell -v examples/standard/default.nix --command env
+
+  examples-flake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Nix
+        uses: nixbuild/nix-quick-install-action@v9
+        with:
+          nix_conf: |
+            extra-experimental-features = nix-command flakes
+
+      - run: nix -vL develop ./examples/flake --command env
