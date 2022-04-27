@@ -68,7 +68,7 @@ let
       pkgToAttrEntry = pkg: {
         name = pkg;
         value =
-          if lib.hasAttr pkg pkgs && (lib.tryEval pkgs.${pkg}).success then
+          if lib.hasAttr pkg pkgs && (builtins.tryEval pkgs.${pkg}).success then
             pkgs.${pkg}
           else
             null;
