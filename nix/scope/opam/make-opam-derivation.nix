@@ -58,7 +58,10 @@ let
     # Some packages install the shared libraries into the 'lib' directory, where they won't be
     # found. So we link them.
     mkdir -p ${opamLib.env.packages."_".stublibs}
-    find ${opamLib.env.local.lib} -iname '*.so' -type f -exec ln -svt ${opamLib.env.packages."_".stublibs} {} \;
+    find ${opamLib.env.local.lib} \
+      \( -iname '*.so' -or -iname '*.a' -or -iname '*.dylib' -or -iname '*.dll' \) \
+      -type f \
+      -exec ln -svt ${opamLib.env.packages."_".stublibs} {} \;
   '';
 
   fixTopkgCommand = args:
