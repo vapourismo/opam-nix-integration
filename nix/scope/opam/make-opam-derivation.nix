@@ -54,6 +54,24 @@ let
     fi
   '';
 
+  fixMachOLibsScript = ''
+    fixMachOSharedObjects() {
+      local flags=()
+
+      for fn in "$@"; do
+          flags+=(-change "$(basename "$fn")" "$fn")
+      done
+
+      for fn in "$@"; do
+          if [ -L "$fn" ]; then continue; fi
+          echo "$fn: fixing dylib"
+          install_name_tool -id "$fn" "''${flags[@]}" "$fn"
+      done
+    }
+
+    fixMachOSharedObjects $(find ${opamLib.env.local.lib} \( -iname '*.so' -or -iname '*.dylib' \))
+  '';
+
   fixBadInstallsScript = ''
     # Some packages install the shared libraries into the 'lib' directory, where they won't be
     # found. So we link them.
@@ -62,6 +80,8 @@ let
       \( -iname '*.so' -or -iname '*.a' -or -iname '*.dylib' -or -iname '*.dll' \) \
       -type f \
       -exec ln -svt ${opamLib.env.packages."_".stublibs} {} \;
+
+    ${lib.optionalString stdenv.isDarwin fixMachOLibsScript}
   '';
 
   fixTopkgCommand = args:
