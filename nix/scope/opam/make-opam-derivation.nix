@@ -152,6 +152,13 @@ stdenv.mkDerivation ({
 
   buildInputs = with pkgs; [ git which ];
 
+  nativeBuildInputs = with pkgs; (
+    if stdenv.isDarwin then
+      [ fixDarwinDylibNames ]
+    else
+      [ autoPatchelfHook ]
+  );
+
   propagatedBuildInputs =
     # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
     # correctly for us when 'ocamlfind' can't be found by it.
