@@ -15,7 +15,12 @@ on:
 
 jobs:
   examples-shell:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runs-on:
+          - macos-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v2
 
@@ -25,7 +30,12 @@ jobs:
       - run: nix-build -v examples/standard/default.nix
 
   examples-flake:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runs-on:
+          - macos-latest
+          - ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v2
 
