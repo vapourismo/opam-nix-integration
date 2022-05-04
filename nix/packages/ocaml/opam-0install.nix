@@ -1,4 +1,10 @@
-{ buildDunePackage, fetchFromGitHub, opam-state, zeroinstall-solver, fmt }:
+{ buildDunePackage
+, fetchFromGitHub
+, opam-state
+, zeroinstall-solver
+, fmt
+, cmdliner
+}:
 
 buildDunePackage {
   pname = "opam-0install";
@@ -17,5 +23,6 @@ buildDunePackage {
     opam-state
     zeroinstall-solver
     fmt
+    cmdliner
   ];
 }
