@@ -8,6 +8,8 @@ depends: [
   "cmdliner"
   "zarith"
   "ppx_deriving"
+  "base64"
+  "hex"
   "odoc" {with-doc}
 ]
 build: [

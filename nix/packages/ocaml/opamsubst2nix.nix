@@ -1,6 +1,8 @@
 { buildDunePackage
 , opam-format
 , zarith
+, base64
+, hex
 , pkgs
 }:
 
@@ -16,6 +18,8 @@ buildDunePackage {
   buildInputs = [
     opam-format
     zarith
+    base64
+    hex
     pkgs.git
   ];
 }

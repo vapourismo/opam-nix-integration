@@ -6,6 +6,8 @@ depends: [
   "opam-format"
   "opam-state"
   "zarith"
+  "base64"
+  "hex"
   "odoc" {with-doc}
 ]
 build: [

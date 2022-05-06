@@ -2,6 +2,8 @@
 , opam-0install
 , cmdliner
 , zarith
+, hex
+, base64
 , pkgs
 }:
 
@@ -18,6 +20,8 @@ buildDunePackage {
     opam-0install
     cmdliner
     zarith
+    hex
+    base64
     pkgs.git
   ];
 }

@@ -2,6 +2,8 @@
 , opam-format
 , opam-state
 , zarith
+, base64
+, hex
 , pkgs
 }:
 
@@ -18,6 +20,8 @@ buildDunePackage {
     opam-format
     opam-state
     zarith
+    base64
+    hex
     pkgs.git
   ];
 }
