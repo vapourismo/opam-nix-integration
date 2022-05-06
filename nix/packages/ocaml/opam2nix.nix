@@ -5,6 +5,8 @@
 , ppx_deriving
 , cmdliner
 , zarith
+, hex
+, base64
 , pkgs
 }:
 
@@ -24,6 +26,8 @@ buildDunePackage {
     ppx_deriving
     cmdliner
     zarith
+    hex
+    base64
     pkgs.git
   ];
 }

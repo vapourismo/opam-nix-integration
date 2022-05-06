@@ -26,6 +26,8 @@ let
         "opam-0install"
         "cmdliner"
         "ppx_deriving"
+        "base64"
+        "hex"
       ];
     };
   };
