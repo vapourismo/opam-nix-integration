@@ -46,15 +46,22 @@
         };
 
         devShell = mkShell {
-          nativeBuildInputs = with ocamlPackages; [
-            ocaml-lsp
-            ocamlformat
-            utop
-            nixpkgs-fmt
-            odoc
-            inotify-tools
-            rnix-lsp
-          ];
+          nativeBuildInputs = with ocamlPackages;
+            [
+              ocaml-lsp
+              ocamlformat
+              utop
+              nixpkgs-fmt
+              odoc
+              rnix-lsp
+            ]
+            ++
+            (
+              if stdenv.isDarwin then
+                [ fswatch ]
+              else
+                [ inotify-tools ]
+            );
 
           buildInputs =
             builtins.concatMap
