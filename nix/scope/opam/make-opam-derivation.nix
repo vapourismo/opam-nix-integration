@@ -198,6 +198,7 @@ stdenv.mkDerivation ({
 
   buildPhase = ''
     # Build Opam package
+    export DUNE_INSTALL_PREFIX=$out
     ${renderedBuildScript}
   '';
 
