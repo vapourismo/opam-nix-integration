@@ -167,10 +167,10 @@ stdenv.mkDerivation ({
 
   patches =
     lib.optional
-      (name == "ocamlfind" && !lib.versionOlder "1.9.2" version)
-      ./topfind-1.9.2.patch
+      (name == "ocamlfind" && !lib.versionOlder "1.9.3" version)
+      ./topfind-1.9.3.patch
     ++ lib.optional
-      (name == "ocamlfind" && lib.versionOlder "1.9.2" version)
+      (name == "ocamlfind" && lib.versionOlder "1.9.3" version)
       ./topfind-1.9.5.patch
     ++ lib.optional (name == "ocamlfind") ./ldconf.patch
     ++ selectedPatches;
