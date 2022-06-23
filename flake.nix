@@ -39,10 +39,11 @@
 
           opam0install2nix = ocamlPackages.opam0install2nix;
 
-          makePackageSet = { packageSelection ? { } }: opam-nix-integration.makePackageSet {
-            repository = opam-repository;
-            inherit packageSelection;
-          };
+          makePackageSet = { packageSelection ? { }, overlays ? [ ] }:
+            opam-nix-integration.makePackageSet {
+              repository = opam-repository;
+              inherit packageSelection overlays;
+            };
         };
 
         devShell = mkShell {
