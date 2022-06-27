@@ -5,8 +5,6 @@ depends: [
   "dune" {>= "2.9"}
   "opam-format"
   "zarith"
-  "base64"
-  "hex"
   "odoc" {with-doc}
 ]
 build: [

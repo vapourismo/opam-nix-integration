@@ -7,8 +7,6 @@ depends: [
   "opam-0install"
   "cmdliner"
   "zarith"
-  "base64"
-  "hex"
   "odoc" {with-doc}
 ]
 build: [
