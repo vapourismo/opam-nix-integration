@@ -22,6 +22,8 @@ let
     inherit src;
     dontUnpack = src == null;
 
+    unpackCmd = "tar xf $curSrc";
+
     setSourceRoot = ''
       export sourceRoot="$(find . -type d -mindepth 1 -maxdepth 1 ! -name env-vars)"
 
