@@ -160,7 +160,7 @@ let
           else
             lookupPackageVar packageName name;
 
-        transformValue = defaults ? if_true && defaults ? otherwise;
+        transformValue = defaults ? ifTrue && defaults ? otherwise;
       in
       if transformValue then
         (
