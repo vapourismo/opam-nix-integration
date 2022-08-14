@@ -47,7 +47,7 @@
         };
 
         devShell = mkShell {
-          nativeBuildInputs = with ocamlPackages;
+          packages = with ocamlPackages;
             [
               ocaml-lsp
               ocamlformat
@@ -64,15 +64,12 @@
                 [ inotify-tools ]
             );
 
-          buildInputs =
-            builtins.concatMap
-              (name:
-                let pkg = self.packages.${system}.${name}; in
-                pkg.buildInputs
-                ++ pkg.propagatedBuildInputs
-                ++ pkg.nativeBuildInputs
-                ++ pkg.propagatedNativeBuildInputs)
-              [ "opam2nix" "opamvars2nix" "opamsubst2nix" "opam0install2nix" ];
+          inputsFrom = with self.packages.${system}; [
+            opam2nix
+            opamvars2nix
+            opamsubst2nix
+            opam0install2nix
+          ];
         };
       }
     );
