@@ -12,7 +12,7 @@
 
   outputs = { self, nixpkgs, flake-utils, opam-repository }:
     {
-      overlays.ocamlBool = import (self + /nix/packages/ocaml/overlay.nix);
+      overlays.ocamlBoot = import (self + /nix/packages/ocaml/overlay.nix);
 
       overlay = import (self + /overlay.nix);
     }
@@ -24,7 +24,7 @@
         };
 
       let
-        ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlays.ocamlBool;
+        ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlays.ocamlBoot;
       in
 
       {
