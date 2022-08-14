@@ -76,17 +76,18 @@ let main options =
   in
   let expr =
     Pattern.attr_set
-      [ "mkOpamDerivation"
-      ; "selectOpamSrc"
-      ; "resolveOpamExtraSrc"
-      ; "fetchurl"
-      ; "fetchgit"
-      ; "altSrc ? null"
-      ; "extraSrc ? null"
-      ; "jobs ? 1"
-      ; "with-test ? false"
-      ; "with-doc ? false"
-      ]
+      Pattern.
+        [ field "mkOpamDerivation"
+        ; field "selectOpamSrc"
+        ; field "resolveOpamExtraSrc"
+        ; field "fetchurl"
+        ; field "fetchgit"
+        ; field "altSrc" @? null
+        ; field "extraSrc" @? null
+        ; field "jobs" @? int 1
+        ; field "with-test" @? bool false
+        ; field "with-doc" @? bool false
+        ]
     => ident "mkOpamDerivation"
        @@ [ attr_set
               ([ "name", string options.name

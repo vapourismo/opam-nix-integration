@@ -1,33 +1,4 @@
 module StringSet = Set.Make (String)
-
-module Pattern = struct
-  type t =
-    | IdentPat of string
-    | AttrSetPat of
-        { fields : StringSet.t
-        ; partial : bool
-        ; bound : string option
-        }
-
-  let render pat =
-    match pat with
-    | IdentPat name -> name
-    | AttrSetPat { fields; partial; bound } ->
-      let fields = StringSet.elements fields in
-      let entries = if partial then fields @ [ "..." ] else fields in
-      let binding = Option.fold ~none:"" ~some:(fun name -> "@" ^ name) bound in
-      "{ " ^ String.concat ", " entries ^ " }" ^ binding
-  ;;
-
-  let attr_set fields =
-    AttrSetPat { fields = StringSet.of_list fields; partial = false; bound = None }
-  ;;
-
-  let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
-
-  let ident name = IdentPat name
-end
-
 module StringMap = Map.Make (String)
 
 type t =
@@ -39,7 +10,7 @@ type t =
   | List of t list
   | AttrSet of attr_set
   | Lambda of
-      { head : Pattern.t
+      { head : pattern
       ; body : t
       }
   | Apply of
@@ -70,6 +41,21 @@ and accessor =
   | StringAccess of string
   | RedirectedAccess of t
 
+and field_pattern =
+  | FieldPat of string
+  | FieldOptPat of
+      { name : string
+      ; default : t
+      }
+
+and pattern =
+  | IdentPat of string
+  | AttrSetPat of
+      { fields : field_pattern list
+      ; partial : bool
+      ; bound : string option
+      }
+
 let parens body = "(" ^ body ^ ")"
 
 let rec render_prec ?(want_parens = false) exp =
@@ -83,7 +69,7 @@ let rec render_prec ?(want_parens = false) exp =
   | AttrSet attrs -> render_attrs attrs
   | Lambda { head; body } ->
     (if want_parens then parens else Fun.id)
-    @@ Pattern.render head
+    @@ render_pattern head
     ^ ": "
     ^ render_prec body
   | Apply { func; args } ->
@@ -144,9 +130,44 @@ and render_accessor acc =
   match acc with
   | StringAccess name -> name
   | RedirectedAccess expr -> "${" ^ render_prec expr ^ "}"
+
+and render_field_pattern field_pat =
+  match field_pat with
+  | FieldPat name -> name
+  | FieldOptPat { name; default } -> name ^ " ? " ^ render_prec default
+
+and render_pattern pat =
+  match pat with
+  | IdentPat name -> name
+  | AttrSetPat { fields; partial; bound } ->
+    let fields = List.map render_field_pattern fields in
+    let entries = if partial then fields @ [ "..." ] else fields in
+    let binding = Option.fold ~none:"" ~some:(fun name -> "@" ^ name) bound in
+    "{ " ^ String.concat ", " entries ^ " }" ^ binding
 ;;
 
 let render exp = render_prec exp
+
+module Pattern = struct
+  type field = field_pattern
+
+  let field name = FieldPat name
+
+  let field_opt name default = FieldOptPat { name; default }
+
+  let ( @? ) field default =
+    match field with
+    | FieldPat name | FieldOptPat { name; _ } -> FieldOptPat { name; default }
+  ;;
+
+  type t = pattern
+
+  let attr_set fields = AttrSetPat { fields; partial = false; bound = None }
+
+  let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
+
+  let ident name = IdentPat name
+end
 
 let ident name = Identifier name
 
@@ -158,6 +179,8 @@ let attr_set entries =
 let null = ident "null"
 
 let bool value = Bool value
+
+let int x = Number (Q.of_int x)
 
 let string body = String [ StringSegment body ]
 
