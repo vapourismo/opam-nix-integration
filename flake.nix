@@ -47,16 +47,18 @@
         };
 
         devShell = mkShell {
-          packages = with ocamlPackages;
-            [
+          packages =
+            # OCaml packages
+            (with ocamlPackages; [
               ocaml-lsp
               ocamlformat
               utop
               nixpkgs-fmt
               odoc
               rnix-lsp
-            ]
+            ])
             ++
+            # Utilities  for dune's watch mode
             (
               if stdenv.isDarwin then
                 [ fswatch ]
