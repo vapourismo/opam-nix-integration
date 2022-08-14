@@ -76,35 +76,11 @@ let rec render_prec ?(want_parens = false) exp =
   match exp with
   | Identifier ident -> ident
   | Bool value -> if value then "true" else "false"
-  | String segments ->
-    "\"" ^ String.concat "" (List.map (fun seg -> render_segment seg) segments) ^ "\""
-  | MultilineString lines ->
-    "''"
-    ^ String.concat
-        "\n"
-        (List.map
-           (fun segments ->
-             String.concat
-               ""
-               (List.map (fun seg -> render_segment ~escape:false seg) segments))
-           lines)
-    ^ "''"
+  | String segments -> render_string segments
+  | MultilineString lines -> render_multline_string lines
   | Number num -> "(" ^ Q.to_string num ^ ")"
-  | List elements ->
-    "["
-    ^ String.concat
-        " "
-        (List.map (fun elem -> render_prec ~want_parens:true elem) elements)
-    ^ "]"
-  | AttrSet attrs ->
-    "{ "
-    ^ String.concat
-        " "
-        (StringMap.to_seq attrs
-        |> List.of_seq
-        |> List.map (fun (k, v) ->
-               "\"" ^ render_segment (StringSegment k) ^ "\" = " ^ render_prec v ^ ";"))
-    ^ " }"
+  | List elements -> render_list elements
+  | AttrSet attrs -> render_attrs attrs
   | Lambda { head; body } ->
     (if want_parens then parens else Fun.id)
     @@ Pattern.render head
@@ -126,11 +102,43 @@ let rec render_prec ?(want_parens = false) exp =
   | Index { attr_set; field } ->
     render_prec ~want_parens:true attr_set ^ "." ^ render_accessor field
 
-and render_segment ?(escape = true) seg =
+and render_string segments =
+  "\""
+  ^ String.concat "" (List.map (fun seg -> render_string_segment seg) segments)
+  ^ "\""
+
+and render_multline_string lines =
+  "''"
+  ^ String.concat
+      "\n"
+      (List.map
+         (fun segments ->
+           String.concat
+             ""
+             (List.map (fun seg -> render_string_segment ~escape:false seg) segments))
+         lines)
+  ^ "''"
+
+and render_string_segment ?(escape = true) seg =
   match seg with
   | StringSegment str ->
     if escape then String.concat "\\\"" (String.split_on_char '"' str) else str
   | CodeSegment code -> "${" ^ render_prec code ^ "}"
+
+and render_list elements =
+  "["
+  ^ String.concat " " (List.map (fun elem -> render_prec ~want_parens:true elem) elements)
+  ^ "]"
+
+and render_attrs attrs =
+  "{ "
+  ^ String.concat
+      " "
+      (StringMap.to_seq attrs
+      |> List.of_seq
+      |> List.map (fun (k, v) ->
+             render_string [ StringSegment k ] ^ " = " ^ render_prec v ^ ";"))
+  ^ " }"
 
 and render_accessor acc =
   match acc with
