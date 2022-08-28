@@ -157,6 +157,14 @@ let
       [ ocamlPackages.ocamlfind ]
     else
       [ ];
+
+  filterOcamlfindPatches = lib.filter (patch:
+    # XXX: This patch overlaps with with ./topfind-1.9.5.patch.
+    # The better solution is probably to adjust ./topfind-1.9.5.patch so that it works with this
+    # patch, rather than bruteforce ignoring it. Only problem is, this patch might not be part
+    # of the user's opam-repository in case they use a custom one.
+    !lib.strings.hasSuffix "/0001-Fix-bug-when-installing-with-a-system-compiler.patch" patch
+  );
 in
 
 stdenv.mkDerivation ({
@@ -173,7 +181,7 @@ stdenv.mkDerivation ({
       (name == "ocamlfind" && lib.versionOlder "1.9.3" version)
       ./topfind-1.9.5.patch
     ++ lib.optional (name == "ocamlfind") ./ldconf.patch
-    ++ selectedPatches;
+    ++ (if name == "ocamlfind" then filterOcamlfindPatches else x: x) selectedPatches;
 
   buildInputs = with pkgs; [ git which ];
 
