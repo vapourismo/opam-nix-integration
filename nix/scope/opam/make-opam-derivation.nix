@@ -102,6 +102,11 @@ let
     else
       args;
 
+  # XXX: Manually installs 'topfind'.
+  extraOcamlfindInstallScript = ''
+    install -c src/findlib/topfind $OCAMLFIND_DESTDIR
+  '';
+
   renderedBuildScript = opamLib.commands.render (
     lib.lists.map
       (cmd: fixNakedOcamlScript (fixTopkgCommand cmd))
@@ -157,14 +162,6 @@ let
       [ ocamlPackages.ocamlfind ]
     else
       [ ];
-
-  filterOcamlfindPatches = lib.filter (patch:
-    # XXX: This patch overlaps with with ./topfind-1.9.5.patch.
-    # The better solution is probably to adjust ./topfind-1.9.5.patch so that it works with this
-    # patch, rather than bruteforce ignoring it. Only problem is, this patch might not be part
-    # of the user's opam-repository in case they use a custom one.
-    !lib.strings.hasSuffix "/0001-Fix-bug-when-installing-with-a-system-compiler.patch" patch
-  );
 in
 
 stdenv.mkDerivation ({
@@ -173,15 +170,7 @@ stdenv.mkDerivation ({
 
   src = overlayedSource;
 
-  patches =
-    lib.optional
-      (name == "ocamlfind" && !lib.versionOlder "1.9.3" version)
-      ./topfind-1.9.3.patch
-    ++ lib.optional
-      (name == "ocamlfind" && lib.versionOlder "1.9.3" version)
-      ./topfind-1.9.5.patch
-    ++ lib.optional (name == "ocamlfind") ./ldconf.patch
-    ++ (if name == "ocamlfind" then filterOcamlfindPatches else x: x) selectedPatches;
+  patches = lib.optional (name == "ocamlfind") ./ldconf.patch ++ selectedPatches;
 
   buildInputs = with pkgs; [ git which ];
 
@@ -221,6 +210,7 @@ stdenv.mkDerivation ({
     export DUNE_INSTALL_PREFIX=$out
     ${defaultInstallScript}
     ${renderedInstallScript}
+    ${lib.optionalString (name == "ocamlfind") extraOcamlfindInstallScript}
     ${fixBadInstallsScript}
   '';
 
