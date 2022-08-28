@@ -10,7 +10,7 @@ buildDunePackage {
   pname = "opamsubst2nix";
   version = "0.0.0";
 
-  useDune2 = true;
+  duneVersion = "3";
   minimumOCamlVersion = "4.13";
 
   src = ../../..;

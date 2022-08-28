@@ -4,7 +4,7 @@ buildDunePackage {
   pname = "0install-solver";
   version = "2.17";
 
-  useDune2 = true;
+  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "0install";

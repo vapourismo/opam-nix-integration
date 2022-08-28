@@ -10,7 +10,7 @@ buildDunePackage {
   pname = "opam-0install";
   version = "0.4.2";
 
-  useDune2 = true;
+  duneVersion = "3";
 
   src = fetchFromGitHub {
     owner = "ocaml-opam";
