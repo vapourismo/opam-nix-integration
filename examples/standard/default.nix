@@ -2,8 +2,8 @@ let
   opam-repository = pkgs.fetchFromGitHub {
     owner = "ocaml";
     repo = "opam-repository";
-    rev = "5269af290fff3fc631a8855e4255b4b53713b467";
-    sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
+    rev = "f904585098b809001380caada4b7426c112d086c";
+    sha256 = "sha256-oARmpd4j8IOvLzC8RqZ8MBDzAvTjI1BdeUbEL59T99A=[]";
   };
 
   opam-nix-integration = import ../..;
@@ -18,8 +18,8 @@ let
 
     packageSelection = {
       packageConstraints = [
-        "ocaml = 4.13.1"
-        "dune < 3"
+        "ocaml = 4.14.0"
+        "dune >= 3.4"
         "zarith"
         "opam-format"
         "opam-state"

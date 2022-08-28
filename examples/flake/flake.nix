@@ -15,8 +15,8 @@
         packageSet = opam-nix-integration.packages.${system}.makePackageSet {
           packageSelection = {
             packageConstraints = [
-              "ocaml = 4.13.1"
-              "dune < 3"
+              "ocaml = 4.14.0"
+              "dune >= 3.4"
               "zarith"
               "opam-format"
               "opam-state"
