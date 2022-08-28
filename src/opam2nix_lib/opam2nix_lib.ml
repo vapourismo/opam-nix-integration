@@ -81,7 +81,13 @@ let nix_of_commands commands =
 
 let hash_attrs hash =
   match OpamHash.kind hash with
-  | `MD5 -> Some ("hash", Nix.string ("md5-" ^ Base64.encode_string (Hex.to_string (`Hex (OpamHash.contents hash))) ^ "=="))
+  | `MD5 ->
+    Some
+      ( "hash"
+      , Nix.string
+          ("md5-"
+          ^ Base64.encode_string (Hex.to_string (`Hex (OpamHash.contents hash)))
+          ^ "==") )
   | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
   | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash))
 ;;

@@ -3,8 +3,8 @@ let nix_of_variable_scoped scope packages name defaults =
   let packages =
     List.map
       (function
-          | Some package -> OpamPackage.Name.to_string package
-          | None -> "_")
+         | Some package -> OpamPackage.Name.to_string package
+         | None -> "_")
       packages
   in
   let defaults =
@@ -34,7 +34,7 @@ let nix_of_variable_scoped scope packages name defaults =
 
 let nix_of_variable packages name defaults =
   Nix.scoped "__envScope" (fun scope ->
-      nix_of_variable_scoped scope packages name defaults)
+    nix_of_variable_scoped scope packages name defaults)
 ;;
 
 let nix_of_ident_string_scoped scope name =
@@ -50,11 +50,11 @@ let nix_of_ident_string name =
 let nix_of_interpolated_string input =
   let open Nix in
   scoped "__envScope" (fun scope ->
-      let segments =
-        Interpolated_string.parse
-          ~on_string:(fun str -> StringSegment str)
-          ~on_variable:(fun name -> CodeSegment (nix_of_ident_string_scoped scope name))
-          input
-      in
-      MultilineString [ segments ])
+    let segments =
+      Interpolated_string.parse
+        ~on_string:(fun str -> StringSegment str)
+        ~on_variable:(fun name -> CodeSegment (nix_of_ident_string_scoped scope name))
+        input
+    in
+    MultilineString [ segments ])
 ;;

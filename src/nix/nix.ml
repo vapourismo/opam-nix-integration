@@ -123,7 +123,7 @@ and render_attrs attrs =
       (StringMap.to_seq attrs
       |> List.of_seq
       |> List.map (fun (k, v) ->
-             render_string [ StringSegment k ] ^ " = " ^ render_prec v ^ ";"))
+           render_string [ StringSegment k ] ^ " = " ^ render_prec v ^ ";"))
   ^ " }"
 
 and render_accessor acc =

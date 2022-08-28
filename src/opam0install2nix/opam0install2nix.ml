@@ -70,9 +70,9 @@ let parse_package_arg package_str =
     let package = String.trim package in
     let version = String.trim version in
     (match parse_relop op with
-    | Some op ->
-      OpamPackage.Name.of_string package, Some (op, OpamPackage.Version.of_string version)
-    | None -> failwith (Printf.sprintf "Unknown relational operator %s" op))
+     | Some op ->
+       OpamPackage.Name.of_string package, Some (op, OpamPackage.Version.of_string version)
+     | None -> failwith (Printf.sprintf "Unknown relational operator %s" op))
   | [ package ] ->
     let package = String.trim package in
     OpamPackage.Name.of_string package, None
