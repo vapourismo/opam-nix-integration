@@ -24,7 +24,7 @@
         };
 
       let
-        ocamlPackages = ocaml-ng.ocamlPackages_4_13.overrideScope' self.overlays.ocamlBoot;
+        ocamlPackages = ocaml-ng.ocamlPackages_4_14.overrideScope' self.overlays.ocamlBoot;
       in
 
       {
