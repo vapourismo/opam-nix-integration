@@ -8,6 +8,7 @@ depends: [
   "zarith"
   "base64"
   "hex"
+  "nix"
   "odoc" {with-doc}
 ]
 build: [

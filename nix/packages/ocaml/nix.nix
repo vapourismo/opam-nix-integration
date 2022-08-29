@@ -1,15 +1,10 @@
 { buildDunePackage
-, opam-0install
-, cmdliner
 , zarith
-, hex
-, base64
-, nix
 , pkgs
 }:
 
 buildDunePackage {
-  pname = "opam0install2nix";
+  pname = "nix";
   version = "0.0.0";
 
   duneVersion = "3";
@@ -18,12 +13,7 @@ buildDunePackage {
   src = ../../..;
 
   buildInputs = [
-    opam-0install
-    cmdliner
     zarith
-    hex
-    base64
-    nix
     pkgs.git
   ];
 }

@@ -27,6 +27,19 @@
               "hex"
             ];
           };
+
+          overlays = [
+            (final: prev: {
+              nix =
+                final.callOpam2Nix
+                  {
+                    name = "nix";
+                    version = "0.0.0";
+                    src = opam-nix-integration;
+                  }
+                  { };
+            })
+          ];
         };
       in
       {

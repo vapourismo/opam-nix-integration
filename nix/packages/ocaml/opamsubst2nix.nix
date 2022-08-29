@@ -3,6 +3,7 @@
 , zarith
 , base64
 , hex
+, nix
 , pkgs
 }:
 
@@ -20,6 +21,7 @@ buildDunePackage {
     zarith
     base64
     hex
+    nix
     pkgs.git
   ];
 }

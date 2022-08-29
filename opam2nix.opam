@@ -10,6 +10,7 @@ depends: [
   "ppx_deriving"
   "base64"
   "hex"
+  "nix"
   "odoc" {with-doc}
 ]
 build: [
