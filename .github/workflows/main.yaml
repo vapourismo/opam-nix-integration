@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Nix
-        uses: nixbuild/nix-quick-install-action@v9
+        uses: nixbuild/nix-quick-install-action@v17
 
       - run: nix-build -v examples/standard/default.nix
 
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Nix
-        uses: nixbuild/nix-quick-install-action@v9
+        uses: nixbuild/nix-quick-install-action@v17
         with:
           nix_conf: |
             extra-experimental-features = nix-command flakes
