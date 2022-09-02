@@ -83,18 +83,25 @@ let hash_attrs hash =
   match OpamHash.kind hash with
   | `MD5 ->
     Some
-      ( "hash"
+      ( 0
+      , "hash"
       , Nix.string
           ("md5-"
           ^ Base64.encode_string (Hex.to_string (`Hex (OpamHash.contents hash)))
           ^ "==") )
-  | `SHA256 -> Some ("sha256", Nix.string (OpamHash.contents hash))
-  | `SHA512 -> Some ("sha512", Nix.string (OpamHash.contents hash))
+  | `SHA256 -> Some (1, "sha256", Nix.string (OpamHash.contents hash))
+  | `SHA512 -> Some (2, "sha512", Nix.string (OpamHash.contents hash))
 ;;
 
 let nix_of_url url =
   let open Nix in
-  let checksum_attrs = List.filter_map hash_attrs (OpamFile.URL.checksum url) in
+  let checksum_attrs =
+    List.filter_map hash_attrs (OpamFile.URL.checksum url)
+    |> List.sort (fun (l, _, _) (r, _, _) -> Int.compare r l)
+    |> function
+      | (_, key, value) :: _ -> [ key, value ]
+      | _ -> assert false
+  in
   let url = OpamFile.URL.url url in
   match url.backend with
   | `git ->
