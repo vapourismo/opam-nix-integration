@@ -1,91 +1,121 @@
-let parens body = "(" ^ body ^ ")"
+let pp_parens pp fmt = Format.fprintf fmt "(%a)" pp
 
-let rec render_prec ?(want_parens = false) exp =
-  match exp with
-  | Expr.Identifier ident -> ident
-  | Bool value -> if value then "true" else "false"
-  | String segments -> render_string segments
-  | MultilineString lines -> render_multline_string lines
-  | Number num -> "(" ^ Q.to_string num ^ ")"
-  | List elements -> render_list elements
-  | AttrSet attrs -> render_attrs attrs
-  | Lambda { head; body } ->
-    (if want_parens then parens else Fun.id)
-    @@ render_pattern head
-    ^ ": "
-    ^ render_prec body
-  | Apply { func; args } ->
-    (if want_parens then parens else Fun.id)
-    @@ render_prec func
-    ^ " "
-    ^ String.concat " " (List.map (fun arg -> render_prec ~want_parens:true arg) args)
-  | Unary { op; exp } -> op ^ render_prec ~want_parens:true exp
-  | Infix { left; op; right } ->
-    (if want_parens then parens else Fun.id)
-    @@ render_prec ~want_parens:true left
-    ^ " "
-    ^ op
-    ^ " "
-    ^ render_prec ~want_parens:true right
-  | Index { attr_set; field } ->
-    render_prec ~want_parens:true attr_set ^ "." ^ render_accessor field
-
-and render_string segments =
-  "\""
-  ^ String.concat "" (List.map (fun seg -> render_string_segment seg) segments)
-  ^ "\""
-
-and render_multline_string lines =
-  "''"
-  ^ String.concat
-      "\n"
-      (List.map
-         (fun segments ->
-           String.concat
-             ""
-             (List.map (fun seg -> render_string_segment ~escape:false seg) segments))
-         lines)
-  ^ "''"
-
-and render_string_segment ?(escape = true) seg =
-  match seg with
-  | StringSegment str ->
-    if escape then String.concat "\\\"" (String.split_on_char '"' str) else str
-  | CodeSegment code -> "${" ^ render_prec code ^ "}"
-
-and render_list elements =
-  "["
-  ^ String.concat " " (List.map (fun elem -> render_prec ~want_parens:true elem) elements)
-  ^ "]"
-
-and render_attrs attrs =
-  "{ "
-  ^ String.concat
-      " "
-      (Expr.StringMap.to_seq attrs
-      |> List.of_seq
-      |> List.map (fun (k, v) ->
-           render_string [ StringSegment k ] ^ " = " ^ render_prec v ^ ";"))
-  ^ " }"
-
-and render_accessor acc =
-  match acc with
-  | StringAccess name -> name
-  | RedirectedAccess expr -> "${" ^ render_prec expr ^ "}"
-
-and render_field_pattern field_pat =
-  match field_pat with
-  | Expr.FieldPat name -> name
-  | FieldOptPat { name; default } -> name ^ " ? " ^ render_prec default
-
-and render_pattern pat =
-  match pat with
-  | IdentPat name -> name
-  | AttrSetPat { fields; partial; bound } ->
-    let fields = List.map render_field_pattern fields in
-    let entries = if partial then fields @ [ "..." ] else fields in
-    let binding = Option.fold ~none:"" ~some:(fun name -> "@" ^ name) bound in
-    "{ " ^ String.concat ", " entries ^ " }" ^ binding
+let pp_join ?(sep = "") pp fmt args =
+  match args with
+  | h :: t ->
+    pp fmt h;
+    List.iter (fun x -> Format.fprintf fmt "%s%a" sep pp x) t
+  | _ -> Format.pp_print_string fmt ""
 ;;
 
-let render exp = render_prec exp
+let rec pp_prec ?(want_parens = false) fmt exp =
+  match exp with
+  | Expr.Identifier ident -> Format.pp_print_string fmt ident
+  | Bool value -> Format.pp_print_string fmt (if value then "true" else "false")
+  | String segments -> pp_string fmt segments
+  | MultilineString lines -> pp_multline_string fmt lines
+  | Number num -> Format.fprintf fmt "(%a)" Q.pp_print num
+  | List elements -> pp_list fmt elements
+  | AttrSet attrs -> pp_attrs fmt attrs
+  | Lambda { head; body } ->
+    (if want_parens then pp_parens else Fun.id)
+      (fun fmt () ->
+        Format.fprintf fmt "%a: %a" pp_pattern head (pp_prec ?want_parens:None) body)
+      fmt
+      ()
+  | Apply { func; args } ->
+    (if want_parens then pp_parens else Fun.id)
+      (fun fmt () ->
+        Format.fprintf
+          fmt
+          "%a %a"
+          (pp_prec ?want_parens:None)
+          func
+          (pp_join ~sep:" " (pp_prec ~want_parens:true))
+          args)
+      fmt
+      ()
+  | Unary { op; exp } -> Format.fprintf fmt "%s%a" op (pp_prec ~want_parens:true) exp
+  | Infix { left; op; right } ->
+    (if want_parens then pp_parens else Fun.id)
+      (fun fmt () ->
+        Format.fprintf
+          fmt
+          "%a %s %a"
+          (pp_prec ~want_parens:true)
+          left
+          op
+          (pp_prec ~want_parens:true)
+          right)
+      fmt
+      ()
+  | Index { attr_set; field } ->
+    Format.fprintf fmt "%a.%a" (pp_prec ~want_parens:true) attr_set pp_accessor field
+
+and pp_string_segment ?(escape = true) fmt seg =
+  match seg with
+  | Expr.StringSegment str ->
+    if escape
+    then pp_join ~sep:"\\\"" Format.pp_print_string fmt (String.split_on_char '"' str)
+    else Format.pp_print_string fmt str
+  | CodeSegment code -> Format.fprintf fmt "${%a}" (pp_prec ?want_parens:None) code
+
+and pp_string fmt segments =
+  Format.fprintf fmt "\"%a\"" (pp_join pp_string_segment) segments
+
+and pp_multline_string fmt lines =
+  Format.fprintf
+    fmt
+    "''%a''"
+    (pp_join ~sep:"\n" (pp_join (pp_string_segment ~escape:false)))
+    lines
+
+and pp_list fmt elements =
+  Format.fprintf fmt "[%a]" (pp_join ~sep:" " (pp_prec ~want_parens:true)) elements
+
+and pp_attrs fmt attrs =
+  let pp_kv fmt (k, v) =
+    Format.fprintf
+      fmt
+      "%a = %a;"
+      pp_string
+      [ StringSegment k ]
+      (pp_prec ?want_parens:None)
+      v
+  in
+  Format.fprintf
+    fmt
+    "{ %a }"
+    (pp_join ~sep:" " pp_kv)
+    (attrs |> Expr.StringMap.to_seq |> List.of_seq)
+
+and pp_accessor fmt acc =
+  match acc with
+  | StringAccess name -> Format.pp_print_string fmt name
+  | RedirectedAccess expr -> Format.fprintf fmt "${%a}" (pp_prec ?want_parens:None) expr
+
+and pp_field_pattern fmt field_pat =
+  match field_pat with
+  | Expr.FieldPat name -> Format.pp_print_string fmt name
+  | FieldOptPat { name; default } ->
+    Format.fprintf fmt "%s ? %a" name (pp_prec ?want_parens:None) default
+
+and pp_pattern fmt pat =
+  match pat with
+  | IdentPat name -> Format.pp_print_string fmt name
+  | AttrSetPat { fields; partial; bound } ->
+    let pp_fields fmt = pp_join ~sep:", " pp_field_pattern fmt fields in
+    let pp_partial fmt =
+      match fields, partial with
+      | [], true -> Format.fprintf fmt "{ ... }"
+      | _, true -> Format.fprintf fmt "{ %t, ... }" pp_fields
+      | _, false -> Format.fprintf fmt "{ %t }" pp_fields
+    in
+    (match bound with
+     | None -> pp_partial fmt
+     | Some name -> Format.fprintf fmt "%t@%s" pp_partial name)
+;;
+
+let render_pattern pat = Format.asprintf "%a" pp_pattern pat
+
+let render pat = Format.asprintf "%a" (pp_prec ?want_parens:None) pat
