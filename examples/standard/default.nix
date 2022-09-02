@@ -46,7 +46,7 @@ let
   };
 
   finalScope = defaultScope.overrideScope' (final: prev: {
-    ocaml-base-compiler = prev.ocaml-base-compiler.override { jobs = 4; };
+    ocaml-base-compiler = prev.ocaml-base-compiler.override { jobs = "$NIX_BUILD_CORES"; };
 
     opam2nix =
       final.callOpam2Nix
