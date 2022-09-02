@@ -170,7 +170,14 @@ stdenv.mkDerivation ({
 
   src = overlayedSource;
 
-  patches = lib.optional (name == "ocamlfind") ./ldconf.patch ++ selectedPatches;
+  patches =
+    lib.optional (name == "ocamlfind") ./ldconf.patch
+      ++
+      lib.optional
+        (name == "ocamlfind" && lib.versionOlder "1.9.3" version)
+        ./ocamlfind-post-193.patch
+      ++
+      selectedPatches;
 
   buildInputs = with pkgs; [ git which ];
 
