@@ -75,8 +75,8 @@ let main options =
       opam.patches
   in
   let expr =
-    Pattern.attr_set
-      Pattern.
+    Pat.(
+      attr_set
         [ field "mkOpamDerivation"
         ; field "selectOpamSrc"
         ; field "resolveOpamExtraSrc"
@@ -87,7 +87,7 @@ let main options =
         ; field "jobs" @? int 1
         ; field "with-test" @? bool false
         ; field "with-doc" @? bool false
-        ]
+        ])
     => ident "mkOpamDerivation"
        @@ [ attr_set
               ([ "name", string options.name

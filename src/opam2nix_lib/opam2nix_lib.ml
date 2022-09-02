@@ -25,7 +25,7 @@ let nix_of_dependency (name, formula) =
       formula
   in
   lambda
-    (Pattern.ident "__dependencyScope")
+    (Pat.ident "__dependencyScope")
     (apply
        (index scope "package")
        [ string (OpamPackage.Name.to_string name)

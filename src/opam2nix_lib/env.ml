@@ -52,9 +52,9 @@ let nix_of_interpolated_string input =
   scoped "__envScope" (fun scope ->
     let segments =
       Interpolated_string.parse
-        ~on_string:(fun str -> StringSegment str)
-        ~on_variable:(fun name -> CodeSegment (nix_of_ident_string_scoped scope name))
+        ~on_string:Str.str
+        ~on_variable:(fun name -> Str.code (nix_of_ident_string_scoped scope name))
         input
     in
-    MultilineString [ segments ])
+    of_multiline_str [ Str.concat segments ])
 ;;
