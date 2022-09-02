@@ -79,7 +79,7 @@ let
     find ${opamLib.env.local.lib} \
       \( -iname '*.so' -or -iname '*.a' -or -iname '*.dylib' -or -iname '*.dll' \) \
       -type f \
-      -exec ln -svt ${opamLib.env.packages."_".stublibs} {} \;
+      -exec ln -svtf ${opamLib.env.packages."_".stublibs} {} \;
 
     ${lib.optionalString stdenv.isDarwin fixMachOLibsScript}
   '';
