@@ -104,6 +104,8 @@ let bool value = Bool value
 
 let int x = Number (Q.of_int x)
 
+let float x = Number (Q.of_float x)
+
 let string body = String (Str.str body)
 
 let multiline lines = MultilineString (List.map Str.str lines)
