@@ -47,6 +47,8 @@
         };
 
         devShell = mkShell {
+          name = "opam-nix-integration-shell";
+
           packages =
             # OCaml packages
             (with ocamlPackages; [
