@@ -12,7 +12,7 @@
 
   outputs = { self, nixpkgs, flake-utils, opam-repository }:
     {
-      overlays.ocamlBoot = import (self + /nix/packages/ocaml/overlay.nix);
+      overlays.ocamlBoot = import (self + /nix/boot/overlay.nix);
 
       overlay = import (self + /overlay.nix);
     }

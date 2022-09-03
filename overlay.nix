@@ -2,7 +2,7 @@ final: prev:
 
 let
   bootedOcamlPackages = final.ocaml-ng.ocamlPackages_4_14.overrideScope' (
-    import ./nix/packages/ocaml/overlay.nix
+    import ./nix/boot/overlay.nix
   );
 in
 
