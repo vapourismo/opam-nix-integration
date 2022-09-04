@@ -1,6 +1,6 @@
 module Lib = Opam2nix_lib
 
-let read_opam path = OpamFilename.of_string path |> OpamFile.make |> OpamFile.OPAM.read
+let read_opam path = path |> OpamFile.make |> OpamFile.OPAM.read
 
 module Options = struct
   open Cmdliner
@@ -10,7 +10,8 @@ module Options = struct
   type t =
     { name : string
     ; version : string
-    ; file : string
+    ; file : OpamFilename.t
+    ; extra_files : OpamFilename.Dir.t option
     }
 
   let name_term = Arg.(info ~docv:"NAME" [ "n"; "name" ] |> req string |> required)
@@ -21,9 +22,19 @@ module Options = struct
 
   let file_term = Arg.(info ~docv:"FILE" [ "f"; "file" ] |> req file |> required)
 
+  let extra_files_term =
+    Arg.(info ~docv:"DIR" [ "e"; "extra-files" ] |> req file |> value)
+  ;;
+
   let term =
-    let combine name version file = { name; version; file } in
-    Term.(const combine $ name_term $ version_term $ file_term)
+    let combine name version file extra_files =
+      { name
+      ; version
+      ; file = OpamFilename.of_string file
+      ; extra_files = Option.map OpamFilename.Dir.of_string extra_files
+      }
+    in
+    Term.(const combine $ name_term $ version_term $ file_term $ extra_files_term)
   ;;
 end
 
@@ -37,6 +48,11 @@ let main options =
   let depends = Lib.nix_of_depends opam.depends in
   let depopts = Lib.nix_of_depopts opam.depopts in
   let native_depends = Lib.nix_of_depexts opam.depexts in
+  let extra_files_dir =
+    match options.extra_files with
+    | Some extra_files -> extra_files
+    | None -> OpamFilename.concat_and_resolve (OpamFilename.dirname options.file) "files"
+  in
   let extra_files =
     Option.fold
       ~none:[]
@@ -46,10 +62,13 @@ let main options =
         | files ->
           List.map
             (fun (path, _hash) ->
-              let path = OpamFilename.Base.to_string path in
+              let path_str = OpamFilename.Base.to_string path in
               attr_set
-                [ "path", string path
-                ; "src", ident "resolveOpamExtraSrc" @@ [ ident "extraSrc"; string path ]
+                [ "path", string path_str
+                ; ( "src"
+                  , OpamFilename.create extra_files_dir path
+                    |> OpamFilename.to_string
+                    |> ident )
                 ])
             files)
       opam.extra_files
@@ -80,11 +99,9 @@ let main options =
       attr_set
         ([ field "mkOpamDerivation"
          ; field "selectOpamSrc"
-         ; field "resolveOpamExtraSrc"
          ; field "fetchurl"
          ; field "fetchgit"
          ; field "altSrc" @? null
-         ; field "extraSrc" @? null
          ; field "jobs" @? int 1
          ; field "with-test" @? bool false
          ; field "with-doc" @? bool false

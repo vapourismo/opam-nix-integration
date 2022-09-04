@@ -100,6 +100,7 @@ Options for the first parameter:
 | `opam` | `path` | No | Path to the OPAM file to processed. This will default to `${src}/${name}.opam` if you omit it. That means you have to provide `src` when skipping `opam`. |
 | `src` | `path` | No | You can specify this parameter if you'd like to override the source for the package. If you skip it, the source specified in the OPAM file will be used. |
 | `patches` | `list` of `path`s | No | These patches will be applied to the OPAM file ahead of processing. |
+| `extraFiles` | `path` | No | Some packages need extra files via the `extra-files` stanza. Those files will be looked up in `extraFiles`. |
 
 These are some of the options for the second parameter:
 
@@ -108,11 +109,11 @@ These are some of the options for the second parameter:
 | `jobs` | `int` | Sets the `jobs` OPAM variable for that package. This can be used to scale the build parallelism. |
 | `with-test` | `bool` | Sets the `with-test` OPAM variable for that package. Usually that enables building and running tests. |
 | `with-doc` | `bool` | Sets the `with-doc` OPAM variable for that package. In most cases documentation will be built and installed if set to `true`. |
-| `extraSrc` | `path` | Some packages need extra files via the `extra-files` stanza. Those files will be looked up in `extraSrc`.  |
 
 ### `callOpam`
 
-`callOpam` is almost identical to `callOpam2Nix` except that it finds the right values for `opam` and `extraSrc` parameters specific to the configured OPAM repository for you.
+`callOpam` is almost identical to `callOpam2Nix` except that it finds the right values for `opam` and `extraFiles` parameters specific to the configured OPAM repository for you.
+
 Example:
 
 ```nix

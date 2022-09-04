@@ -20,13 +20,7 @@ lib.makeScope pkgs.newScope (self: {
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
 
-  resolveOpamExtraSrc = extraSrc: file:
-    if builtins.isPath extraSrc || builtins.isString extraSrc then
-      "${extraSrc}/${file}"
-    else
-      abort "OPAM file needs 'extraSrc' to be a string or path! Got: ${builtins.typeOf extraSrc}";
-
-  generateOpam2Nix = { name, version, opam, patches ? [ ] }:
+  generateOpam2Nix = { name, version, opam, patches ? [ ], extraFiles ? null }:
     import (
       runCommand
         "opam2nix-${name}-${version}"
@@ -43,6 +37,7 @@ lib.makeScope pkgs.newScope (self: {
           opam2nix \
             --name ${name} \
             --version ${version} \
+            ${lib.optionalString (extraFiles != null && lib.pathExists extraFiles) "--extra-files ${extraFiles}"} \
             --file opam > $out
         ''
     );
