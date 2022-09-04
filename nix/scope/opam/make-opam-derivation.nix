@@ -28,7 +28,7 @@ ocamlPackages:
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
 , substFiles ? [ ]
-, jobs ? 1
+, jobs ? "$NIX_BUILD_CORES"
 , with-test ? false
 , with-doc ? false
 , patches ? [ ]
