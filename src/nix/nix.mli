@@ -62,10 +62,10 @@ module Pat : sig
   val ident : string -> t
 
   (** [attr_set fields] creates an attribute set pattern. *)
-  val attr_set : field list -> t
+  val attr_set : ?bound:string -> field list -> t
 
   (** [attr_set_partial fields] creates an attribute set pattern with additional optional fields. *)
-  val attr_set_partial : field list -> t
+  val attr_set_partial : ?bound:string -> field list -> t
 
   (** [render pattern] converts a Nix pattern to string. *)
   val render : t -> string

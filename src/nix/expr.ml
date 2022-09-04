@@ -72,9 +72,9 @@ module Pat = struct
 
   type t = pattern
 
-  let attr_set fields = AttrSetPat { fields; partial = false; bound = None }
+  let attr_set ?bound fields = AttrSetPat { fields; partial = false; bound }
 
-  let attr_set_partial fields = AttrSetPat { fields; partial = true; bound = None }
+  let attr_set_partial ?bound fields = AttrSetPat { fields; partial = true; bound }
 
   let ident name = IdentPat name
 end
