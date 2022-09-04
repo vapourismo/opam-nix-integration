@@ -148,41 +148,40 @@ let
       abort "Unknown variable ${packageName}:${name}";
 
   eval = { onMissing ? defaultOnMissing }: template:
-    let lookup =
-      { packageName ? null
-      , name
-      , defaults ? { }
-      }:
-      let
-        value =
-          if packageName == null then
-            lookupLocalVar name
-          else
-            lookupPackageVar packageName name;
+    let
+      lookup =
+        { packageName ? null
+        , name
+        , defaults ? { }
+        }:
+        let
+          value =
+            if packageName == null then
+              lookupLocalVar name
+            else
+              lookupPackageVar packageName name;
 
-        transformValue = defaults ? ifTrue && defaults ? otherwise;
-      in
-      if transformValue then
-        (
-          # This condition might seem strange.
-          # Keep in mind that 'value' might not be a boolean.
-          if value == true then
-            defaults.ifTrue
-          else
-            defaults.otherwise
-        )
-      else
-        (
-          if value == null then
-            onMissing packageName name
-          else
-            value
-        );
+          transformValue = defaults ? ifTrue && defaults ? otherwise;
+        in
+        if transformValue then
+          (
+            # This condition might seem strange.
+            # Keep in mind that 'value' might not be a boolean.
+            if value == true then
+              defaults.ifTrue
+            else
+              defaults.otherwise
+          )
+        else
+          (
+            if value == null then
+              onMissing packageName name
+            else
+              value
+          );
     in
     template {
-      local = lookup;
-
-      package = lookup;
+      inherit lookup;
 
       toString = x:
         if lib.isString x then
