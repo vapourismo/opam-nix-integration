@@ -14,12 +14,10 @@
 
 let
   callPackage = lib.callPackageWith args;
-
-  baseScope = callPackage ../base { };
 in
 
-baseScope.overrideScope' (final: prev: {
-  mkOpamDerivation = callPackage ./make-opam-derivation.nix { } final;
+lib.makeScope newScope (self: {
+  mkOpamDerivation = callPackage ./make-opam-derivation.nix { } self;
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
 
@@ -60,7 +58,7 @@ baseScope.overrideScope' (final: prev: {
         else
           abort "'opam' mustn't be null if 'src' is also null!";
     in
-    final.callPackage
-      (final.generateOpam2Nix (builtins.removeAttrs args [ "src" ] // argOverride))
+    self.callPackage
+      (self.generateOpam2Nix (builtins.removeAttrs args [ "src" ] // argOverride))
       ({ altSrc = src; } // extra);
 })
