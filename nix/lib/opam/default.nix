@@ -26,10 +26,7 @@ let
 
   commandsLib = callPackage ./commands { inherit envLib filterLib; };
 
-  dependsLib =
-    callPackage ./depends
-      { inherit envLib filterLib constraintLib formulaLib; }
-      { inherit (args) ocamlPackages; };
+  dependsLib = callPackage ./depends { inherit envLib filterLib constraintLib formulaLib; };
 
   substLib = callPackage ./subst { inherit envLib; };
 

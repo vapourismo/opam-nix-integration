@@ -6,16 +6,11 @@ let
   showConstraint = subject: formulaLib.show { atom = constraintLib.show subject; };
 
   evalConstraint = formulaLib.evalPredicate { atom = constraintLib.eval; };
-in
 
-{ ocamlPackages }:
-
-let
   evalDependency = { optional ? false }: dep: dep {
-    package = packageName: enabled: constraint:
+    package = { name, package, enabled, constraint }:
       let want = evalCondition enabled; in
-      if lib.hasAttr packageName ocamlPackages && want then
-        let package = ocamlPackages.${packageName}; in
+      if want && package != null then
         (
           if evalConstraint constraint package.version then
             [ package ]
@@ -29,17 +24,14 @@ let
   };
 
   showDependency = dep: dep {
-    package = packageName: enabled: constraint:
-      if lib.hasAttr packageName ocamlPackages then
-        let package = ocamlPackages.${packageName}.name; in
-        (
-          if evalCondition enabled then
-            "${showConstraint package constraint}"
-          else
-            "${packageName} disabled"
-        )
+    package = { name, package, enabled, constraint }:
+      let want = evalCondition enabled; in
+      if want && package != null then
+        "${showConstraint package constraint}"
+      else if !want then
+        "${name} disabled"
       else
-        "${packageName} is unknown";
+        "${name} is unknown";
   };
 
   eval = { name, ... }@config: depFormula:
@@ -50,13 +42,14 @@ let
     if lib.isList deps then
       deps
     else
-      let debugged =
-        formulaLib.debug
-          {
-            evalAtom = dep: evalDependency downstreamConfig dep != null;
-            showAtom = showDependency;
-          }
-          depFormula;
+      let
+        debugged =
+          formulaLib.debug
+            {
+              evalAtom = dep: evalDependency downstreamConfig dep != null;
+              showAtom = showDependency;
+            }
+            depFormula;
       in
       abort ''
         Dependency formula could not be satisfied for ${name}:

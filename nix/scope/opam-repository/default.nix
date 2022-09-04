@@ -2,7 +2,6 @@
 , stdenv
 , lib
 , system
-, newScope
 , runCommand
 , writeText
 , writeScript
@@ -50,6 +49,14 @@ let
       );
     in
     versions;
+
+  fixPackageName = name:
+    let fixedName = pkgs.lib.replaceChars [ "+" ] [ "p" ] name; in
+    # Check if the name starts with a bad letter.
+    if lib.strings.match "^[^a-zA-Z_].*" fixedName != null then
+      "_${fixedName}"
+    else
+      fixedName;
 in
 
 opamScope.overrideScope' (final: prev: {
@@ -63,29 +70,38 @@ opamScope.overrideScope' (final: prev: {
 
   repository = {
     packages =
-      lib.mapAttrs
-        (name: collection:
-          lib.listToAttrs
-            (
-              lib.lists.map
-                (version: {
-                  name = version;
-                  value = final.callOpam { inherit name version; } { };
-                })
-                collection.versions
-            ) // {
-            latest =
-              final.callOpam
-                { inherit name; version = collection.latest; }
-                { };
-          })
+      lib.mapAttrs'
+        (name: collection: {
+          name = fixPackageName name;
+          value =
+            lib.listToAttrs
+              (
+                lib.lists.map
+                  (version: {
+                    name = version;
+                    value = final.callOpam { inherit name version; } { };
+                  })
+                  collection.versions
+              )
+            //
+            {
+              latest =
+                final.callOpam
+                  { inherit name; version = collection.latest; }
+                  { };
+            };
+        })
         repositoryIndex;
 
     select = { testablePackages ? [ ], ... }@args:
-      lib.mapAttrs
+      lib.mapAttrs'
         (name: version:
-          let pkg = final.callOpam { inherit name version; } { }; in
-          pkg.override { with-test = lib.elem name testablePackages; })
+          {
+            name = fixPackageName name;
+            value =
+              let pkg = final.callOpam { inherit name version; } { }; in
+              pkg.override { with-test = lib.elem name testablePackages; };
+          })
         (solvePackageVersions args);
   };
 })

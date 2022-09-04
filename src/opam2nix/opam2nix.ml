@@ -74,20 +74,22 @@ let main options =
           ])
       opam.patches
   in
+  let extra_pattern_fields = Lib.nix_fields_of_deps opam.depends opam.depopts in
   let expr =
     Pat.(
       attr_set
-        [ field "mkOpamDerivation"
-        ; field "selectOpamSrc"
-        ; field "resolveOpamExtraSrc"
-        ; field "fetchurl"
-        ; field "fetchgit"
-        ; field "altSrc" @? null
-        ; field "extraSrc" @? null
-        ; field "jobs" @? int 1
-        ; field "with-test" @? bool false
-        ; field "with-doc" @? bool false
-        ])
+        ([ field "mkOpamDerivation"
+         ; field "selectOpamSrc"
+         ; field "resolveOpamExtraSrc"
+         ; field "fetchurl"
+         ; field "fetchgit"
+         ; field "altSrc" @? null
+         ; field "extraSrc" @? null
+         ; field "jobs" @? int 1
+         ; field "with-test" @? bool false
+         ; field "with-doc" @? bool false
+         ]
+        @ extra_pattern_fields))
     => ident "mkOpamDerivation"
        @@ [ attr_set
               ([ "name", string options.name

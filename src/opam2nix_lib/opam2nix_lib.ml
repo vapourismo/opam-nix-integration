@@ -24,19 +24,34 @@ let nix_of_dependency (name, formula) =
         | Filter filter -> OpamFormula.Atom filter)
       formula
   in
+  let name = Names.string_of_package_name name in
   lambda
     (Pat.ident "__dependencyScope")
     (apply
        (index scope "package")
-       [ string (OpamPackage.Name.to_string name)
-       ; Formula.to_nix Filter.to_nix enabled
-       ; Formula.to_nix Constraint.to_nix constraints
+       [ attr_set
+           [ "name", string name
+           ; "package", ident name
+           ; "enabled", Formula.to_nix Filter.to_nix enabled
+           ; "constraint", Formula.to_nix Constraint.to_nix constraints
+           ]
        ])
 ;;
 
 let nix_of_depends depends = Formula.to_nix nix_of_dependency depends
 
 let nix_of_depopts depots = Formula.to_nix nix_of_dependency depots
+
+module StringSet = Set.Make (String)
+
+let nix_fields_of_deps depends depopts =
+  let add_name set (name, _) = StringSet.add (Names.string_of_package_name name) set in
+  let stage1 = OpamFormula.fold_left add_name StringSet.empty depopts in
+  let stage2 = OpamFormula.fold_left add_name stage1 depends in
+  StringSet.to_seq stage2
+  |> List.of_seq
+  |> List.map (fun name -> Nix.(Pat.field_opt name null))
+;;
 
 let nix_of_depexts depexts =
   let open Nix in

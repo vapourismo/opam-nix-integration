@@ -2,7 +2,6 @@
 , stdenv
 , lib
 , system
-, newScope
 , runCommand
 , writeText
 , writeScript
@@ -16,7 +15,7 @@ let
   callPackage = lib.callPackageWith args;
 in
 
-lib.makeScope newScope (self: {
+lib.makeScope pkgs.newScope (self: {
   mkOpamDerivation = callPackage ./make-opam-derivation.nix { } self;
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
