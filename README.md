@@ -181,7 +181,7 @@ packageSet.overrideScope' (final: prev: prev.repository.select {
 
 ## Known problems
 
-### Dune 3+ direct installation mode
+### Dune 3.0 and 3.1 direct installation mode
 
 As reported in [ocaml/dune#5455][dune-install-issue], Dune 3+ wants either an explicit `--prefix` command-line argument or the `opam` executable in scope when installing build results directly. We can't do either at the moment unfortunately.
 
