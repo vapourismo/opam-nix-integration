@@ -53,6 +53,16 @@ let nix_fields_of_deps depends depopts =
   |> List.map (fun name -> Nix.(Pat.field_opt name null))
 ;;
 
+let nix_package_closure_of_deps depends depopts =
+  let add_name set (name, _) = StringSet.add (Names.string_of_package_name name) set in
+  let stage1 = OpamFormula.fold_left add_name StringSet.empty depopts in
+  let stage2 = OpamFormula.fold_left add_name stage1 depends in
+  StringSet.to_seq stage2
+  |> List.of_seq
+  |> List.map (fun name -> name, Nix.ident name)
+  |> Nix.attr_set
+;;
+
 let nix_of_depexts depexts =
   let open Nix in
   list

@@ -94,6 +94,7 @@ let main options =
       opam.patches
   in
   let extra_pattern_fields = Lib.nix_fields_of_deps opam.depends opam.depopts in
+  let subst_env = Lib.nix_package_closure_of_deps opam.depends opam.depopts in
   let expr =
     Pat.(
       attr_set
@@ -119,6 +120,7 @@ let main options =
                ; "nativeDepends", native_depends
                ; "extraFiles", list (extra_files @ extra_sources)
                ; "substFiles", list substs
+               ; "substEnv", subst_env
                ; "patches", list patches
                ; "jobs", ident "jobs"
                ; "with-test", ident "with-test"

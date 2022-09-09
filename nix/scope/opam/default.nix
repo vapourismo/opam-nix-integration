@@ -16,7 +16,7 @@ let
 in
 
 lib.makeScope pkgs.newScope (self: {
-  mkOpamDerivation = callPackage ./make-opam-derivation.nix { } self;
+  mkOpamDerivation = callPackage ./make-opam-derivation.nix { };
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
 

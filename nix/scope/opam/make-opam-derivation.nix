@@ -15,8 +15,6 @@ let
   extraLib = callPackage ../../lib { };
 in
 
-ocamlPackages:
-
 { name
 , version
 , src ? null
@@ -28,6 +26,7 @@ ocamlPackages:
 , nativeDepends ? [ ]
 , extraFiles ? [ ]
 , substFiles ? [ ]
+, substEnv ? { }
 , jobs ? "$NIX_BUILD_CORES"
 , with-test ? false
 , with-doc ? false
@@ -36,6 +35,8 @@ ocamlPackages:
 }@args:
 
 let
+  ocamlPackages = lib.attrsets.filterAttrs (_: v: v != null) substEnv;
+
   opamLib = extraLib.makeOpamLib {
     inherit name version ocamlPackages jobs with-doc with-test;
   };
@@ -232,5 +233,6 @@ stdenv.mkDerivation ({
   "nativeDepends"
   "extraFiles"
   "substFiles"
+  "substEnv"
   "patches"
 ])
