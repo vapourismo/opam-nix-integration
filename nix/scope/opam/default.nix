@@ -11,16 +11,16 @@
 , opamsubst2nix
 }@args:
 
-let
-  callPackage = lib.callPackageWith args;
-in
-
 lib.makeScope pkgs.newScope (self: {
-  mkOpamDerivation = callPackage ./make-opam-derivation.nix { };
+  mkOpamDerivation = self.callPackage ./make-opam-derivation.nix {
+    inherit opamvars2nix opamsubst2nix opam-installer;
+  };
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
 
-  generateOpam2Nix = callPackage ./generate-opam2nix.nix { };
+  generateOpam2Nix = self.callPackage ./generate-opam2nix.nix {
+    inherit opam2nix;
+  };
 
   callOpam2Nix = { name, opam ? null, src ? null, ... }@args: extra:
     let
