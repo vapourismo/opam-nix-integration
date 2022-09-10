@@ -13,9 +13,12 @@ in
     '';
 
     emptyPackageSet =
-      bootedOcamlPackages.callPackage
+      final.callPackage
         ./nix/scope/opam-repository
-        { repository = final.opam-nix-integration.emptyRepository; };
+        {
+          inherit (bootedOcamlPackages) opam2nix opamvars2nix opamsubst2nix opam0install2nix;
+          repository = final.opam-nix-integration.emptyRepository;
+        };
 
     makePackageSet = { repository, packageSelection ? { }, overlays ? [ ] }:
       let
