@@ -55,12 +55,16 @@
               ocaml-lsp
               ocamlformat
               utop
-              nixpkgs-fmt
               odoc
-              rnix-lsp
             ])
             ++
-            # Utilities  for dune's watch mode
+            # Misc utilities
+            [
+              nixpkgs-fmt
+              rnix-lsp
+            ]
+            ++
+            # Utilities for dune's watch mode
             (
               if stdenv.isDarwin then
                 [ fswatch ]
