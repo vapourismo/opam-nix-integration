@@ -29,6 +29,7 @@ type expr =
   | Index of
       { attr_set : expr
       ; field : accessor
+      ; default : expr option
       }
 
 and string_segment =
@@ -128,6 +129,8 @@ let infix left op right = Infix { left; op; right }
 
 let unary op exp = Unary { op; exp }
 
-let index expr field = Index { attr_set = expr; field = StringAccess field }
+let index ?default expr field =
+  Index { attr_set = expr; field = StringAccess field; default }
+;;
 
 let scoped name body = lambda (Pat.ident name) (body (ident name))

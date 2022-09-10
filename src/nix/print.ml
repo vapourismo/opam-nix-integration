@@ -49,8 +49,22 @@ let rec pp_prec ?(want_parens = false) fmt exp =
           right)
       fmt
       ()
-  | Index { attr_set; field } ->
+  | Index { attr_set; field; default = None } ->
     Format.fprintf fmt "%a.%a" (pp_prec ~want_parens:true) attr_set pp_accessor field
+  | Index { attr_set; field; default = Some default } ->
+    (if want_parens then pp_parens else Fun.id)
+      (fun fmt () ->
+        Format.fprintf
+          fmt
+          "%a.%a or %a"
+          (pp_prec ~want_parens:true)
+          attr_set
+          pp_accessor
+          field
+          (pp_prec ~want_parens:true)
+          default)
+      fmt
+      ()
 
 and pp_string_segment ?(escape = true) fmt seg =
   match seg with
@@ -91,7 +105,7 @@ and pp_attrs fmt attrs =
 
 and pp_accessor fmt acc =
   match acc with
-  | StringAccess name -> Format.pp_print_string fmt name
+  | StringAccess name -> pp_string fmt [ Expr.StringSegment name ]
   | RedirectedAccess expr -> Format.fprintf fmt "${%a}" (pp_prec ?want_parens:None) expr
 
 and pp_field_pattern fmt field_pat =

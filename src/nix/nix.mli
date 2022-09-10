@@ -36,8 +36,9 @@ val infix : t -> string -> t -> t
 (** [unary op exp] applies the unary operator [op] to [exp]. *)
 val unary : string -> t -> t
 
-(** [index exp name] accesses the field [name] of the expression [exp]. *)
-val index : t -> string -> t
+(** [index ?default exp name] accesses the field [name] of the expression [exp]. If [name] isn't
+    present [default] can be used to provide a default value. *)
+val index : ?default:t -> t -> string -> t
 
 (** [render exp] converts the Nix expression to string. *)
 val render : t -> string
