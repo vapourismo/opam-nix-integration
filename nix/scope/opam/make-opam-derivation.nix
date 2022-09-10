@@ -87,7 +87,9 @@ let
 
   fixTopkgCommand = args:
     # XXX: A hack to deal with missing 'topfind' dependency for 'topkg'-based packages.
-    if lib.lists.take 2 args == [ "ocaml" "pkg/pkg.ml" ] then
+    if
+      lib.lists.take 2 args == [ "ocaml" "pkg/pkg.ml" ] && lib.hasAttr "ocamlfind" ocamlPackages
+    then
       [
         "ocaml"
         "-I"
