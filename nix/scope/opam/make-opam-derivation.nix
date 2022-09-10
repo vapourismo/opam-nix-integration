@@ -180,14 +180,18 @@ stdenv.mkDerivation ({
 
   patches = lib.optional (name == "ocamlfind") ./ldconf.patch ++ selectedPatches;
 
-  buildInputs = [ git which ];
-
-  nativeBuildInputs = (
-    if stdenv.isDarwin then
-      [ fixDarwinDylibNames ]
-    else
-      [ autoPatchelfHook ]
-  );
+  nativeBuildInputs =
+    [
+      git
+      which
+    ]
+    ++
+    (
+      if stdenv.isDarwin then
+        [ fixDarwinDylibNames ]
+      else
+        [ autoPatchelfHook ]
+    );
 
   propagatedBuildInputs =
     # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
@@ -195,9 +199,8 @@ stdenv.mkDerivation ({
     [ setupHookDeriv ]
       ++ specialDuneDeps
       ++ opamLib.depends.eval { inherit name; } depends
-      ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
-
-  propagatedNativeBuildInputs = opamLib.depends.evalNative guessedNativeDepends nativeDepends;
+      ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends
+      ++ opamLib.depends.evalNative guessedNativeDepends nativeDepends;
 
   checkInputs =
     opamTestLib.depends.eval { inherit name; } depends
