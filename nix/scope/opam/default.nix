@@ -11,14 +11,14 @@
 , opamsubst2nix
 }@args:
 
-lib.makeScope pkgs.newScope (self: {
-  mkOpamDerivation = self.callPackage ./make-opam-derivation.nix {
+lib.makeScope pkgs.newScope (final: {
+  mkOpamDerivation = final.callPackage ./make-opam-derivation.nix {
     inherit opamvars2nix opamsubst2nix opam-installer;
   };
 
   selectOpamSrc = src: altSrc: if altSrc != null then altSrc else src;
 
-  generateOpam2Nix = self.callPackage ./generate-opam2nix.nix {
+  generateOpam2Nix = final.callPackage ./generate-opam2nix.nix {
     inherit opam2nix;
   };
 
@@ -32,7 +32,7 @@ lib.makeScope pkgs.newScope (self: {
         else
           abort "'opam' mustn't be null if 'src' is also null!";
     in
-    self.callPackage
-      (self.generateOpam2Nix (builtins.removeAttrs args [ "src" ] // argOverride))
+    final.callPackage
+      (final.generateOpam2Nix (builtins.removeAttrs args [ "src" ] // argOverride))
       ({ altSrc = src; } // extra);
 })
