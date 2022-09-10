@@ -1,5 +1,4 @@
-{ pkgs
-, stdenv
+{ stdenv
 , lib
 , runCommand
 , writeText
@@ -7,12 +6,17 @@
 , opamvars2nix
 , opamsubst2nix
 , opam-installer
+, gnumake
+, jq
+, unzip
+, git
+, which
+, fixDarwinDylibNames
+, autoPatchelfHook
 }@args:
 
 let
-  callPackage = lib.callPackageWith args;
-
-  extraLib = callPackage ../../lib { };
+  extraLib = lib.callPackageWith args ../../lib { };
 in
 
 { name
@@ -24,6 +28,7 @@ in
 , depends ? (_: [ ])
 , optionalDepends ? (_: [ ])
 , nativeDepends ? [ ]
+, guessedNativeDepends ? [ ]
 , extraFiles ? [ ]
 , substFiles ? [ ]
 , substEnv ? { }
@@ -175,9 +180,9 @@ stdenv.mkDerivation ({
 
   patches = lib.optional (name == "ocamlfind") ./ldconf.patch ++ selectedPatches;
 
-  buildInputs = with pkgs; [ git which ];
+  buildInputs = [ git which ];
 
-  nativeBuildInputs = with pkgs; (
+  nativeBuildInputs = (
     if stdenv.isDarwin then
       [ fixDarwinDylibNames ]
     else
@@ -192,12 +197,12 @@ stdenv.mkDerivation ({
       ++ opamLib.depends.eval { inherit name; } depends
       ++ opamLib.depends.eval { inherit name; optional = true; } optionalDepends;
 
-  propagatedNativeBuildInputs = opamLib.depends.evalNative nativeDepends;
+  propagatedNativeBuildInputs = opamLib.depends.evalNative guessedNativeDepends nativeDepends;
 
   checkInputs =
     opamTestLib.depends.eval { inherit name; } depends
       ++ opamTestLib.depends.eval { inherit name; optional = true; } optionalDepends
-      ++ opamTestLib.depends.evalNative nativeDepends;
+      ++ opamTestLib.depends.evalNative guessedNativeDepends nativeDepends;
 
   dontConfigure = true;
 
@@ -233,6 +238,7 @@ stdenv.mkDerivation ({
   "depends"
   "optionalDepends"
   "nativeDepends"
+  "guessedNativeDepends"
   "extraFiles"
   "substFiles"
   "substEnv"

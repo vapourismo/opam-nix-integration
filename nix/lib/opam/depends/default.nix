@@ -1,4 +1,4 @@
-{ lib, pkgs, envLib, filterLib, constraintLib, formulaLib }:
+{ lib, envLib, filterLib, constraintLib, formulaLib }:
 
 let
   evalCondition = formulaLib.evalBoolean { atom = filterLib.eval; };
@@ -56,46 +56,17 @@ let
         ${debugged}
       '';
 
-  guessNativeDepends = nativeDepends:
+  evalNative = guessedNativeDepends: nativeDepends:
     let
-      pkgToAttrEntry = pkg: {
-        name = pkg;
-        value =
-          if lib.hasAttr pkg pkgs && (builtins.tryEval pkgs.${pkg}).success then
-            pkgs.${pkg}
-          else
-            null;
-      };
-
-      pkgsSet = lib.listToAttrs (
-        lib.concatMap
-          ({ nativePackages, ... }:
-            lib.lists.map
-              pkgToAttrEntry
-              nativePackages
-          )
-          nativeDepends
-      );
-    in
-    lib.attrValues (lib.filterAttrs (_: value: value != null) pkgsSet);
-
-  evalNative = nativeDepends:
-    let
-      findDep = packageName:
-        if lib.hasAttr packageName pkgs then
-          pkgs.${packageName}
-        else
-          abort "Unknown native package ${packageName}";
-
       nativeDeps =
         lib.concatMap
-          ({ nativePackages, ... }: lib.lists.map findDep nativePackages)
+          ({ nativePackages, ... }: nativePackages)
           (lib.filter ({ filter, ... }: filterLib.eval filter) nativeDepends);
     in
     if lib.length nativeDeps > 0 then
       nativeDeps
     else
-      guessNativeDepends nativeDepends;
+      lib.filter (x: x != null) guessedNativeDepends;
 
 in
 

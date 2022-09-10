@@ -65,18 +65,28 @@ let nix_package_closure_of_deps depends depopts =
 
 let nix_of_depexts depexts =
   let open Nix in
-  list
-    (List.map
-       (fun (packages, filter) ->
-         attr_set
-           [ ( "nativePackages"
-             , list
-                 (List.map
-                    (fun package -> string (OpamSysPkg.to_string package))
-                    (OpamSysPkg.Set.elements packages)) )
-           ; "filter", Filter.to_nix filter
-           ])
-       depexts)
+  depexts
+  |> List.map (fun (packages, filter) ->
+       attr_set
+         [ ( "nativePackages"
+           , list
+               (List.map
+                  (fun package -> index (ident "pkgs") (OpamSysPkg.to_string package))
+                  (OpamSysPkg.Set.elements packages)) )
+         ; "filter", Filter.to_nix filter
+         ])
+  |> list
+;;
+
+let nix_of_guessed_depexts depexts =
+  let open Nix in
+  depexts
+  |> List.concat_map (fun (packages, _) ->
+       List.map
+         (fun package ->
+           index ~default:null (ident "pkgs") (OpamSysPkg.to_string package))
+         (OpamSysPkg.Set.elements packages))
+  |> list
 ;;
 
 let nix_of_args args =

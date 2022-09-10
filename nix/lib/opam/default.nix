@@ -1,9 +1,11 @@
 { stdenv
-, pkgs
 , lib
 , writeText
 , writeScript
 , runCommand
+, gnumake
+, jq
+, unzip
 , opamvars2nix
 , opamsubst2nix
 , cleanVersion

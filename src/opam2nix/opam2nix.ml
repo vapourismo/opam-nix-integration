@@ -48,6 +48,7 @@ let main options =
   let depends = Lib.nix_of_depends opam.depends in
   let depopts = Lib.nix_of_depopts opam.depopts in
   let native_depends = Lib.nix_of_depexts opam.depexts in
+  let guessed_native_depends = Lib.nix_of_guessed_depexts opam.depexts in
   let extra_files_dir =
     match options.extra_files with
     | Some extra_files -> extra_files
@@ -98,7 +99,8 @@ let main options =
   let expr =
     Pat.(
       attr_set
-        ([ field "mkOpamDerivation"
+        ([ field "pkgs"
+         ; field "mkOpamDerivation"
          ; field "selectOpamSrc"
          ; field "fetchurl"
          ; field "fetchgit"
@@ -118,6 +120,7 @@ let main options =
                ; "depends", depends
                ; "optionalDepends", depopts
                ; "nativeDepends", native_depends
+               ; "guessedNativeDepends", guessed_native_depends
                ; "extraFiles", list (extra_files @ extra_sources)
                ; "substFiles", list substs
                ; "substEnv", subst_env
