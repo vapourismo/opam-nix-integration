@@ -67,9 +67,14 @@ let main options =
               attr_set
                 [ "path", string path_str
                 ; ( "src"
-                  , OpamFilename.create extra_files_dir path
-                    |> OpamFilename.to_string
-                    |> ident )
+                  , let path =
+                      OpamFilename.create extra_files_dir path
+                      |> OpamFilename.to_string
+                      |> string
+                    in
+                    (* Raw paths literals in Nix expressions might not parse correctly. Therefore we
+                       must pass it as a string and convert it to a path in the expression. *)
+                    infix (ident "/.") "+" (apply (ident "builtins.toPath") [ path ]) )
                 ])
             files)
       opam.extra_files
