@@ -1,0 +1,28 @@
+name: "Setup Nix"
+description: "Setup Nix with persistent caching"
+inputs:
+  ssh-private-key:
+    description: "SSH private key with which to access the Nix cache server"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up SSH key
+      uses: webfactory/ssh-agent@v0.5.4
+      with:
+        ssh-private-key: ${{ inputs.ssh-private-key }}
+
+    - name: Set up SSH known hosts
+      run: |
+        mkdir -p ~/.ssh
+        echo "nix.cache.hwlium.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMgFrVwxuYXb5rVL8OM250p/3GnBAgp038SzFft89Z51" >> ~/.ssh/known_hosts
+      shell: bash
+
+    - name: Set up Nix
+      uses: nixbuild/nix-quick-install-action@v9
+      with:
+        nix_conf: |
+          extra-experimental-features = nix-command flakes
+          extra-trusted-substituters = https://nix.cache.hwlium.com
+          extra-trusted-public-keys = nix.cache.hwlium.com:M57rk9haJRNFiNUA+6sF6ogbIVg4k8XrKpf5QSohBEA= nix.cache.ole.run-1:4r2pTlyRkYixibZKLNlSbHL1tbxHZGAnsKMFbz1Oz3s= ole-desktop-1:r3WFR09PxO+ANUKuuFrE6gy3qpgTZMYe6SJanIKaYuA=
+          extra-substituters = https://nix.cache.hwlium.com

@@ -19,21 +19,26 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Nix
-        uses: nixbuild/nix-quick-install-action@v17
+      - uses: ./.github/actions/setup-nix
+        with:
+          ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
       - run: nix-build -v examples/standard/default.nix
+
+      - if: always()
+        uses: ./.github/actions/export-nix-store
 
   examples-flake:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Nix
-        uses: nixbuild/nix-quick-install-action@v17
+      - uses: ./.github/actions/setup-nix
         with:
-          nix_conf: |
-            extra-experimental-features = nix-command flakes
+          ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
       - run: |
           nix -vL build --impure ./examples/flake --override-input opam-nix-integration path:./.
+
+      - if: always()
+        uses: ./.github/actions/export-nix-store
