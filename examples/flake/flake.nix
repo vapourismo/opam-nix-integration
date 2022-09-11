@@ -12,23 +12,22 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        packageSet = opam-nix-integration.packages.${system}.makePackageSet {
-          packageSelection = {
-            packageConstraints = [
-              "ocaml = 4.14.0"
-              "dune >= 3.4"
-              "zarith"
-              "opam-format"
-              "opam-state"
-              "opam-0install"
-              "cmdliner"
-              "ppx_deriving"
-              "base64"
-              "hex"
-            ];
-          };
-
-          overlays = [
+        packageSet = opam-nix-integration.opamPackages.${system}.overrideScope' (
+          pkgs.lib.composeManyExtensions [
+            (final: prev: prev.repository.select {
+              packageConstraints = [
+                "ocaml = 4.14.0"
+                "dune >= 3.4"
+                "zarith"
+                "opam-format"
+                "opam-state"
+                "opam-0install"
+                "cmdliner"
+                "ppx_deriving"
+                "base64"
+                "hex"
+              ];
+            })
             (final: prev: {
               nix =
                 final.callOpam2Nix
@@ -39,8 +38,8 @@
                   }
                   { };
             })
-          ];
-        };
+          ]
+        );
       in
       {
         packages = {

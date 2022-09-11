@@ -33,15 +33,17 @@ let
   };
 
   # Create a package set using some constraints against the packages available in opam-repository.
-  packageSet = pkgs.opam-nix-integration.makePackageSet {
+  packageSet = pkgs.opamPackages.overrideScope' (pkgs.lib.composeManyExtensions [
     # Set the opam-repository which has all our package descriptions.
-    repository = opam-repository;
+    (final: prev: {
+      repository = prev.repository.override { src = opam-repository; };
+    })
 
     # Specify the constraints we have.
-    packageSelection = {
+    (final: prev: prev.repository.select {
       packageConstraints = [
-        "ocaml = 4.13.1"
-        "dune < 3"
+        "ocaml = 4.14.0"
+        "dune >= 3.4"
         "zarith"
         "opam-format"
         "opam-state"
@@ -49,26 +51,17 @@ let
         "cmdliner"
         "ppx_deriving"
       ];
-    };
-  };
+    })
+  ]);
 in
 
-# Generate a Nix derivation from our OPAM package in the current directory.
+# Generate a Nix derivation using a OPAM package in the current directory.
 packageSet.callOpam2Nix {
-  name = "opam2nix";
+  name = "nix";
   version = "0.0.0";
   src = ./.;
 } {}
 ```
-
-## Building the initial package set
-
-When calling the `opam-nix-integration.makePackageSet` entrypoint, you can supply the following arguments:
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `repository` | `path` | This is an `opam-repository` checkout. You don't have to provide this, but it is highly recommended. |
-| `packageSelection` | `attrset` | See `repository.select` function below for specification. |
 
 ## Package set functionality
 
@@ -87,7 +80,7 @@ packageSet.callOpam2Nix
   }
   {
     jobs = 16;
-    enableTests = true;
+    with-test = true;
   }
 ```
 

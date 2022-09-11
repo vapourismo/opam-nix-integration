@@ -1,8 +1,8 @@
-{ callPackage, opam2nix }:
+{ callPackage, lib, runCommand, opam2nix }:
 
 let
-  generateOpam2Nix = callPackage ./generate-opam2nix.nix {
-    inherit opam2nix;
+  generateOpam2Nix = import ./generate-opam2nix.nix {
+    inherit lib runCommand opam2nix;
   };
 in
 

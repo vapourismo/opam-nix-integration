@@ -1,9 +1,7 @@
-{ lib }:
-
-repository:
+{ lib, src }:
 
 let
-  packageDirs = builtins.readDir "${repository}/packages";
+  packageDirs = builtins.readDir "${src}/packages";
 
   packageNames =
     lib.filter
@@ -12,7 +10,7 @@ let
 
   getPackage = packageName:
     let
-      versionDirs = builtins.readDir "${repository}/packages/${packageName}";
+      versionDirs = builtins.readDir "${src}/packages/${packageName}";
 
       versionedNames =
         lib.filter

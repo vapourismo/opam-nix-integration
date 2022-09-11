@@ -16,7 +16,7 @@
 }@args:
 
 let
-  extraLib = lib.callPackageWith args ../../lib { };
+  extraLib = lib.callPackageWith args ../lib { };
 in
 
 { name
