@@ -69,9 +69,17 @@ let rec pp_prec ?(want_parens = false) fmt exp =
 and pp_string_segment ?(escape = true) fmt seg =
   match seg with
   | Expr.StringSegment str ->
-    if escape
-    then pp_join ~sep:"\\\"" Format.pp_print_string fmt (String.split_on_char '"' str)
-    else Format.pp_print_string fmt str
+    let base_fmt fmt str =
+      if escape
+      then
+        pp_join
+          ~sep:"\\\""
+          (pp_join ~sep:"\\\\" Format.pp_print_string)
+          fmt
+          (String.split_on_char '"' str |> List.map (String.split_on_char '\\'))
+      else Format.pp_print_string fmt str
+    in
+    pp_join ~sep:"\\$" base_fmt fmt (String.split_on_char '$' str)
   | CodeSegment code -> Format.fprintf fmt "${%a}" (pp_prec ?want_parens:None) code
 
 and pp_string fmt segments =

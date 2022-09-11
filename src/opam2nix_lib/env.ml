@@ -60,5 +60,5 @@ let nix_of_interpolated_string input =
         ~on_variable:(fun name -> Str.code (nix_of_ident_string_scoped scope name))
         input
     in
-    of_multiline_str [ Str.concat segments ])
+    of_str (Str.concat segments))
 ;;
