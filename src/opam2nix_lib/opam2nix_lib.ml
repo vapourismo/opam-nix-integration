@@ -135,7 +135,11 @@ let nix_of_url url =
     |> List.sort (fun (l, _, _) (r, _, _) -> Int.compare r l)
     |> function
       | (_, key, value) :: _ -> [ key, value ]
-      | _ -> assert false
+      | _ ->
+        Printf.eprintf
+          "No checksum provided for %s\n%!"
+          (url |> OpamFile.URL.url |> OpamUrl.to_string);
+        [] (* no checksum! *)
   in
   let url = OpamFile.URL.url url in
   match url.backend with
