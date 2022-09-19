@@ -24,5 +24,5 @@ runs:
         nix_conf: |
           extra-experimental-features = nix-command flakes
           extra-trusted-substituters = https://nix.cache.hwlium.com
-          extra-trusted-public-keys = nix.cache.hwlium.com:M57rk9haJRNFiNUA+6sF6ogbIVg4k8XrKpf5QSohBEA= nix.cache.ole.run-1:4r2pTlyRkYixibZKLNlSbHL1tbxHZGAnsKMFbz1Oz3s= ole-desktop-1:r3WFR09PxO+ANUKuuFrE6gy3qpgTZMYe6SJanIKaYuA=
+          extra-trusted-public-keys = nix.cache.hwlium.com:M57rk9haJRNFiNUA+6sF6ogbIVg4k8XrKpf5QSohBEA= nix.cache.ole.run-1:4r2pTlyRkYixibZKLNlSbHL1tbxHZGAnsKMFbz1Oz3s= ole-desktop-1:r3WFR09PxO+ANUKuuFrE6gy3qpgTZMYe6SJanIKaYuA= nix.cache.hwlium.com-2:mFFtk/Pvh/mrCJ7DHOY9mf769A/Nth97WFXMPMy6BGw=
           extra-substituters = https://nix.cache.hwlium.com
