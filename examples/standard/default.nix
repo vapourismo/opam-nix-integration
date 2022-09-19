@@ -85,4 +85,4 @@ let
   });
 in
 
-finalScope
+pkgs.lib.filterAttrs (_: v: pkgs.lib.isDerivation v) finalScope
