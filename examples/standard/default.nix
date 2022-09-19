@@ -1,3 +1,5 @@
+{ nixpkgs ? fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz" }:
+
 let
   opam-repository = pkgs.fetchFromGitHub {
     owner = "ocaml";
@@ -8,10 +10,7 @@ let
 
   opam-nix-integration = import ../..;
 
-  pkgs =
-    import
-      (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
-      { overlays = [ opam-nix-integration.overlay ]; };
+  pkgs = import nixpkgs { overlays = [ opam-nix-integration.overlay ]; };
 
   defaultScope = pkgs.opam-nix-integration.makePackageSet {
     repository = opam-repository;
