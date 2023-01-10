@@ -51,7 +51,7 @@ let
     versions;
 
   fixPackageName = name:
-    let fixedName = pkgs.lib.replaceChars [ "+" ] [ "p" ] name; in
+    let fixedName = pkgs.lib.replaceStrings [ "+" ] [ "p" ] name; in
     # Check if the name starts with a bad letter.
     if lib.strings.match "^[^a-zA-Z_].*" fixedName != null then
       "_${fixedName}"
