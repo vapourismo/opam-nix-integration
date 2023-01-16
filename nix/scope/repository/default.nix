@@ -13,7 +13,7 @@ let
     };
 
   fixPackageName = name:
-    let fixedName = lib.replaceChars [ "+" ] [ "p" ] name; in
+    let fixedName = lib.replaceStrings [ "+" ] [ "p" ] name; in
     # Check if the name starts with a bad letter.
     if lib.strings.match "^[^a-zA-Z_].*" fixedName != null then
       "_${fixedName}"
