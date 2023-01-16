@@ -1,12 +1,7 @@
 { nixpkgs ? fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz" }:
 
 let
-  opam-repository = pkgs.fetchFromGitHub {
-    owner = "ocaml";
-    repo = "opam-repository";
-    rev = "f904585098b809001380caada4b7426c112d086c";
-    sha256 = "sha256-oARmpd4j8IOvLzC8RqZ8MBDzAvTjI1BdeUbEL59T99A=[]";
-  };
+  opam-repository = fetchTarball "https://github.com/ocaml/opam-repository/archive/refs/heads/master.tar.gz";
 
   opam-nix-integration = import ../..;
 
