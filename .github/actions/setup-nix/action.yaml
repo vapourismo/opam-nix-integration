@@ -8,7 +8,7 @@ runs:
   using: "composite"
   steps:
     - name: Set up SSH key
-      uses: webfactory/ssh-agent@v0.5.4
+      uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ inputs.ssh-private-key }}
 
@@ -19,7 +19,7 @@ runs:
       shell: bash
 
     - name: Set up Nix
-      uses: nixbuild/nix-quick-install-action@v9
+      uses: nixbuild/nix-quick-install-action@v21
       with:
         nix_conf: |
           extra-experimental-features = nix-command flakes
