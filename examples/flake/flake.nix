@@ -16,7 +16,7 @@
           pkgs.lib.composeManyExtensions [
             (final: prev: prev.repository.select {
               packageConstraints = [
-                "ocaml = 4.14.0"
+                "ocaml = 4.14.1"
                 "dune >= 3.4"
                 "zarith"
                 "opam-format"
