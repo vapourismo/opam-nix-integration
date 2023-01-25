@@ -59,7 +59,7 @@
             # Misc utilities
             [
               nixpkgs-fmt
-              rnix-lsp
+              nil
             ]
             ++
             # Utilities for dune's watch mode
