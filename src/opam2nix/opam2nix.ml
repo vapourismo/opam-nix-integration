@@ -144,6 +144,6 @@ let main options =
 ;;
 
 let () =
-  let open Cmdliner.Term in
-  (const main $ Options.term, info "opam2nix") |> eval |> exit
+  let open Cmdliner in
+  Cmd.v (Cmd.info "opam2nix") Term.(const main $ Options.term) |> Cmd.eval |> Stdlib.exit
 ;;

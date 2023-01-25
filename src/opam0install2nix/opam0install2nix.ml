@@ -134,6 +134,8 @@ let main config =
 ;;
 
 let () =
-  let open Cmdliner.Term in
-  (const main $ Options.term, info "opam0install2nix") |> eval |> exit
+  let open Cmdliner in
+  Cmd.v (Cmd.info "opam0install2nix") Term.(const main $ Options.term)
+  |> Cmd.eval
+  |> Stdlib.exit
 ;;
