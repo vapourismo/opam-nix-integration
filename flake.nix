@@ -2,10 +2,10 @@
   description = "OPAM integration with Nix";
 
   inputs = {
-    nixpkgs.url = github:NixOS/nixpkgs;
-    flake-utils.url = github:numtide/flake-utils;
+    nixpkgs.url = "github:NixOS/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
     opam-repository = {
-      url = github:ocaml/opam-repository;
+      url = "github:ocaml/opam-repository";
       flake = false;
     };
   };
