@@ -15,7 +15,10 @@ on:
 
 jobs:
   examples-shell:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v3.3.0
 
@@ -29,7 +32,10 @@ jobs:
         uses: ./.github/actions/export-nix-store
 
   examples-flake:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v3.3.0
 
