@@ -10,6 +10,7 @@
 , unzip
 , git
 , which
+, darwin
 , fixDarwinDylibNames
 , autoPatchelfHook
 , opam-installer

@@ -11,6 +11,7 @@
 , unzip
 , git
 , which
+, darwin
 , fixDarwinDylibNames
 , autoPatchelfHook
 }@args:
@@ -170,6 +171,14 @@ let
       [ ocamlPackages.ocamlfind ]
     else
       [ ];
+
+  availableFrameworks =
+    # Filter out the MacOS frameworks that aren't available.
+    lib.mapAttrs (_: test: test.value) (
+      lib.filterAttrs (_: test: test.success) (
+        lib.mapAttrs (_: framework: builtins.tryEval framework) darwin.apple_sdk.frameworks
+      )
+    );
 in
 
 stdenv.mkDerivation ({
@@ -191,7 +200,11 @@ stdenv.mkDerivation ({
         [ fixDarwinDylibNames ]
       else
         [ autoPatchelfHook ]
-    );
+    )
+    ++
+    # OPAM packages don't specify their MacOS framework dependencies. Since we
+    # can't really guess, we just add all available ones.
+    lib.optionals stdenv.isDarwin (lib.attrValues availableFrameworks);
 
   propagatedBuildInputs =
     # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
