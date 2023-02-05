@@ -1,23 +1,29 @@
-{ lib, envLib }:
-
-let
+{
+  lib,
+  envLib,
+}: let
   scope = {
     bool = builtins.toJSON;
 
     string = builtins.toJSON;
 
-    ident = f:
-      let value = envLib.eval { } f; in
+    ident = f: let
+      value = envLib.eval {} f;
+    in
       f {
-        local = { name, ... }: "${value} (= ${name})";
+        local = {name, ...}: "${value} (= ${name})";
 
-        package = { packageName, name, ... }: "${value} (= ${packageName}:${name})";
+        package = {
+          packageName,
+          name,
+          ...
+        }: "${value} (= ${packageName}:${name})";
 
         combine = values:
           lib.foldl'
-            (lhs: rhs: "${lhs} & ${rhs}")
-            (lib.head values)
-            (lib.tail values);
+          (lhs: rhs: "${lhs} & ${rhs}")
+          (lib.head values)
+          (lib.tail values);
       };
 
     equal = lhs: rhs: "${lhs} == ${rhs}";
@@ -43,5 +49,4 @@ let
 
   show = filter: filter scope;
 in
-
-show
+  show

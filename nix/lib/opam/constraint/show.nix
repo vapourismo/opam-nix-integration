@@ -1,6 +1,5 @@
-{ filterLib }:
-
-subject: constraint: constraint {
+{filterLib}: subject: constraint:
+constraint {
   equal = versionFilter: "${subject} == ${filterLib.show versionFilter}";
 
   notEqual = versionFilter: "${subject} != ${filterLib.show versionFilter}";

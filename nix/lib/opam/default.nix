@@ -1,47 +1,41 @@
-{ stdenv
-, lib
-, writeText
-, writeScript
-, runCommand
-, gnumake
-, jq
-, unzip
-, opamvars2nix
-, opamsubst2nix
-, cleanVersion
-}@depends:
-
-let
+{
+  stdenv,
+  lib,
+  writeText,
+  writeScript,
+  runCommand,
+  gnumake,
+  jq,
+  unzip,
+  opamvars2nix,
+  opamsubst2nix,
+  cleanVersion,
+} @ depends: let
   callPackage = lib.callPackageWith depends;
 
-  formulaLib = callPackage ./formula { };
+  formulaLib = callPackage ./formula {};
 in
+  args: let
+    envLib = callPackage ./env {} args;
 
-args:
+    filterLib = callPackage ./filter {inherit envLib;};
 
-let
-  envLib = callPackage ./env { } args;
+    constraintLib = callPackage ./constraint {inherit filterLib;};
 
-  filterLib = callPackage ./filter { inherit envLib; };
+    commandsLib = callPackage ./commands {inherit envLib filterLib;};
 
-  constraintLib = callPackage ./constraint { inherit filterLib; };
+    dependsLib = callPackage ./depends {inherit envLib filterLib constraintLib formulaLib;};
 
-  commandsLib = callPackage ./commands { inherit envLib filterLib; };
+    substLib = callPackage ./subst {inherit envLib;};
 
-  dependsLib = callPackage ./depends { inherit envLib filterLib constraintLib formulaLib; };
-
-  substLib = callPackage ./subst { inherit envLib; };
-
-  sourceLib = callPackage ./source { inherit substLib; };
-in
-
-{
-  formula = formulaLib;
-  env = envLib;
-  filter = filterLib;
-  constraint = constraintLib;
-  commands = commandsLib;
-  depends = dependsLib;
-  subst = substLib;
-  source = sourceLib;
-}
+    sourceLib = callPackage ./source {inherit substLib;};
+  in {
+    formula = formulaLib;
+    env = envLib;
+    filter = filterLib;
+    constraint = constraintLib;
+    commands = commandsLib;
+    depends = dependsLib;
+    subst = substLib;
+    source = sourceLib;
+  }

@@ -10,73 +10,83 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, opam-repository }:
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    opam-repository,
+  }:
     {
       overlays.ocamlBoot = import (self + /nix/boot/overlay.nix);
 
       overlay = import (self + /overlay.nix);
     }
-    // flake-utils.lib.eachDefaultSystem (system:
-      with import nixpkgs
+    // flake-utils.lib.eachDefaultSystem (
+      system:
+        with import nixpkgs
         {
           inherit system;
-          overlays = [ self.overlay ];
-        };
+          overlays = [self.overlay];
+        }; let
+          ocamlPackages = ocaml-ng.ocamlPackages_4_14.overrideScope' self.overlays.ocamlBoot;
+        in {
+          defaultPackage = self.packages.${system}.opam2nix;
 
-      let
-        ocamlPackages = ocaml-ng.ocamlPackages_4_14.overrideScope' self.overlays.ocamlBoot;
-      in
+          packages = {
+            opam2nix = ocamlPackages.opam2nix;
 
-      {
-        defaultPackage = self.packages.${system}.opam2nix;
+            opamvars2nix = ocamlPackages.opamvars2nix;
 
-        packages = {
-          opam2nix = ocamlPackages.opam2nix;
+            opamsubst2nix = ocamlPackages.opamsubst2nix;
 
-          opamvars2nix = ocamlPackages.opamvars2nix;
+            opam0install2nix = ocamlPackages.opam0install2nix;
+          };
 
-          opamsubst2nix = ocamlPackages.opamsubst2nix;
+          opamPackages = opamPackages.overrideScope' (final: prev: {
+            repository = prev.repository.override {src = opam-repository;};
+          });
 
-          opam0install2nix = ocamlPackages.opam0install2nix;
-        };
+          devShell = mkShell {
+            name = "opam-nix-integration-shell";
 
-        opamPackages = opamPackages.overrideScope' (final: prev: {
-          repository = prev.repository.override { src = opam-repository; };
-        });
+            packages =
+              # OCaml packages
+              (with ocamlPackages; [
+                ocaml-lsp
+                ocamlformat
+                utop
+                odoc
+              ])
+              ++
+              # Misc utilities
+              [
+                alejandra
+                nil
+              ]
+              ++
+              # Utilities for dune's watch mode
+              (
+                if stdenv.isDarwin
+                then [fswatch]
+                else [inotify-tools]
+              );
 
-        devShell = mkShell {
-          name = "opam-nix-integration-shell";
+            inputsFrom = with self.packages.${system}; [
+              opam2nix
+              opamvars2nix
+              opamsubst2nix
+              opam0install2nix
+            ];
+          };
 
-          packages =
-            # OCaml packages
-            (with ocamlPackages; [
-              ocaml-lsp
-              ocamlformat
-              utop
-              odoc
-            ])
-            ++
-            # Misc utilities
-            [
-              nixpkgs-fmt
-              nil
-            ]
-            ++
-            # Utilities for dune's watch mode
-            (
-              if stdenv.isDarwin then
-                [ fswatch ]
-              else
-                [ inotify-tools ]
-            );
+          formatter = alejandra;
 
-          inputsFrom = with self.packages.${system}; [
-            opam2nix
-            opamvars2nix
-            opamsubst2nix
-            opam0install2nix
-          ];
-        };
-      }
+          checks = {
+            format = runCommand "check-formatting" {buildInputs = [alejandra];} ''
+              alejandra -c ${self}
+              touch $out
+            '';
+          };
+        }
     );
 }

@@ -14,6 +14,23 @@ on:
     - cron: "0 8 * * *"
 
 jobs:
+  checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - uses: ./.github/actions/setup-nix
+        with:
+          ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
+
+      - run: nix flake check
+
+      - if: always()
+        uses: ./.github/actions/export-nix-store
+
   examples-shell:
     strategy:
       matrix:

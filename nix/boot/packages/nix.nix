@@ -1,8 +1,8 @@
-{ buildDunePackage
-, zarith
-, pkgs
+{
+  buildDunePackage,
+  zarith,
+  pkgs,
 }:
-
 buildDunePackage {
   pname = "nix";
   version = "0.0.0";

@@ -1,5 +1,7 @@
-{ buildDunePackage, fetchFromGitHub }:
-
+{
+  buildDunePackage,
+  fetchFromGitHub,
+}:
 buildDunePackage {
   pname = "0install-solver";
   version = "2.17";
