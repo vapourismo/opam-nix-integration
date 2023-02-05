@@ -17,6 +17,8 @@ buildDunePackage {
 
   src = ../../..;
 
+  nativeBuildInputs = [pkgs.git];
+
   buildInputs = [
     opam-0install
     cmdliner
@@ -24,6 +26,5 @@ buildDunePackage {
     hex
     base64
     nix
-    pkgs.git
   ];
 }

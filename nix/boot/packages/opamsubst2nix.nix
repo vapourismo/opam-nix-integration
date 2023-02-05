@@ -16,12 +16,13 @@ buildDunePackage {
 
   src = ../../..;
 
+  nativeBuildInputs = [pkgs.git];
+
   buildInputs = [
     opam-format
     zarith
     base64
     hex
     nix
-    pkgs.git
   ];
 }

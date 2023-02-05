@@ -12,8 +12,7 @@ buildDunePackage {
 
   src = ../../..;
 
-  buildInputs = [
-    zarith
-    pkgs.git
-  ];
+  nativeBuildInputs = [pkgs.git];
+
+  buildInputs = [zarith];
 }

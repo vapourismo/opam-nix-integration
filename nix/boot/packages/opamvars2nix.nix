@@ -17,6 +17,8 @@ buildDunePackage {
 
   src = ../../..;
 
+  nativeBuildInputs = [pkgs.git];
+
   buildInputs = [
     opam-format
     opam-state
@@ -24,6 +26,5 @@ buildDunePackage {
     base64
     hex
     nix
-    pkgs.git
   ];
 }
