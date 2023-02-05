@@ -19,20 +19,20 @@
     {
       overlays.ocamlBoot = import (self + /nix/boot/overlay.nix);
 
-      overlay = import (self + /overlay.nix);
+      overlays.default = import (self + /overlay.nix);
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
         with import nixpkgs
         {
           inherit system;
-          overlays = [self.overlay];
+          overlays = [self.overlays.default];
         }; let
           ocamlPackages = ocaml-ng.ocamlPackages_4_14.overrideScope' self.overlays.ocamlBoot;
         in {
-          defaultPackage = self.packages.${system}.opam2nix;
-
           packages = {
+            default = self.packages.${system}.opam2nix;
+
             opam2nix = ocamlPackages.opam2nix;
 
             opamvars2nix = ocamlPackages.opamvars2nix;
@@ -46,7 +46,7 @@
             repository = prev.repository.override {src = opam-repository;};
           });
 
-          devShell = mkShell {
+          devShells.default = mkShell {
             name = "opam-nix-integration-shell";
 
             packages =
