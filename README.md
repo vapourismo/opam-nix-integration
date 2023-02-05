@@ -154,7 +154,6 @@ in
 ### `repository.select`
 
 This function allows you to select an attribute set of packages given some constraints.
-Its argument corresponds to `makePackageSet`'s `packageSelection` argument.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
