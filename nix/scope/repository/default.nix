@@ -7,7 +7,10 @@
 }: let
   repositoryIndex = import ./repository-index.nix {inherit lib src;};
 
-  packagePath = name: version: "${src}/packages/${name}/${name}.${version}";
+  packagePath = name: version:
+    builtins.path {
+      path = "${src}/packages/${name}/${name}.${version}";
+    };
 
   callOpam = {
     name,
@@ -56,7 +59,7 @@
   in
     versions;
 in {
-  inherit src callOpam;
+  inherit callOpam;
 
   packages =
     lib.mapAttrs'
