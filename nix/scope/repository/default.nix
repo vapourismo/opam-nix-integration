@@ -9,6 +9,7 @@
 
   packagePath = name: version:
     builtins.path {
+      name = "opam-${name}-${version}";
       path = "${src}/packages/${name}/${name}.${version}";
     };
 
