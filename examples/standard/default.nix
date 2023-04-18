@@ -13,15 +13,29 @@
       prev.repository.select {
         packageConstraints = [
           "ocaml = 4.14.1"
-          "dune >= 3.4"
-          "zarith"
-          "opam-format"
-          "opam-state"
-          "opam-0install"
-          "cmdliner"
-          "ppx_deriving"
-          "base64"
-          "hex"
+        ];
+
+        opams = [
+          {
+            name = "nix";
+            opam = ../../nix.opam;
+          }
+          {
+            name = "opam2nix";
+            opam = ../../opam2nix.opam;
+          }
+          {
+            name = "opamsubst2nix";
+            opam = ../../opamsubst2nix.opam;
+          }
+          {
+            name = "opamvars2nix";
+            opam = ../../opamvars2nix.opam;
+          }
+          {
+            name = "opam0install2nix";
+            opam = ../../opam0install2nix.opam;
+          }
         ];
       })
     (final: prev: {

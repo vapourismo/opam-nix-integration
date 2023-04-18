@@ -36,12 +36,21 @@
   solvePackageVersions = {
     packageConstraints ? [],
     testablePackages ? [],
+    opams ? [],
   }: let
     testTargetArgs = lib.strings.escapeShellArgs (
       lib.lists.map (name: "--with-test-for=${name}") testablePackages
     );
 
     packageConstraintArgs = lib.strings.escapeShellArgs packageConstraints;
+
+    pinArgs = lib.strings.escapeShellArgs (
+      lib.lists.map ({
+        name,
+        opam,
+      }: "--pin=${name}:${opam}")
+      opams
+    );
 
     versions = import (
       runCommand
@@ -54,6 +63,7 @@
           --packages-dir="${src}/packages" \
           ${testTargetArgs} \
           ${packageConstraintArgs} \
+          ${pinArgs} \
           > $out
       ''
     );

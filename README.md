@@ -159,6 +159,7 @@ This function allows you to select an attribute set of packages given some const
 |-----------|------|-------------|
 | `packageConstraints` | `list` of `string`s | Here you can specify which packages you'd like to have in the package set including an optional version constraint. A constraint is imposed if you add a relation operator and version after the package name like so: `package = 1.2.3`. |
 | `testablePackages` | `list` of `string`s | These are the names of packages whose test dependencies should be included in the package set. |
+| `opams` | `list` of `attrset` | This list of pinned `.opam` package descriptions will be included in the resolution of the package set. |
 
 Example:
 
@@ -168,6 +169,9 @@ let
 in
 packageSet.overrideScope' (final: prev: prev.repository.select {
   packageConstraints = ["dune >= 3.2"];
+  opams = [
+    { name = "my-package"; opam = ./my-package.opam; }
+  ];
 })
 ```
 
