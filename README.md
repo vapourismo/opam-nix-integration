@@ -4,7 +4,7 @@ This project aims to provide an integration mechanism for OPAM packages into Nix
 
 To achieve this, it supplies two key solutions for common use cases:
 
-  * Build a package set from a list of constraints and an [opam-repository][opam-repository].
+  * Build a package set from a list of constraints or OPAM files, and an [opam-repository][opam-repository].
   * Produce a Nix derivation from an OPAM file.
 
 ## Getting started
@@ -16,51 +16,55 @@ let
   # Fetch the Opam Nix integration library.
   opam-nix-integration =
     import
-      (fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz");
+    (fetchTarball "https://github.com/vapourismo/opam-nix-integration/archive/master.tar.gz");
 
   # Fetch Nixpkgs and inject our overlay.
   pkgs =
     import
-      (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
-      { overlays = [ opam-nix-integration.overlay ]; };
+    (fetchTarball "https://github.com/NixOS/nixpkgs/archive/master.tar.gz")
+    {overlays = [opam-nix-integration.overlay];};
 
   # Fetch the opam-repository.
   opam-repository = pkgs.fetchFromGitHub {
     owner = "ocaml";
     repo = "opam-repository";
-    rev = "5269af290fff3fc631a8855e4255b4b53713b467";
-    sha256 = "sha256-6sFe1838OthFRUhJQ74u/k0urk7Om/gSNnX67BE+DJs=";
+    rev = "2a1d95dd9f9379c992e963988e89db3cf94c1788";
+    sha256 = "sha256-BSbn85tRKeaxuS2iXf6fOaFTG14xrLw5LFm2opwkt+s=";
   };
 
   # Create a package set using some constraints against the packages available in opam-repository.
   packageSet = pkgs.opamPackages.overrideScope' (pkgs.lib.composeManyExtensions [
     # Set the opam-repository which has all our package descriptions.
     (final: prev: {
-      repository = prev.repository.override { src = opam-repository; };
+      repository = prev.repository.override {src = opam-repository;};
     })
 
     # Specify the constraints we have.
-    (final: prev: prev.repository.select {
-      packageConstraints = [
-        "ocaml = 4.14.1"
-        "dune >= 3.4"
-        "zarith"
-        "opam-format"
-        "opam-state"
-        "opam-0install"
-        "cmdliner"
-        "ppx_deriving"
-      ];
-    })
+    (final: prev:
+      prev.repository.select {
+        # Set some common constraints.
+        packageConstraints = [
+          "ocaml = 4.14.1"
+          "dune >= 3.4"
+        ];
+
+        # Get other dependencies from .opam files.
+        opams = [
+          {
+            name = "nix";
+            opam = ./nix.opam;
+          }
+        ];
+      })
   ]);
 in
+  # Generate a Nix derivation using a OPAM package in the current directory.
+  packageSet.callOpam2Nix {
+    name = "nix";
+    version = "0.0.0";
+    src = ./.;
+  } {}
 
-# Generate a Nix derivation using a OPAM package in the current directory.
-packageSet.callOpam2Nix {
-  name = "nix";
-  version = "0.0.0";
-  src = ./.;
-} {}
 ```
 
 ## Package set functionality
