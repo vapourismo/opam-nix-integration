@@ -4,7 +4,7 @@ module Solver = Solver.Make (Dir_context)
 module Options = struct
   open Cmdliner
 
-  let req body infos = Arg.(opt (some body) None infos)
+  let option body infos = Arg.(opt (some body) None infos)
 
   let many body infos = Arg.(pos_all body [] infos)
 
@@ -12,23 +12,24 @@ module Options = struct
     { packages_dir : string
     ; targets : string list
     ; test_targets : string list
+    ; pins : string list
     }
 
-  let file_term = Arg.(info ~docv:"PATH" [ "packages-dir" ] |> req file |> required)
+  let file_term = Arg.(info ~docv:"PATH" [ "packages-dir" ] |> option file |> required)
 
   let test_targets =
     Arg.(info ~docv:"PACKAGE" [ "with-test-for" ] |> opt_all string [] |> value)
   ;;
 
+  let pins = Arg.(info ~docv:"FILE" [ "pin" ] |> opt_all string [] |> value)
+
   let targets_term = Arg.(info ~docv:"PACKAGE" [] |> many string |> value)
 
-  let with_test_term = Arg.(info [ "with-test" ] |> flag |> value)
-
   let term =
-    let combine packages_dir targets test_targets =
-      { packages_dir; targets; test_targets }
+    let combine packages_dir targets test_targets pins =
+      { packages_dir; targets; test_targets; pins }
     in
-    Term.(const combine $ file_term $ targets_term $ test_targets)
+    Term.(const combine $ file_term $ targets_term $ test_targets $ pins)
   ;;
 end
 
@@ -79,11 +80,13 @@ let parse_package_arg package_str =
   | _ -> failwith (Printf.sprintf "Unknown package format %s" package_str)
 ;;
 
+let read_opam path = path |> OpamFile.make |> OpamFile.OPAM.read
+
 let main config =
   let open Options in
   let targets = List.map parse_package_arg config.targets in
   let target_names = List.map fst targets in
-  let std_env =
+  let lookup_std_env =
     Dir_context.std_env
       ~ocaml_native:true
       ~arch
@@ -93,12 +96,12 @@ let main config =
       ~os_version:"1"
       ()
   in
-  let env = function
+  let lookup_env = function
     | "build" -> Some (OpamVariable.B true)
     | "post" -> Some (OpamVariable.B false)
     | "pinned" -> Some (OpamVariable.B false)
     | "dev" -> Some (OpamVariable.B true)
-    | other -> std_env other
+    | other -> lookup_std_env other
   in
   let package_constraints =
     List.filter_map
@@ -110,14 +113,48 @@ let main config =
     List.map OpamPackage.Name.of_string config.test_targets
     |> OpamPackage.Name.Set.of_list
   in
+  let pins =
+    List.map
+      (fun path ->
+        let opt_name, path =
+          match String.split_on_char ':' path with
+          | [ name; path ] ->
+            Some (String.trim name |> OpamPackage.Name.of_string), String.trim path
+          | _ -> None, path
+        in
+        let opam = read_opam (OpamFilename.of_string path) in
+        let name =
+          match opam.name, opt_name with
+          | Some name, _ | None, Some name -> name
+          | None, None ->
+            failwith
+              (Format.asprintf
+                 "Cannot pin a package without a name: %s.\n\
+                  Consider prefixing the argument to --pin with 'name:' to override the \
+                  OPAM description name."
+                 path)
+        in
+        let version =
+          Option.value ~default:(OpamPackage.Version.of_string "pinned") opam.version
+        in
+        name, (version, opam))
+      config.pins
+  in
+  let pins = OpamPackage.Name.Map.of_list pins in
+  let constraints =
+    let open OpamPackage.Name.Map in
+    map (fun (version, _) -> `Eq, version) pins
+    |> union (fun _ rhs -> rhs) package_constraints
+  in
   let context =
     Dir_context.create
-      ~constraints:package_constraints
+      ~constraints
       ~test:test_packages
-      ~env
+      ~env:lookup_env
+      ~pins
       config.packages_dir
   in
-  let solved = Solver.solve context target_names in
+  let solved = Solver.solve context (target_names @ OpamPackage.Name.Map.keys pins) in
   let open Nix in
   match solved with
   | Ok selection ->
