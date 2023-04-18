@@ -27,11 +27,6 @@ in
       inherit opamvars2nix opamsubst2nix opam-installer;
     };
 
-    selectOpamSrc = src: altSrc:
-      if altSrc != null
-      then altSrc
-      else src;
-
     callOpam2Nix = callSubPackage ./call-opam2nix.nix {
       inherit opam2nix;
       inherit (final) callPackage;

@@ -106,7 +106,6 @@ let main options =
       attr_set
         ([ field "pkgs"
          ; field "mkOpamDerivation"
-         ; field "selectOpamSrc"
          ; field "fetchurl"
          ; field "fetchgit"
          ; field "altSrc" @? null
@@ -136,7 +135,8 @@ let main options =
                ]
               @
               match source with
-              | Some src -> [ "src", ident "selectOpamSrc" @@ [ src; ident "altSrc" ] ]
+              | Some src ->
+                [ "src", if_ (infix (ident "altSrc") "!=" null) (ident "altSrc") src ]
               | None -> [ "src", ident "altSrc" ])
           ]
   in

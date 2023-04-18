@@ -31,6 +31,11 @@ type expr =
       ; field : accessor
       ; default : expr option
       }
+  | If_ of
+      { if_ : expr
+      ; then_ : expr
+      ; else_ : expr
+      }
 
 and string_segment =
   | StringSegment of string
@@ -134,3 +139,5 @@ let index ?default expr field =
 ;;
 
 let scoped name body = lambda (Pat.ident name) (body (ident name))
+
+let if_ if_ then_ else_ = If_ { if_; then_; else_ }

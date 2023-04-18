@@ -40,6 +40,9 @@ val unary : string -> t -> t
     present [default] can be used to provide a default value. *)
 val index : ?default:t -> t -> string -> t
 
+(** [if_ cond when_true when_false] creates an if-expression. *)
+val if_ : t -> t -> t -> t
+
 (** [render exp] converts the Nix expression to string. *)
 val render : t -> string
 

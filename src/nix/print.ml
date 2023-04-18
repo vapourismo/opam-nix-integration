@@ -65,6 +65,20 @@ let rec pp_prec ?(want_parens = false) fmt exp =
           default)
       fmt
       ()
+  | If_ { if_; then_; else_ } ->
+    (if want_parens then pp_parens else Fun.id)
+      (fun fmt () ->
+        Format.fprintf
+          fmt
+          "if %a then %a else %a"
+          (pp_prec ~want_parens:true)
+          if_
+          (pp_prec ~want_parens:true)
+          then_
+          (pp_prec ~want_parens:true)
+          else_)
+      fmt
+      ()
 
 and pp_string_segment ?(escape = true) fmt seg =
   match seg with
