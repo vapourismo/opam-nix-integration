@@ -48,23 +48,19 @@ let
           "dune >= 3.4"
         ];
 
-        # Get other dependencies from .opam files.
+        # Include these OPAM packages in the package set.
+        # This is useful for inferring the dependencies of these packages.
         opams = [
           {
             name = "nix";
-            opam = ./nix.opam;
+            src = ./.;
           }
         ];
       })
   ]);
 in
   # Generate a Nix derivation using a OPAM package in the current directory.
-  packageSet.callOpam2Nix {
-    name = "nix";
-    version = "0.0.0";
-    src = ./.;
-  } {}
-
+  packageSet.nix
 ```
 
 ## Package set functionality
@@ -174,7 +170,11 @@ in
 packageSet.overrideScope' (final: prev: prev.repository.select {
   packageConstraints = ["dune >= 3.2"];
   opams = [
-    { name = "my-package"; opam = ./my-package.opam; }
+    { 
+      name = "my-package";
+      src = ./.; # Needed when you want to build the package. 
+      opam = ./my-package.opam; # Optional if you specify `src`.
+    }
   ];
 })
 ```

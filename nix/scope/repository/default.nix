@@ -33,6 +33,8 @@
     then "_${fixedName}"
     else fixedName;
 
+  inferOpamLocation = import ../infer-opam-location.nix;
+
   solvePackageVersions = {
     packageConstraints ? [],
     testablePackages ? [],
@@ -45,10 +47,10 @@
     packageConstraintArgs = lib.strings.escapeShellArgs packageConstraints;
 
     pinArgs = lib.strings.escapeShellArgs (
-      lib.lists.map ({
-        name,
-        opam,
-      }: "--pin=${name}:${opam}")
+      lib.lists.map
+      (args: let
+        fixed = inferOpamLocation args;
+      in "--pin=${fixed.name}:${fixed.opam}")
       opams
     );
 
@@ -98,14 +100,21 @@ in {
     })
     repositoryIndex;
 
-  select = {testablePackages ? [], ...} @ args:
-    lib.mapAttrs'
-    (name: version: {
+  select = {testablePackages ? [], ...} @ args: let
+    fixPackage = name: version: let
+      pkg = callOpam {inherit name version;} {};
+    in {
       name = fixPackageName name;
-      value = let
-        pkg = callOpam {inherit name version;} {};
-      in
-        pkg.override {with-test = lib.elem name testablePackages;};
-    })
-    (solvePackageVersions args);
+      value = pkg.override {with-test = lib.elem name testablePackages;};
+    };
+
+    pinnedPackages =
+      lib.lists.map
+      (opamArg: {
+        name = opamArg.name;
+        value = callOpam2Nix ({version = "pinned";} // opamArg) {};
+      })
+      (args.opams or []);
+  in
+    lib.mapAttrs' fixPackage (solvePackageVersions args) // lib.attrsets.listToAttrs pinnedPackages;
 }

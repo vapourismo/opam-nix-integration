@@ -18,23 +18,23 @@
         opams = [
           {
             name = "nix";
-            opam = ../../nix.opam;
+            src = ../..;
           }
           {
             name = "opam2nix";
-            opam = ../../opam2nix.opam;
+            src = ../..;
           }
           {
             name = "opamsubst2nix";
-            opam = ../../opamsubst2nix.opam;
+            src = ../..;
           }
           {
             name = "opamvars2nix";
-            opam = ../../opamvars2nix.opam;
+            src = ../..;
           }
           {
             name = "opam0install2nix";
-            opam = ../../opam0install2nix.opam;
+            src = ../..;
           }
         ];
       })
@@ -42,51 +42,6 @@
       ocaml-base-compiler = prev.ocaml-base-compiler.override {
         jobs = "$NIX_BUILD_CORES";
       };
-
-      nix =
-        final.callOpam2Nix
-        {
-          name = "nix";
-          version = "0.0.0";
-          src = ../..;
-        }
-        {};
-
-      opam2nix =
-        final.callOpam2Nix
-        {
-          name = "opam2nix";
-          version = "0.0.0";
-          src = ../..;
-        }
-        {};
-
-      opamsubst2nix =
-        final.callOpam2Nix
-        {
-          name = "opamsubst2nix";
-          version = "0.0.0";
-          src = ../..;
-        }
-        {};
-
-      opamvars2nix =
-        final.callOpam2Nix
-        {
-          name = "opamvars2nix";
-          version = "0.0.0";
-          src = ../..;
-        }
-        {};
-
-      opam0install2nix =
-        final.callOpam2Nix
-        {
-          name = "opam0install2nix";
-          version = "0.0.0";
-          src = ../..;
-        }
-        {};
     })
   ]);
 in
