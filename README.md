@@ -59,7 +59,6 @@ let
       })
   ]);
 in
-  # Generate a Nix derivation using a OPAM package in the current directory.
   packageSet.nix
 ```
 
