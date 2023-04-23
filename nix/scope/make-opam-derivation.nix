@@ -147,12 +147,6 @@ in
         }
 
         addEnvHooks "$targetOffset" addOCamlPath
-
-        function exportOcamlDestDir {
-          export OCAMLFIND_DESTDIR="''$out/lib"
-        }
-
-        addEnvHooks "$hostOffset" exportOcamlDestDir
       '';
     };
 
@@ -223,6 +217,7 @@ in
 
         buildPhase = ''
           # Build Opam package
+          export OCAMLFIND_DESTDIR="$out/lib"
           export DUNE_INSTALL_PREFIX=$out
           ${renderedBuildScript}
         '';
@@ -230,6 +225,7 @@ in
         installPhase = ''
           # Install Opam package
           mkdir -p ${opamLib.env.local.bin} ${opamLib.env.local.lib}
+          export OCAMLFIND_DESTDIR="$out/lib"
           export DUNE_INSTALL_PREFIX=$out
           ${defaultInstallScript}
           ${renderedInstallScript}
