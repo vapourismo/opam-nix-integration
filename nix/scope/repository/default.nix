@@ -7,9 +7,11 @@
 }: let
   repositoryIndex = import ./repository-index.nix {inherit lib src;};
 
+  cleanVersion = lib.replaceStrings ["~"] ["-"];
+
   packagePath = name: version:
     builtins.path {
-      name = "opam-${name}-${version}";
+      name = "opam-${name}-${cleanVersion version}";
       path = "${src}/packages/${name}/${name}.${version}";
     };
 
