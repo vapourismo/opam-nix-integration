@@ -1,0 +1,24 @@
+{
+    "enabled": 1,
+    "hidden": false,
+    "description": "Jobsets",
+    "nixexprinput": "src",
+    "nixexprpath": "hydra/jobsets-generator.nix",
+    "checkinterval": 300,
+    "schedulingshares": 100,
+    "enableemail": false,
+    "emailoverride": "",
+    "keepnr": 3,
+    "inputs": {
+        "src": { 
+          "type": "git",
+          "value": "https://github.com/vapourismo/opam-nix-integration",
+          "emailresponsible": false
+        },
+        "nixpkgs": {
+            "type": "git",
+            "value": "https://github.com/NixOS/nixpkgs",
+            "emailresponsible": false 
+        }
+    }
+}
