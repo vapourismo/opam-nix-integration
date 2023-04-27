@@ -1,8 +1,12 @@
-{lib, ...}: let
-  mkJobSet = prefix: {
+{
+  lib,
+  opam-nix-integration,
+  ...
+}: let
+  mkJobSet = name: {
     enabled = 1;
     hidden = false;
-    description = "Packages starting with ${prefix}";
+    description = name;
     nixexprinput = "opam-nix-integration";
     nixexprpath = "hydra/jobs.nix";
     checkinterval = 86400;
@@ -11,9 +15,9 @@
     emailoverride = "";
     keepnr = 3;
     inputs = {
-      prefix = {
+      name = {
         type = "string";
-        value = prefix;
+        value = name;
         emailresponsible = false;
       };
 
@@ -31,38 +35,10 @@
 
       opam-nix-integration = {
         type = "git";
-        value = "https://github.com/vapourismo/opam-nix-integration";
+        value = "https://github.com/vapourismo/opam-nix-integration feature/individual-hydra-jobs";
         emailresponsible = false;
       };
     };
   };
 in
-  lib.genAttrs [
-    "a"
-    "b"
-    "c"
-    "d"
-    "e"
-    "f"
-    "g"
-    "h"
-    "i"
-    "j"
-    "k"
-    "l"
-    "m"
-    "n"
-    "o"
-    "p"
-    "q"
-    "r"
-    "s"
-    "t"
-    "u"
-    "v"
-    "w"
-    "x"
-    "y"
-    "z"
-  ]
-  mkJobSet
+  lib.genAttrs (lib.attrNames opam-nix-integration.repository.packages) mkJobSet
