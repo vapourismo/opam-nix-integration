@@ -5,7 +5,7 @@
     description = "Packages starting with ${prefix}";
     nixexprinput = "opam-nix-integration";
     nixexprpath = "hydra/jobs.nix";
-    checkinterval = 300;
+    checkinterval = 86400;
     schedulingshares = 1;
     enableemail = false;
     emailoverride = "";
