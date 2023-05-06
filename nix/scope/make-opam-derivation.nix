@@ -37,7 +37,7 @@
 
         if test -d "''$1/lib/stublibs"; then
           export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/stublibs"
-          export NIX_LDFLAGS="''$NIX_LDFLAGS -L''$1/lib/stublibs"
+          export NIX_LDFLAGS="''${NIX_LDFLAGS-}''${NIX_LDFLAGS:+ }-L''$1/lib/stublibs"
         fi
       }
 
