@@ -26,9 +26,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
-      - run: nix build .#opam2nix .#opamsubst2nix .#opamvars2nix .#opam0install2nix
+      - run: nix build -j auto .#opam2nix .#opamsubst2nix .#opamvars2nix .#opam0install2nix
 
-      - run: nix develop --command true
+      - run: nix develop -j auto --command true
 
       - if: always()
         uses: ./.github/actions/export-nix-store
