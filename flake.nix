@@ -22,71 +22,109 @@
       overlays.default = import (self + /overlay.nix);
     }
     // flake-utils.lib.eachDefaultSystem (
-      system:
-        with import nixpkgs
-        {
+      system: let
+        pkgs = import nixpkgs {
           inherit system;
           overlays = [self.overlays.default];
-        }; let
-          ocamlPackages = ocaml-ng.ocamlPackages_4_14.overrideScope' self.overlays.ocamlBoot;
-        in {
-          packages = {
-            default = self.packages.${system}.opam2nix;
+        };
 
-            opam2nix = ocamlPackages.opam2nix;
+        opamPackages = pkgs.opamPackages.overrideScope' (final: prev: {
+          repository = prev.repository.override {src = opam-repository;};
+        });
 
-            opamvars2nix = ocamlPackages.opamvars2nix;
+        localOpamPackages = opamPackages.overrideScope' (
+          final: prev:
+            prev.repository.select {
+              packageConstraints = [
+                "ocaml = 4.14.1"
+                "dune >= 3.4"
+                "ocaml-lsp-server"
+                "ocamlformat"
+                "utop"
+                "odoc"
+              ];
 
-            opamsubst2nix = ocamlPackages.opamsubst2nix;
+              opams = [
+                {
+                  name = "nix";
+                  src = self;
+                }
+                {
+                  name = "opam2nix";
+                  src = self;
+                }
+                {
+                  name = "opamvars2nix";
+                  src = self;
+                }
+                {
+                  name = "opamsubst2nix";
+                  src = self;
+                }
+                {
+                  name = "opam0install2nix";
+                  src = self;
+                }
+              ];
+            }
+        );
+      in {
+        packages = {
+          default = self.packages.${system}.opam2nix;
 
-            opam0install2nix = ocamlPackages.opam0install2nix;
-          };
+          opam2nix = localOpamPackages.opam2nix;
 
-          opamPackages = opamPackages.overrideScope' (final: prev: {
-            repository = prev.repository.override {src = opam-repository;};
-          });
+          opamvars2nix = localOpamPackages.opamvars2nix;
 
-          devShells.default = mkShell {
-            name = "opam-nix-integration-shell";
+          opamsubst2nix = localOpamPackages.opamsubst2nix;
 
-            packages =
-              # OCaml packages
-              (with ocamlPackages; [
-                ocaml-lsp
-                ocamlformat
-                utop
-                odoc
-              ])
-              ++
-              # Misc utilities
-              [
-                alejandra
-                nil
-              ]
-              ++
-              # Utilities for dune's watch mode
-              (
+          opam0install2nix = localOpamPackages.opam0install2nix;
+        };
+
+        inherit opamPackages;
+
+        devShells.default = pkgs.mkShell {
+          name = "opam-nix-integration-shell";
+
+          packages =
+            # OCaml packages
+            (with localOpamPackages; [
+              ocaml-lsp-server
+              ocamlformat
+              utop
+              odoc
+            ])
+            ++
+            # Misc utilities
+            (with pkgs; [
+              alejandra
+              nil
+            ])
+            ++
+            # Utilities for dune's watch mode
+            (
+              with pkgs;
                 if stdenv.isDarwin
                 then [fswatch]
                 else [inotify-tools]
-              );
+            );
 
-            inputsFrom = with self.packages.${system}; [
-              opam2nix
-              opamvars2nix
-              opamsubst2nix
-              opam0install2nix
-            ];
-          };
+          inputsFrom = with self.packages.${system}; [
+            opam2nix
+            opamvars2nix
+            opamsubst2nix
+            opam0install2nix
+          ];
+        };
 
-          formatter = alejandra;
+        formatter = pkgs.alejandra;
 
-          checks = {
-            format = runCommand "check-formatting" {buildInputs = [alejandra];} ''
-              alejandra -c ${self}
-              touch $out
-            '';
-          };
-        }
+        checks = {
+          format = pkgs.runCommand "check-formatting" {buildInputs = [pkgs.alejandra];} ''
+            alejandra -c ${self}
+            touch $out
+          '';
+        };
+      }
     );
 }
