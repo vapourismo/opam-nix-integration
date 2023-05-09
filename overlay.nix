@@ -4,7 +4,7 @@ final: prev: let
   );
 in {
   opam-nix-integration = final.callPackage ./nix/scope {
-    inherit (bootedOcamlPackages) opam2nix opamvars2nix opamsubst2nix opam0install2nix;
+    inherit (bootedOcamlPackages) opam2nix;
   };
 
   opamPackages = final.opam-nix-integration;

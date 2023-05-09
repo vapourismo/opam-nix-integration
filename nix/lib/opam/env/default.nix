@@ -2,16 +2,16 @@
   lib,
   runCommand,
   gnumake,
-  opamvars2nix,
+  opam2nix,
   opamVersion ? "2.1.2",
 }: let
   defaultOpamVars =
     import
     (
       runCommand
-      "opamvars2nix"
-      {buildInputs = [opamvars2nix];}
-      "opamvars2nix > $out"
+      "opam2nix-vars"
+      {buildInputs = [opam2nix];}
+      "opam2nix opam-variables > $out"
     )
     // {
       os-distribution = "nixos";

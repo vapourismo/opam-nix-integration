@@ -27,37 +27,11 @@
 
                 opams = [
                   {
-                    name = "nix";
-                    opam = ../../nix.opam;
-                  }
-                  {
                     name = "opam2nix";
                     opam = ../../opam2nix.opam;
                   }
-                  {
-                    name = "opamsubst2nix";
-                    opam = ../../opamsubst2nix.opam;
-                  }
-                  {
-                    name = "opamvars2nix";
-                    opam = ../../opamvars2nix.opam;
-                  }
-                  {
-                    name = "opam0install2nix";
-                    opam = ../../opam0install2nix.opam;
-                  }
                 ];
               })
-            (final: prev: {
-              nix =
-                final.callOpam2Nix
-                {
-                  name = "nix";
-                  version = "0.0.0";
-                  src = opam-nix-integration;
-                }
-                {};
-            })
           ]
         );
       in {
@@ -66,33 +40,6 @@
             packageSet.callOpam2Nix
             {
               name = "opam2nix";
-              version = "0.0.0";
-              src = opam-nix-integration;
-            }
-            {};
-
-          opamsubst2nix =
-            packageSet.callOpam2Nix
-            {
-              name = "opamsubst2nix";
-              version = "0.0.0";
-              src = opam-nix-integration;
-            }
-            {};
-
-          opamvars2nix =
-            packageSet.callOpam2Nix
-            {
-              name = "opamvars2nix";
-              version = "0.0.0";
-              src = opam-nix-integration;
-            }
-            {};
-
-          opam0install2nix =
-            packageSet.callOpam2Nix
-            {
-              name = "opam0install2nix";
               version = "0.0.0";
               src = opam-nix-integration;
             }

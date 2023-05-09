@@ -1,4 +1,4 @@
-let () =
+let main () =
   let open Nix in
   let go (name, value) =
     Option.map
@@ -14,3 +14,5 @@ let () =
   in
   OpamSysPoll.variables |> List.filter_map go |> attr_set |> render |> print_endline
 ;;
+
+let command = Cmdliner.Term.(const main $ const ())

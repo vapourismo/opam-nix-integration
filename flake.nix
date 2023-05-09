@@ -46,23 +46,7 @@
 
               opams = [
                 {
-                  name = "nix";
-                  src = self;
-                }
-                {
                   name = "opam2nix";
-                  src = self;
-                }
-                {
-                  name = "opamvars2nix";
-                  src = self;
-                }
-                {
-                  name = "opamsubst2nix";
-                  src = self;
-                }
-                {
-                  name = "opam0install2nix";
                   src = self;
                 }
               ];
@@ -73,12 +57,6 @@
           default = self.packages.${system}.opam2nix;
 
           opam2nix = localOpamPackages.opam2nix;
-
-          opamvars2nix = localOpamPackages.opamvars2nix;
-
-          opamsubst2nix = localOpamPackages.opamsubst2nix;
-
-          opam0install2nix = localOpamPackages.opam0install2nix;
         };
 
         inherit opamPackages;
@@ -109,12 +87,7 @@
                 else [inotify-tools]
             );
 
-          inputsFrom = with self.packages.${system}; [
-            opam2nix
-            opamvars2nix
-            opamsubst2nix
-            opam0install2nix
-          ];
+          inputsFrom = [self.packages.${system}.opam2nix];
         };
 
         formatter = pkgs.alejandra;

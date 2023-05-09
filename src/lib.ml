@@ -1,10 +1,3 @@
-module Common = Common
-module Interpolated_string = Interpolated_string
-module Env = Env
-module Constraint = Constraint
-module Filter = Filter
-module Formula = Formula
-
 let nix_of_dependency (name, formula) =
   let open Nix in
   let scope = ident "__dependencyScope" in

@@ -170,9 +170,4 @@ let main config =
     exit 1
 ;;
 
-let () =
-  let open Cmdliner in
-  Cmd.v (Cmd.info "opam0install2nix") Term.(const main $ Options.term)
-  |> Cmd.eval
-  |> Stdlib.exit
-;;
+let command = Cmdliner.Term.(const main $ Options.term)

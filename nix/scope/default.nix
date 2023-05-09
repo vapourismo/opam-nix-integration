@@ -16,15 +16,12 @@
   autoPatchelfHook,
   opam-installer,
   opam2nix,
-  opamvars2nix,
-  opamsubst2nix,
-  opam0install2nix,
 } @ args: let
   callSubPackage = lib.callPackageWith args;
 in
   lib.makeScope pkgs.newScope (final: {
     mkOpamDerivation = callSubPackage ./make-opam-derivation.nix {
-      inherit opamvars2nix opamsubst2nix opam-installer;
+      inherit opam2nix opam-installer;
     };
 
     callOpam2Nix = callSubPackage ./call-opam2nix.nix {
@@ -33,7 +30,7 @@ in
     };
 
     repository = callSubPackage ./repository {
-      inherit opam0install2nix;
+      inherit opam2nix;
       inherit (final) callOpam2Nix;
 
       src = runCommand "empty-opam-repository" {} ''

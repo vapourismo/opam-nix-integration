@@ -17,23 +17,7 @@
 
         opams = [
           {
-            name = "nix";
-            src = ../..;
-          }
-          {
             name = "opam2nix";
-            src = ../..;
-          }
-          {
-            name = "opamsubst2nix";
-            src = ../..;
-          }
-          {
-            name = "opamvars2nix";
-            src = ../..;
-          }
-          {
-            name = "opam0install2nix";
             src = ../..;
           }
         ];

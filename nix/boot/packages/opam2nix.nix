@@ -2,6 +2,7 @@
   buildDunePackage,
   opam-format,
   opam-state,
+  opam-0install,
   ppxlib,
   ppx_deriving,
   cmdliner,
@@ -25,6 +26,7 @@ buildDunePackage {
   buildInputs = [
     opam-format
     opam-state
+    opam-0install
     ppxlib
     ppx_deriving
     cmdliner

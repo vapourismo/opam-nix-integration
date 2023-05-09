@@ -1,0 +1,6 @@
+(executable
+ (public_name opam2nix)
+ (package opam2nix)
+ (libraries opam-format opam-state opam-0install cmdliner zarith str hex base64 opam2nix_nix)
+ (preprocess
+  (pps ppx_deriving.show)))

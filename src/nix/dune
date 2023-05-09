@@ -1,3 +1,3 @@
 (library
- (public_name nix)
+ (name opam2nix_nix)
  (libraries zarith))

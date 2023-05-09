@@ -5,12 +5,12 @@ depends: [
   "dune" {>= "2.9"}
   "opam-format"
   "opam-state"
+  "opam-0install"
   "cmdliner"
   "zarith"
   "ppx_deriving"
   "base64"
   "hex"
-  "nix"
   "odoc" {with-doc}
 ]
 build: [

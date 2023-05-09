@@ -7,8 +7,7 @@
   gnumake,
   jq,
   unzip,
-  opamvars2nix,
-  opamsubst2nix,
+  opam2nix,
 } @ args: let
   callPackage = lib.callPackageWith args;
 

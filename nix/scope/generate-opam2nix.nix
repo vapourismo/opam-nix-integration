@@ -22,7 +22,7 @@ import (
     for patch in $patches; do
       patch opam $patch
     done
-    opam2nix \
+    opam2nix generate-derivation \
       --name ${name} \
       --version ${version} \
       ${lib.optionalString (extraFiles != null && lib.pathExists extraFiles) "--extra-files ${extraFiles}"} \

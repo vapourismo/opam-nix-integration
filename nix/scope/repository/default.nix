@@ -2,7 +2,7 @@
   lib,
   runCommand,
   callOpam2Nix,
-  opam0install2nix,
+  opam2nix,
   src,
 }: let
   repositoryIndex = import ./repository-index.nix {inherit lib src;};
@@ -58,12 +58,12 @@
 
     versions = import (
       runCommand
-      "opam0install2nix-solver"
+      "opam2nix-0install-solver"
       {
-        buildInputs = [opam0install2nix];
+        buildInputs = [opam2nix];
       }
       ''
-        opam0install2nix \
+        opam2nix solve-0install \
           --packages-dir="${src}/packages" \
           ${testTargetArgs} \
           ${packageConstraintArgs} \

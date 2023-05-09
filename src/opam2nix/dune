@@ -1,7 +1,0 @@
-(executable
- (name opam2nix)
- (package opam2nix)
- (public_name opam2nix)
- (libraries opam-format opam-state cmdliner zarith nix opam2nix_lib)
- (preprocess
-  (pps ppx_deriving.show)))

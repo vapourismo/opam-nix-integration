@@ -1,5 +1,3 @@
-module Lib = Opam2nix_lib
-
 let read_opam path = path |> OpamFile.make |> OpamFile.OPAM.read
 
 module Options = struct
@@ -94,8 +92,7 @@ let main options =
       (fun (path, filter) ->
         attr_set
           [ "path", string (OpamFilename.Base.to_string path)
-          ; ( "filter"
-            , Option.fold ~none:Lib.Filter.nix_of_true ~some:Lib.Filter.to_nix filter )
+          ; "filter", Option.fold ~none:Filter.nix_of_true ~some:Filter.to_nix filter
           ])
       opam.patches
   in
@@ -143,7 +140,7 @@ let main options =
   print_endline (render expr)
 ;;
 
-let () =
+let command =
   let open Cmdliner in
-  Cmd.v (Cmd.info "opam2nix") Term.(const main $ Options.term) |> Cmd.eval |> Stdlib.exit
+  Term.(const main $ Options.term)
 ;;

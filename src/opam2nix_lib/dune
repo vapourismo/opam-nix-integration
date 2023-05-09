@@ -1,3 +1,0 @@
-(library
- (name opam2nix_lib)
- (libraries nix opam-format hex base64))

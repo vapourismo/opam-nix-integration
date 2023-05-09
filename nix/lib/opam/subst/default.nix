@@ -1,7 +1,7 @@
 {
   writeText,
   runCommand,
-  opamsubst2nix,
+  opam2nix,
   envLib,
 }: let
   rewrite = src:
@@ -12,9 +12,9 @@
           "opam2nix-subst-expr"
           {
             inherit src;
-            buildInputs = [opamsubst2nix];
+            buildInputs = [opam2nix];
           }
-          "opamsubst2nix < $src > $out"
+          "opam2nix substitute < $src > $out"
         )
       )
     );
