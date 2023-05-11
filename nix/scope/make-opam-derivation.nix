@@ -83,6 +83,9 @@ in
         \( -iname '*.so' -or -iname '*.a' -or -iname '*.dylib' -or -iname '*.dll' \) \
         -type f \
         -exec ln -fsvt ${opamLib.env.packages."_".stublibs} {} \;
+      if test -z "$(ls -A ${opamLib.env.packages."_".stublibs})"; then
+        rm -r ${opamLib.env.packages."_".stublibs}
+      fi
 
       ${lib.optionalString stdenv.isDarwin fixMachOLibsScript}
     '';
