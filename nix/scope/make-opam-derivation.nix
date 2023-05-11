@@ -16,33 +16,6 @@
   autoPatchelfHook,
 } @ args: let
   extraLib = lib.callPackageWith args ../lib {};
-
-  discoverOcamlDeps = stdenv.mkDerivation {
-    name = "ocaml-setup-hook";
-
-    dontUnpack = true;
-    dontConfigure = true;
-    dontBuild = true;
-
-    installPhase = ''
-      mkdir -p $out
-    '';
-
-    setupHook = writeScript "setup-hook.sh" ''
-      function addOCamlPath {
-        if test -d "''$1/lib"; then
-          export OCAMLPATH="''${OCAMLPATH-}''${OCAMLPATH:+:}''$1/lib"
-        fi
-
-        if test -d "''$1/lib/stublibs"; then
-          export CAML_LD_LIBRARY_PATH="''${CAML_LD_LIBRARY_PATH-}''${CAML_LD_LIBRARY_PATH:+:}''$1/lib/stublibs"
-          export NIX_LDFLAGS="''${NIX_LDFLAGS-}''${NIX_LDFLAGS:+ }-L''$1/lib/stublibs"
-        fi
-      }
-
-      addEnvHooks "$targetOffset" addOCamlPath
-    '';
-  };
 in
   {
     name,
@@ -147,6 +120,21 @@ in
 
     renderedTestScript = opamLib.commands.render (opamLib.commands.eval testScript);
 
+    writeSetupHookScript = ''
+      mkdir -p $out/nix-support
+
+      # Make this package discoverable as a OCaml dependency.
+      if test -d "${opamLib.env.local.lib}"; then
+        echo "export OCAMLPATH=\"\''${OCAMLPATH-}\''${OCAMLPATH:+:}${opamLib.env.local.lib}\"" >> $out/nix-support/setup-hook
+      fi
+
+      # Expose libraries if there are any.
+      if test -d "${opamLib.env.packages."_".stublibs}"; then
+        echo "export CAML_LD_LIBRARY_PATH=\"\''${CAML_LD_LIBRARY_PATH-}\''${CAML_LD_LIBRARY_PATH:+:}${opamLib.env.packages."_".stublibs}\"" >> $out/nix-support/setup-hook
+        echo "export NIX_LDFLAGS=\"\''${NIX_LDFLAGS-}\''${NIX_LDFLAGS:+ }-L${opamLib.env.packages."_".stublibs}\"" >> $out/nix-support/setup-hook
+      fi
+    '';
+
     overlayedSource = opamLib.source.fix {inherit name version src extraFiles substFiles;};
 
     selectedPatches =
@@ -191,11 +179,9 @@ in
           lib.optionals stdenv.isDarwin (lib.attrValues availableFrameworks);
 
         propagatedBuildInputs =
-          # This is a setup hook that makes OCaml dependencies available.
-          [discoverOcamlDeps]
           # We want to propagate 'ocamlfind' to everything that uses 'dune'. Dune does not behave
           # correctly for us when 'ocamlfind' can't be found by it.
-          ++ specialDuneDeps
+          specialDuneDeps
           ++ opamLib.depends.eval {inherit name;} depends
           ++ opamLib.depends.eval {
             inherit name;
@@ -231,6 +217,7 @@ in
           ${renderedInstallScript}
           ${lib.optionalString (name == "ocamlfind") extraOcamlfindInstallScript}
           ${fixBadInstallsScript}
+          ${writeSetupHookScript}
         '';
 
         doCheck = with-test;
