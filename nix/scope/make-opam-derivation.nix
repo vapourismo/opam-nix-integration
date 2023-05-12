@@ -75,6 +75,16 @@ in
       fixMachOSharedObjects $(find ${opamLib.env.local.lib} \( -iname '*.so' -or -iname '*.dylib' \))
     '';
 
+    linkRelativeScript = writeScript "" ''
+      target=$1
+      base=$2
+      source=$3
+
+      link=$target/$(realpath --relative-to=$base $source)
+      mkdir -p $(dirname $link)
+      ln -fsv $source $link
+    '';
+
     fixBadInstallsScript = ''
       # Some packages install the shared libraries into the 'lib' directory, where they won't be
       # found. So we link them.
@@ -85,6 +95,18 @@ in
         -exec ln -fsvt ${opamLib.env.packages."_".stublibs} {} \;
       if test -z "$(ls -A ${opamLib.env.packages."_".stublibs})"; then
         rm -r ${opamLib.env.packages."_".stublibs}
+      fi
+
+      # Find and install header files.
+      mkdir -p $out/include
+      if test -d "${opamLib.env.packages."_".lib}"; then
+        find ${opamLib.env.packages."_".lib} \
+          \( -iname '*.h' -or -iname '*.hpp' -or -iname '*.hxx' -or -iname '*.hh' \) \
+          -type f \
+          -exec ${linkRelativeScript} $out/include ${opamLib.env.packages."_".lib} {} \;
+      fi
+      if test -z "$(ls -A $out/include)"; then
+        rm -r $out/include
       fi
 
       ${lib.optionalString stdenv.isDarwin fixMachOLibsScript}
