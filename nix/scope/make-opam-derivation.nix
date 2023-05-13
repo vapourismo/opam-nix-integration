@@ -75,7 +75,7 @@ in
       fixMachOSharedObjects $(find ${opamLib.env.local.lib} \( -iname '*.so' -or -iname '*.dylib' \))
     '';
 
-    linkRelativeScript = writeScript "" ''
+    linkRelativeScript = writeScript "link-relative" ''
       target=$1
       base=$2
       source=$3
