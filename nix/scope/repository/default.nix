@@ -4,15 +4,41 @@
   callOpam2Nix,
   opam2nix,
   src,
+  srcs ? [src],
 }: let
-  repositoryIndex = import ./repository-index.nix {inherit lib src;};
+  mergedRepoSrc =
+    if lib.length srcs == 0
+    then
+      runCommand "empty-opam-repository" {} ''
+        mkdir -p $out/packages
+      ''
+    else if lib.length srcs == 1
+    then lib.elemAt srcs 0
+    else
+      runCommand "merged-opam-repository" {inherit srcs;} ''
+        set -x
+        mkdir -p $out/packages
+        for src in $srcs; do
+          packages_dir="$src/packages"
+          for name in $(ls -1 "$packages_dir"); do
+            package_dir="$packages_dir/$name"
+            mkdir -p "$out/packages/$name"
+            ln -sfv -t "$out/packages/$name" $(find "$package_dir" -mindepth 1 -maxdepth 1)
+          done
+        done
+      '';
+
+  repositoryIndex = import ./repository-index.nix {
+    inherit lib;
+    src = mergedRepoSrc;
+  };
 
   cleanVersion = lib.replaceStrings ["~"] ["-"];
 
   packagePath = name: version:
     builtins.path {
       name = "opam-${name}-${cleanVersion version}";
-      path = "${src}/packages/${name}/${name}.${version}";
+      path = "${mergedRepoSrc}/packages/${name}/${name}.${version}";
     };
 
   callOpam = {
@@ -64,7 +90,7 @@
       }
       ''
         opam2nix solve-0install \
-          --packages-dir="${src}/packages" \
+          --packages-dir="${mergedRepoSrc}/packages" \
           ${testTargetArgs} \
           ${packageConstraintArgs} \
           ${pinArgs} \

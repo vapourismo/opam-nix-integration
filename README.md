@@ -36,7 +36,11 @@ let
   packageSet = pkgs.opamPackages.overrideScope' (pkgs.lib.composeManyExtensions [
     # Set the opam-repository which has all our package descriptions.
     (final: prev: {
-      repository = prev.repository.override {src = opam-repository;};
+      repository = prev.repository.override {
+        # You can pull from multiple repositories. They will be merged with increasing priority
+        # left to right.
+        srcs = [opam-repository];
+      };
     })
 
     # Specify the constraints we have.
