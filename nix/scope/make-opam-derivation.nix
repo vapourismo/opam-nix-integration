@@ -130,11 +130,6 @@ in
       then ["ocaml"] ++ args
       else args;
 
-    # XXX: Manually installs 'topfind'.
-    extraOcamlfindInstallScript = ''
-      install -c src/findlib/topfind $OCAMLFIND_DESTDIR
-    '';
-
     renderedBuildScript = opamLib.commands.render (
       lib.lists.map
       (cmd: fixNakedOcamlScript (fixTopkgCommand cmd))
@@ -240,7 +235,6 @@ in
           export DUNE_INSTALL_PREFIX=$out
           ${defaultInstallScript}
           ${renderedInstallScript}
-          ${lib.optionalString (name == "ocamlfind") extraOcamlfindInstallScript}
           ${fixBadInstallsScript}
           ${writeSetupHookScript}
         '';
