@@ -186,7 +186,7 @@ in
 
         src = overlayedSource;
 
-        patches = lib.optional (name == "ocamlfind") ./ldconf.patch ++ selectedPatches;
+        patches = selectedPatches;
 
         nativeBuildInputs =
           [
