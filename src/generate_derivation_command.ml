@@ -53,29 +53,26 @@ let main options =
     | None -> OpamFilename.concat_and_resolve (OpamFilename.dirname options.file) "files"
   in
   let extra_files =
-    Option.fold
-      ~none:[]
-      ~some:(fun files ->
-        match files with
-        | [] -> []
-        | files ->
-          List.map
-            (fun (path, _hash) ->
-              let path_str = OpamFilename.Base.to_string path in
-              attr_set
-                [ "path", string path_str
-                ; ( "src"
-                  , let path =
-                      OpamFilename.create extra_files_dir path
-                      |> OpamFilename.to_string
-                      |> string
-                    in
-                    (* Raw paths literals in Nix expressions might not parse correctly. Therefore we
-                       must pass it as a string and convert it to a path in the expression. *)
-                    infix (ident "/.") "+" (apply (ident "builtins.toPath") [ path ]) )
-                ])
-            files)
-      opam.extra_files
+    match opam.extra_files with
+    | None -> []
+    | Some [] -> []
+    | Some files ->
+      List.map
+        (fun (path, _hash) ->
+          let path_str = OpamFilename.Base.to_string path in
+          attr_set
+            [ "path", string path_str
+            ; ( "src"
+              , let path =
+                  OpamFilename.create extra_files_dir path
+                  |> OpamFilename.to_string
+                  |> string
+                in
+                (* Raw paths literals in Nix expressions might not parse correctly. Therefore we
+                      must pass it as a string and convert it to a path in the expression. *)
+                infix (ident "/.") "+" (apply (ident "builtins.toPath") [ path ]) )
+            ])
+        files
   in
   let extra_sources =
     List.map
@@ -110,7 +107,7 @@ let main options =
          ; field "with-test" @? bool false
          ; field "with-doc" @? bool false
          ]
-        @ extra_pattern_fields))
+         @ extra_pattern_fields))
     => ident "mkOpamDerivation"
        @@ [ attr_set
               ([ "name", string options.name
@@ -130,11 +127,11 @@ let main options =
                ; "with-test", ident "with-test"
                ; "with-doc", ident "with-doc"
                ]
-              @
-              match source with
-              | Some src ->
-                [ "src", if_ (infix (ident "altSrc") "!=" null) (ident "altSrc") src ]
-              | None -> [ "src", ident "altSrc" ])
+               @
+               match source with
+               | Some src ->
+                 [ "src", if_ (infix (ident "altSrc") "!=" null) (ident "altSrc") src ]
+               | None -> [ "src", ident "altSrc" ])
           ]
   in
   print_endline (render expr)
