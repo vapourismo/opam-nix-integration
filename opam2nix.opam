@@ -4,7 +4,7 @@ synopsis: "Convert .opam files to Nix expressions"
 depends: [
   "dune" {>= "2.9"}
   "opam-format"
-  "opam-state"
+  "opam-state" {< "2.2"}
   "opam-0install"
   "cmdliner"
   "zarith"
