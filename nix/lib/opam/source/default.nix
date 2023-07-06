@@ -2,11 +2,23 @@
   lib,
   stdenv,
   writeScript,
-  cleanVersion,
   substLib,
   jq,
   unzip,
 }: let
+  mkSrcName = src: let
+    src' = toString src;
+  in
+    if src' != null && lib.strings.hasPrefix "/nix/store/" src'
+    then
+      lib.pipe src' [
+        (builtins.split "-")
+        builtins.tail
+        (builtins.filter builtins.isString)
+        (builtins.concatStringsSep "-")
+      ]
+    else "unknown";
+
   mkCopyExtraFilesScript = extraFiles:
     lib.concatStringsSep "\n" (
       lib.lists.map ({
@@ -22,14 +34,13 @@
   '';
 
   overlayExtraFiles = {
-    name,
-    version,
+    srcName,
     src,
     extraFiles,
     ...
   }:
     stdenv.mkDerivation {
-      name = "opam2nix-${name}-${cleanVersion version}-source-phase1";
+      name = "opam2nix-${srcName}-source-phase1";
 
       inherit src;
       dontUnpack = src == null;
@@ -70,15 +81,16 @@
     );
 
   fixSource = {
-    name,
-    version,
+    src,
+    extraFiles,
     substFiles,
     ...
   } @ args: let
-    src = overlayExtraFiles args;
+    srcName = mkSrcName args.src;
+    src = overlayExtraFiles (args // {inherit srcName;});
   in
     stdenv.mkDerivation {
-      name = "opam2nix-${name}-${cleanVersion version}-source";
+      name = "opam2nix-${srcName}-source";
 
       inherit src;
 
