@@ -2,7 +2,6 @@
   lib,
   stdenv,
   writeScript,
-  cleanVersion,
   substLib,
   jq,
   unzip,
@@ -22,14 +21,12 @@
   '';
 
   overlayExtraFiles = {
-    name,
-    version,
     src,
     extraFiles,
     ...
   }:
     stdenv.mkDerivation {
-      name = "opam2nix-${name}-${cleanVersion version}-source-phase1";
+      name = "opam2nix-source-phase1";
 
       inherit src;
       dontUnpack = src == null;
@@ -70,15 +67,14 @@
     );
 
   fixSource = {
-    name,
-    version,
+    src,
     substFiles,
     ...
   } @ args: let
     src = overlayExtraFiles args;
   in
     stdenv.mkDerivation {
-      name = "opam2nix-${name}-${cleanVersion version}-source";
+      name = "opam2nix-source";
 
       inherit src;
 

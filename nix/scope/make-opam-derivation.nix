@@ -160,7 +160,7 @@ in
       fi
     '';
 
-    overlayedSource = opamLib.source.fix {inherit name version src extraFiles substFiles;};
+    overlayedSource = opamLib.source.fix {inherit src extraFiles substFiles;};
 
     selectedPatches =
       lib.lists.map
