@@ -1,8 +1,14 @@
 name: "Export Nix closure"
 description: "Export a Nix closure to the cache"
+inputs:
+  has-ssh-key:
+    description: "Is the SSH key available?"
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
     - uses: vapourismo/workflows/copy-nix-store@master
       with:
         target: ssh://nix-ssh@nix.cache.hwlium.com
+      if: ${{ inputs.has-ssh-key }}
