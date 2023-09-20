@@ -37,4 +37,6 @@ in
         mkdir -p $out/packages
       '';
     };
+
+    lib = callSubPackage ./lib.nix {};
   })
