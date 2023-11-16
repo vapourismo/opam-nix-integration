@@ -36,9 +36,9 @@
       setSourceRoot = ''
         export sourceRoot="$(find . -type d -mindepth 1 -maxdepth 1 ! -name env-vars)"
 
-        # If the unpack command creates multiple directories we'll choose the most top-level directory
-        # as our source root.
-        if [[ $(echo "$sourceRoot" | wc -l) -gt 1 ]]; then
+        # If the unpack command creates multiple or no directories we'll choose the most top-level
+        # directory as our source root.
+        if [[ $(echo "$sourceRoot" | wc -l) -ne 1 ]] || [[ -z "$sourceRoot" ]]; then
           export sourceRoot="."
         fi
       '';
