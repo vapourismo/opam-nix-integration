@@ -20,7 +20,7 @@ runs:
       shell: bash
 
     - name: Set up Nix
-      uses: nixbuild/nix-quick-install-action@v21
+      uses: nixbuild/nix-quick-install-action@v26
       with:
         nix_conf: |
           extra-experimental-features = nix-command flakes
