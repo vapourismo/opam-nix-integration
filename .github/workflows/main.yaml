@@ -26,9 +26,17 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
-      - run: nix build -j auto
+      - name: Build Nix Flake default package
+        uses: Wandalen/wretry.action@v3.2.0
+        with:
+          attempt_limit: 3
+          command: nix build -j auto
 
-      - run: nix develop -j auto --command true
+      - name: Build Nix Flake default development shell
+        uses: Wandalen/wretry.action@v3.2.0
+        with:
+          attempt_limit: 3
+          command: nix develop -j auto --command true
 
       - if: always()
         uses: ./.github/actions/export-nix-store
@@ -47,7 +55,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
-      - run: nix-build -j auto -v examples/standard/default.nix
+      - name: Build Example deriviation
+        uses: Wandalen/wretry.action@v3.2.0
+        with:
+          attempt_limit: 3
+          command: nix-build -j auto examples/standard/default.nix
 
       - if: always()
         uses: ./.github/actions/export-nix-store
@@ -67,8 +79,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.NIX_CACHE_SSH_KEY }}
 
-      - run: |
-          nix -vL build -j auto --impure ./examples/flake --override-input opam-nix-integration path:./.
+      - name: Build Example flake
+        uses: Wandalen/wretry.action@v3.2.0
+        with:
+          attempt_limit: 3
+          command: nix build -j auto --impure ./examples/flake --override-input opam-nix-integration path:./.
 
       - if: always()
         uses: ./.github/actions/export-nix-store
