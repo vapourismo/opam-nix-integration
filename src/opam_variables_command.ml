@@ -2,7 +2,7 @@ let main () =
   let open Nix in
   let go (name, value) =
     match OpamVariable.to_string name, Lazy.force value with
-    | ("os-distribution" as name), _ -> Some (name, string "nixos")
+    | (("os-distribution" | "os-family") as name), _ -> Some (name, string "nixos")
     | name, Some value ->
       let value =
         match value with
