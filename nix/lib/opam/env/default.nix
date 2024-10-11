@@ -45,7 +45,7 @@ in
     jobs ? 1,
     with-test ? false,
     with-doc ? false,
-    with-dev-setup ? true,
+    with-dev-setup ? false,
     ocamlPackages,
     disabledPackages ? [],
   }:
