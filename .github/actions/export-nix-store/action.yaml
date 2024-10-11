@@ -7,8 +7,4 @@ inputs:
     default: false
 runs:
   using: "composite"
-  steps:
-    - uses: vapourismo/workflows/copy-nix-store@master
-      with:
-        target: ssh://nix-ssh@nix.cache.hwlium.com
-      if: ${{ inputs.has-ssh-key }}
+  steps: []
