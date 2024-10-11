@@ -45,6 +45,7 @@ in
     jobs ? 1,
     with-test ? false,
     with-doc ? false,
+    with-dev-setup ? true,
     ocamlPackages,
     disabledPackages ? [],
   }:
@@ -53,7 +54,7 @@ in
         defaultOpamVars
         // defaultLocalVars
         // rec {
-          inherit name version jobs with-test with-doc;
+          inherit name version jobs with-test with-doc with-dev-setup;
 
           prefix = "$out";
           lib = "${prefix}/lib";
