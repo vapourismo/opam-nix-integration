@@ -12,7 +12,7 @@
 
       # Override the default opam-repository.
       (final: prev: {
-        opamPackages = prev.opamPackages.overrideScope' (final: prev: {
+        opamPackages = prev.opamPackages.overrideScope (final: prev: {
           repository = prev.repository.override {
             src = opam-repository;
           };
@@ -23,7 +23,7 @@
 
   mkPackage = name: version:
     (
-      pkgs.opamPackages.overrideScope' (
+      pkgs.opamPackages.overrideScope (
         final: prev:
           prev.repository.select {
             packageConstraints = [

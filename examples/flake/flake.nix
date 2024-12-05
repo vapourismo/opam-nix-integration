@@ -17,7 +17,7 @@
       system: let
         pkgs = import nixpkgs {inherit system;};
 
-        packageSet = opam-nix-integration.opamPackages.${system}.overrideScope' (
+        packageSet = opam-nix-integration.opamPackages.${system}.overrideScope (
           pkgs.lib.composeManyExtensions [
             (final: prev:
               prev.repository.select {

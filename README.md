@@ -33,7 +33,7 @@ let
   };
 
   # Create a package set using some constraints against the packages available in opam-repository.
-  packageSet = pkgs.opamPackages.overrideScope' (pkgs.lib.composeManyExtensions [
+  packageSet = pkgs.opamPackages.overrideScope (pkgs.lib.composeManyExtensions [
     # Set the opam-repository which has all our package descriptions.
     (final: prev: {
       repository = prev.repository.override {
@@ -170,7 +170,7 @@ Example:
 let
   packageSet = ...;
 in
-packageSet.overrideScope' (final: prev: prev.repository.select {
+packageSet.overrideScope (final: prev: prev.repository.select {
   packageConstraints = ["dune >= 3.2"];
   opams = [
     { 

@@ -5,7 +5,7 @@
 
   pkgs = import nixpkgs {overlays = [opam-nix-integration.overlay];};
 
-  scope = pkgs.opamPackages.overrideScope' (pkgs.lib.composeManyExtensions [
+  scope = pkgs.opamPackages.overrideScope (pkgs.lib.composeManyExtensions [
     (final: prev: {
       repository = prev.repository.override {src = opam-repository;};
     })

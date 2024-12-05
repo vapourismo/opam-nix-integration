@@ -28,11 +28,11 @@
           overlays = [self.overlays.default];
         };
 
-        opamPackages = pkgs.opamPackages.overrideScope' (final: prev: {
+        opamPackages = pkgs.opamPackages.overrideScope (final: prev: {
           repository = prev.repository.override {src = opam-repository;};
         });
 
-        localOpamPackages = opamPackages.overrideScope' (
+        localOpamPackages = opamPackages.overrideScope (
           final: prev:
             prev.repository.select {
               packageConstraints = [
