@@ -33,24 +33,33 @@
         });
 
         localOpamPackages = opamPackages.overrideScope (
-          final: prev:
-            prev.repository.select {
-              packageConstraints = [
-                "ocaml = 4.14.2"
-                "dune >= 3.4"
-                "ocaml-lsp-server"
-                "ocamlformat"
-                "utop"
-                "odoc"
-              ];
+          pkgs.lib.composeManyExtensions [
+            (
+              final: prev:
+                prev.repository.select {
+                  packageConstraints = [
+                    "ocaml = 4.14.2"
+                    "dune >= 3.4"
+                    "ocaml-lsp-server"
+                    "ocamlformat"
+                    "utop"
+                    "odoc"
+                  ];
 
-              opams = [
-                {
-                  name = "opam2nix";
-                  src = self;
+                  opams = [
+                    {
+                      name = "opam2nix";
+                      src = self;
+                    }
+                  ];
                 }
-              ];
-            }
+            )
+            (final: prev: {
+              ocamlformat-lib = prev.ocamlformat-lib.overrideAttrs (old: {
+                propagatedBuildInputs = old.propagatedBuildInputs ++ [prev.ocp-indent];
+              });
+            })
+          ]
         );
       in {
         packages = {
