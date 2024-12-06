@@ -84,7 +84,7 @@
 
     versions = import (
       runCommand
-      "opam2nix-0install-solver"
+      "solve-for-opam2nix"
       {
         buildInputs = [opam2nix];
       }

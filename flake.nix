@@ -36,7 +36,7 @@
           final: prev:
             prev.repository.select {
               packageConstraints = [
-                "ocaml = 4.14.1"
+                "ocaml = 4.14.2"
                 "dune >= 3.4"
                 "ocaml-lsp-server"
                 "ocamlformat"

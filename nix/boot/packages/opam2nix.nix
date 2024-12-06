@@ -17,7 +17,7 @@ buildDunePackage {
   version = "0.0.0";
 
   duneVersion = "3";
-  minimumOCamlVersion = "4.13";
+  minimumOCamlVersion = "4.14";
 
   src = ../../..;
 

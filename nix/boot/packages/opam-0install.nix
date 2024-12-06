@@ -15,8 +15,8 @@ buildDunePackage {
   src = fetchFromGitHub {
     owner = "ocaml-opam";
     repo = "opam-0install-solver";
-    rev = "eb08da5434a8c8227af39927b99b5cc15e82c053";
-    sha256 = "sha256-+AD5zSAKZ4k2G+RsrKq1MxzjuGV4qdfOpt4TJxDMlEk=";
+    rev = "f4e5478242f9d70340b8d6e74a75ed035d4d544a";
+    sha256 = "GvARNrqtc4R5gSJj6yWjSTr9rYuxUU4sLJLguUWiPhg=";
   };
 
   propagatedBuildInputs = [

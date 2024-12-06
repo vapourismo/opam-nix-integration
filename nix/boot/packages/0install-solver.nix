@@ -11,7 +11,7 @@ buildDunePackage {
   src = fetchFromGitHub {
     owner = "0install";
     repo = "0install";
-    rev = "4a837bd638d93905b96d073c28c644894f8d4a0b";
-    sha256 = "sha256-OsHJNh99oEQxCUH4GuV1sAlUhxCIxcW3oodgojgRskw=";
+    rev = "b58af5db6afd496cfd4a5f85fb23f30ba8dfbc87";
+    sha256 = "CxADWMYZBPobs65jeyMQjqu3zmm2PgtNgI/jUsYUp8I=";
   };
 }

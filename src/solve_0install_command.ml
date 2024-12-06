@@ -34,13 +34,13 @@ module Options = struct
 end
 
 let arch =
-  match OpamSysPoll.arch () with
+  match OpamSysPoll.arch OpamVariable.Map.empty with
   | None -> failwith "Failed to discover $arch"
   | Some arch -> arch
 ;;
 
 let os =
-  match OpamSysPoll.os () with
+  match OpamSysPoll.os OpamVariable.Map.empty with
   | None -> failwith "Failed to discover $os"
   | Some os -> os
 ;;
